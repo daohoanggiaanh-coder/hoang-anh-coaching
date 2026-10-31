@@ -1,0 +1,252 @@
+# Hoàng Anh Coaching v1.0 (2026-10-31) — hồ sơ khách, lịch cố định, hẹn / dời / nghỉ / đã tập, đếm buổi, tin Zalo
+# (chuyển từ mục 🔒 Khách riêng của Atlas Academy v3.71 — giữ nguyên tên trường để chuyển dữ liệu 1-1)
+from __future__ import annotations
+
+import hashlib
+import json
+from datetime import date, datetime, timedelta
+
+from core import db
+
+THU = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"]
+TRANG_THAI = ["Đang tập", "Tạm dừng", "Ngưng tập"]
+HINH_THUC = ["Trực tiếp", "Online", "Kết hợp"]
+FIELDS = ["ma", "ho_ten", "sdt", "ten_zalo", "goi_khach", "xung_toi", "dia_diem", "goi_buoi", "da_tap_truoc", "gia",
+          "ngay_bat_dau", "lich", "trang_thai", "ghi_chu", "xoa", "ngay_sinh",
+          "gioi_tinh", "chieu_cao", "muc_tieu", "can_muc_tieu", "hinh_thuc", "chan_thuong"]
+
+
+# ------------------------------------------------------------------ khách
+def clients(ca_ngung: bool = True) -> list[dict]:
+    out = [{**v, "ma": v.get("ma") or k} for k, v in db.latest("KhachHang").items()]
+    if not ca_ngung:
+        out = [r for r in out if (r.get("trang_thai") or "Đang tập") == "Đang tập"]
+    return sorted(out, key=lambda r: (TRANG_THAI.index(r.get("trang_thai") or "Đang tập")
+                                      if (r.get("trang_thai") or "Đang tập") in TRANG_THAI else 9, str(r.get("ho_ten", ""))))
+
+
+def client(ma: str) -> dict | None:
+    v = db.latest("KhachHang").get(str(ma))
+    return {**v, "ma": v.get("ma") or ma} if v else None
+
+
+def ma_moi(ds: list[dict]) -> str:
+    so = [int(str(r.get("ma", ""))[1:]) for r in ds if str(r.get("ma", ""))[1:].isdigit()]
+    return f"R{(max(so) if so else 0) + 1:03d}"
+
+
+def save_client(k: dict, nguoi: str) -> bool:
+    k = {f: k.get(f, "") for f in FIELDS}
+    if k.get("xoa"):
+        k["xoa"] = 1
+    return db.append("KhachHang", k["ma"], k, nguoi, k["ma"])
+
+
+def tuoi(k: dict, hom_nay: date | None = None) -> int | None:
+    d = _d(k.get("ngay_sinh"))
+    if not d:
+        return None
+    t = hom_nay or db.now_vn().date()
+    return t.year - d.year - ((t.month, t.day) < (d.month, d.day))
+
+
+# ------------------------------------------------------------------ lịch
+def hens(ma: str | None = None) -> dict[str, dict]:
+    return db.latest("LichHen", ma, ca_xoa=True)
+
+
+def hen_id(ma: str, ngay: date, gio: str) -> str:
+    return f"{ma}|{ngay.isoformat()}|{gio}"
+
+
+def ghi_hen(ma: str, ngay: date, gio: str, trang_thai: str, nguoi: str, dia_diem: str = "", ghi_chu: str = "",
+            goc: str = "") -> bool:
+    """trang_thai: hen (thêm / dời tới) · xong (đã tập) · huy (nghỉ)."""
+    hid = goc if goc and trang_thai in ("huy", "xong") else hen_id(ma, ngay, gio)
+    return db.append("LichHen", hid, {"ma": ma, "ngay": ngay.isoformat(), "gio": gio, "dia_diem": dia_diem,
+                                      "trang_thai": trang_thai, "ghi_chu": ghi_chu, "goc": goc}, nguoi, ma)
+
+
+def lich_co_dinh(k: dict) -> list[dict]:
+    try:
+        v = k.get("lich")
+        v = json.loads(v) if isinstance(v, str) else (v or [])
+        return [x for x in v if isinstance(x, dict) and "thu" in x]
+    except (TypeError, ValueError):
+        return []
+
+
+def _d(v) -> date | None:
+    try:
+        return datetime.strptime(str(v)[:10], "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
+def buoi(ds: list[dict], tu: date, den: date, H: dict[str, dict] | None = None) -> list[dict]:
+    """Các buổi từ tu → den: lịch cố định + buổi hẹn thêm / dời; kèm trạng thái (hen / xong / huy)."""
+    H = hens() if H is None else H
+    by = {k["ma"]: k for k in ds}
+    out: dict[str, dict] = {}
+    for k in ds:
+        if (k.get("trang_thai") or "Đang tập") != "Đang tập":
+            continue
+        bd = _d(k.get("ngay_bat_dau")) or date.min
+        d = tu
+        while d <= den:
+            for s in lich_co_dinh(k):
+                if int(s["thu"]) == d.weekday() and d >= bd:
+                    hid = hen_id(k["ma"], d, str(s.get("gio", "")))
+                    out[hid] = {"id": hid, "ma": k["ma"], "ngay": d, "gio": str(s.get("gio", "")),
+                                "dia_diem": s.get("dia_diem") or k.get("dia_diem", ""), "trang_thai": "hen", "co_dinh": True}
+            d += timedelta(days=1)
+    for hid, h in H.items():
+        nd = _d(h.get("ngay"))
+        if h.get("ma") not in by:
+            continue
+        if hid in out:
+            out[hid].update({"trang_thai": h.get("trang_thai", "hen"), "ghi_chu": h.get("ghi_chu", "")})
+        elif nd and tu <= nd <= den:
+            out[hid] = {"id": hid, "ma": h["ma"], "ngay": nd, "gio": h.get("gio", ""), "dia_diem": h.get("dia_diem", ""),
+                        "trang_thai": h.get("trang_thai", "hen"), "ghi_chu": h.get("ghi_chu", ""), "co_dinh": False}
+    return sorted(out.values(), key=lambda b: (b["ngay"], str(b["gio"])))
+
+
+def da_tap(k: dict, H: dict[str, dict] | None = None) -> int:
+    H = hens() if H is None else H
+    bd = _d(k.get("ngay_bat_dau")) or date.min
+    n = sum(1 for h in H.values() if h.get("ma") == k["ma"] and h.get("trang_thai") == "xong" and (_d(h.get("ngay")) or bd) >= bd)
+    try:
+        n += int(float(k.get("da_tap_truoc") or 0))
+    except ValueError:
+        pass
+    return n
+
+
+def con_lai(k: dict, H: dict[str, dict] | None = None) -> int | None:
+    try:
+        g = int(float(k.get("goi_buoi") or 0))
+    except ValueError:
+        g = 0
+    return max(g - da_tap(k, H), 0) if g else None
+
+
+# ------------------------------------------------------------------ tin nhắn (như tin nhắn thường: không ký tên)
+def xung(k: dict) -> tuple[str, str]:
+    goi = str(k.get("goi_khach") or "").split("|")[0].strip() or "bạn"
+    toi = str(k.get("xung_toi") or "").strip() or ("mình" if goi == "bạn" else "em")
+    return goi, toi
+
+
+def _chon(pool: list[str], seed: str) -> str:
+    return pool[int(hashlib.md5(seed.encode()).hexdigest(), 16) % len(pool)]
+
+
+def gio_s(g: str) -> str:
+    g = str(g or "").strip()
+    if ":" in g:
+        h, m = g.split(":")[:2]
+        try:
+            return f"{int(h)}h{m}" if m != "00" else f"{int(h)}h"
+        except ValueError:
+            return g
+    return g
+
+
+def ngay_s(d: date, hom_nay: date) -> str:
+    if d == hom_nay:
+        return "hôm nay"
+    if d == hom_nay + timedelta(days=1):
+        return "ngày mai"
+    return f"{THU[d.weekday()]} ({d:%d/%m})"
+
+
+def _buoi_trong_ngay(g: str) -> str:
+    try:
+        h = int(str(g).split(":")[0])
+    except ValueError:
+        return ""
+    return "sáng" if h < 11 else "trưa" if h < 13 else "chiều" if h < 18 else "tối"
+
+
+def tin_nhac(k: dict, b: dict, hom_nay: date) -> str:
+    goi, toi = xung(k)
+    G = goi[:1].upper() + goi[1:]
+    khi = ngay_s(b["ngay"], hom_nay)
+    buoi_ = _buoi_trong_ngay(b["gio"])
+    noi = f" ở {b['dia_diem']}" if b.get("dia_diem") else ""
+    if khi == "hôm nay":
+        mo = _chon([f"{G} ơi, {buoi_} nay {gio_s(b['gio'])} mình có buổi tập{noi} nha 💪",
+                    f"{G} ơi, nhắc {goi} {buoi_} nay {gio_s(b['gio'])} mình tập{noi} nhé 💪",
+                    f"Hello {goi}, {buoi_} nay {gio_s(b['gio'])} có buổi tập{noi} đó nha 🔥"], k["ma"] + str(b["ngay"]))
+    else:
+        mo = _chon([f"{G} ơi, {khi} {gio_s(b['gio'])} mình có buổi tập{noi} nha 💪",
+                    f"{G} ơi, {toi} nhắc lịch {khi} {gio_s(b['gio'])} mình tập{noi} nhé",
+                    f"Hello {goi}, {khi} {gio_s(b['gio'])} có buổi tập{noi} nha 🔥"], k["ma"] + str(b["ngay"]))
+    ket = _chon([f"Nhớ ăn nhẹ trước tập 1–2 tiếng và mang theo nước nha. Có việc bận thì nhắn {toi} sớm để {toi} dời lịch cho {goi} nhé 😊",
+                 f"{G} nhớ ngủ đủ và uống đủ nước nha. Nếu bận thì báo {toi} sớm để mình đổi buổi khác nhé 😊",
+                 f"Mang theo khăn với bình nước nha {goi}. Có gì thay đổi cứ nhắn {toi} nhé 😊"], k["ma"] + str(b["ngay"]) + "k")
+    return f"{mo}\n\n{ket}"
+
+
+def tin_tuan(k: dict, ds_buoi: list[dict], hom_nay: date, H: dict | None = None) -> str:
+    goi, toi = xung(k)
+    G = goi[:1].upper() + goi[1:]
+    bs = [b for b in ds_buoi if b["ma"] == k["ma"] and b["trang_thai"] != "huy" and b["ngay"] >= hom_nay]
+    dong = [f"{G} ơi, {toi} gửi lịch tập tuần này của {goi} nha 💪", ""]
+    for b in bs:
+        dong.append(f"• {THU[b['ngay'].weekday()]} ({b['ngay']:%d/%m}) – {gio_s(b['gio'])}"
+                    + (f" · {b['dia_diem']}" if b.get("dia_diem") else "") + (" (hôm nay)" if b["ngay"] == hom_nay else ""))
+    if not bs:
+        dong.append("Tuần này mình chưa xếp buổi nào — " + goi + " rảnh hôm nào nhắn " + toi + " để hẹn nhé.")
+    con = con_lai(k, H)
+    if con is not None and con <= 3:
+        dong += ["", f"Gói của {goi} còn {con} buổi nữa nha."]
+    dong += ["", f"Hôm nào bận thì nhắn {toi} sớm để {toi} dời lịch cho {goi} nhé 😊"]
+    return "\n".join(dong)
+
+
+def tin_hen(k: dict, ngay: date, gio: str, hom_nay: date, dia_diem: str = "", doi_tu: dict | None = None) -> str:
+    goi, toi = xung(k)
+    G = goi[:1].upper() + goi[1:]
+    noi = f" ở {dia_diem}" if dia_diem else ""
+    if doi_tu:
+        return (f"{G} ơi, {toi} dời buổi {ngay_s(doi_tu['ngay'], hom_nay)} {gio_s(doi_tu['gio'])} sang "
+                f"{ngay_s(ngay, hom_nay)} {gio_s(gio)}{noi} nha. {G} xem giờ này được không, có gì nhắn {toi} nhé 😊")
+    return (f"{G} ơi, {toi} hẹn {goi} buổi tập {ngay_s(ngay, hom_nay)} lúc {gio_s(gio)}{noi} nha 💪 "
+            f"{G} xác nhận giúp {toi} nhé, nếu chưa tiện thì báo {toi} đổi giờ khác 😊")
+
+
+def tin_ru_quay_lai(k: dict) -> str:
+    goi, toi = xung(k)
+    G = goi[:1].upper() + goi[1:]
+    return (f"{G} ơi, lâu rồi mình chưa tập lại đó 😄 Tuần này {goi} sắp xếp được buổi nào không? "
+            f"{G} báo {toi} ngày giờ tiện để {toi} giữ lịch cho {goi} nha 💪")
+
+
+def tin_tai_khoan(k: dict, link: str, username: str, password: str | None) -> str:
+    goi, toi = xung(k)
+    G = goi[:1].upper() + goi[1:]
+    mk = f"Mật khẩu: {password}" if password else "Mật khẩu: (giữ như cũ)"
+    return (f"{G} ơi, {toi} gửi {goi} trang theo dõi riêng nha 💪 Trong đó có giáo án, thực đơn tính riêng cho {goi}, "
+            f"số tạ từng buổi và biểu đồ tiến độ.\n\n"
+            f"🔗 {link}\nTên đăng nhập: {username}\n{mk}\n\n"
+            f"{G} đăng nhập xong vào mục Tài khoản đổi mật khẩu riêng nhé. Mở trên điện thoại thì bấm Chia sẻ → "
+            f"Thêm vào màn hình chính để dùng như app 😊")
+
+
+# ------------------------------------------------------------------ hàng chờ Claude gửi qua Zalo Web
+def xep_hang(k: dict, noi_dung: str, nguoi: str) -> bool:
+    key = hashlib.md5((k["ma"] + noi_dung).encode()).hexdigest()[:12]
+    return db.append("HangCho", key, {"ma": k["ma"], "ho_ten": k.get("ho_ten"), "ten_zalo": k.get("ten_zalo"),
+                                      "sdt": k.get("sdt"), "noi_dung": noi_dung, "trang_thai": "cho"}, nguoi, k["ma"])
+
+
+def danh_dau_gui(key: str, nguoi: str, bo: bool = False) -> bool:
+    cu = db.latest("HangCho", ca_xoa=True).get(key, {})
+    d = {k: v for k, v in cu.items() if not k.startswith("_")}
+    return db.append("HangCho", key, {**d, "trang_thai": "bo" if bo else "da_gui"}, nguoi, d.get("ma", ""))
+
+
+def hang_cho() -> list[dict]:
+    return [v for v in db.latest("HangCho").values() if v.get("trang_thai", "cho") == "cho"]

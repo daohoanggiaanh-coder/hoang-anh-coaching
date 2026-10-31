@@ -1,0 +1,9 @@
+# Hoàng Anh Coaching v1.0 (2026-10-31)
+streamlit>=1.45,<2
+pandas>=2.0
+numpy
+scipy>=1.10
+requests>=2.31
+plotly>=5.20
+pillow>=10
+reportlab>=4.0

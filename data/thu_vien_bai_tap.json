@@ -1,0 +1,863 @@
+{
+ "_phien_ban": "v3.59",
+ "loai": {
+  "A": {
+   "ten": "Kích hoạt · sửa tư thế",
+   "thu_tu": -2,
+   "mau": "#7A5C9E"
+  },
+  "P": {
+   "ten": "Bật nhảy",
+   "thu_tu": -1,
+   "mau": "#C0392B"
+  },
+  "C": {
+   "ten": "Compound",
+   "thu_tu": 0,
+   "mau": "#1C1B19"
+  },
+  "M": {
+   "ten": "Multi",
+   "thu_tu": 1,
+   "mau": "#A3803C"
+  },
+  "I": {
+   "ten": "Isolate",
+   "thu_tu": 2,
+   "mau": "#5BA36B"
+  },
+  "Core": {
+   "ten": "Core",
+   "thu_tu": 3,
+   "mau": "#2E6DA4"
+  },
+  "T": {
+   "ten": "Thể lực",
+   "thu_tu": 1.5,
+   "mau": "#D98E04"
+  },
+  "S": {
+   "ten": "Strongman",
+   "thu_tu": 4,
+   "mau": "#5B3A1E"
+  }
+ },
+ "nhom": {
+  "squat": {
+   "ten": "Thân dưới · đùi trước",
+   "bai": [
+    {
+     "id": "smith_squat",
+     "ten": "Smith Machine Squat",
+     "loai": "C",
+     "dung_cu": "Smith"
+    },
+    {
+     "id": "smith_sumo",
+     "ten": "Smith Sumo Squat",
+     "loai": "C",
+     "dung_cu": "Smith"
+    },
+    {
+     "id": "db_goblet",
+     "ten": "Dumbbell Goblet Squat",
+     "loai": "C",
+     "dung_cu": "Tạ đơn"
+    },
+    {
+     "id": "leg_press",
+     "ten": "Leg Press (máy)",
+     "loai": "C",
+     "dung_cu": "Tầng 1"
+    }
+   ]
+  },
+  "hinge": {
+   "ten": "Chuỗi sau · đùi sau, mông",
+   "bai": [
+    {
+     "id": "db_rdl",
+     "ten": "Dumbbell Romanian Deadlift",
+     "loai": "C",
+     "dung_cu": "Tạ đơn"
+    },
+    {
+     "id": "bb_rdl",
+     "ten": "Barbell Romanian Deadlift",
+     "loai": "C",
+     "dung_cu": "Thanh đòn"
+    },
+    {
+     "id": "bb_deadlift",
+     "ten": "Barbell Conventional Deadlift",
+     "loai": "C",
+     "dung_cu": "Thanh đòn"
+    },
+    {
+     "id": "bb_hip_thrust",
+     "ten": "Barbell Hip Thrust",
+     "loai": "M",
+     "dung_cu": "Thanh đòn + ghế"
+    },
+    {
+     "id": "glute_trainer",
+     "ten": "Glute Trainer (máy)",
+     "loai": "M",
+     "dung_cu": "Tầng 1"
+    },
+    {
+     "id": "back_ext",
+     "ten": "Hyperextension (máy)",
+     "loai": "M",
+     "dung_cu": "Tầng 1"
+    },
+    {
+     "id": "b_stance_rdl",
+     "ten": "RDL tư thế chữ B tạ đơn (B-stance)",
+     "loai": "C",
+     "dung_cu": "Tạ đơn"
+    },
+    {
+     "id": "cable_pull_through",
+     "ten": "Cable Pull Through (kéo cáp qua háng)",
+     "loai": "M",
+     "dung_cu": "Cáp"
+    },
+    {
+     "id": "sl_hip_thrust",
+     "ten": "Hip Thrust một chân",
+     "loai": "M",
+     "dung_cu": "Ghế"
+    }
+   ]
+  },
+  "mot_chan": {
+   "ten": "Một chân · đùi, mông",
+   "bai": [
+    {
+     "id": "db_reverse_lunge",
+     "ten": "Dumbbell Reverse Lunge",
+     "loai": "M",
+     "dung_cu": "Tạ đơn"
+    },
+    {
+     "id": "db_walking_lunge",
+     "ten": "Dumbbell Walking Lunge",
+     "loai": "M",
+     "dung_cu": "Tạ đơn"
+    },
+    {
+     "id": "db_bulgarian",
+     "ten": "Dumbbell Bulgarian Split Squat",
+     "loai": "M",
+     "dung_cu": "Tạ đơn + ghế"
+    },
+    {
+     "id": "db_stepup",
+     "ten": "Dumbbell Step Up",
+     "loai": "M",
+     "dung_cu": "Tạ đơn + bục"
+    },
+    {
+     "id": "curtsy_lunge",
+     "ten": "Curtsy Lunge tạ đơn (lunge chéo sau)",
+     "loai": "M",
+     "dung_cu": "Tạ đơn"
+    }
+   ]
+  },
+  "day_ngang": {
+   "ten": "Đẩy ngang · ngực",
+   "bai": [
+    {
+     "id": "bb_bench",
+     "ten": "Barbell Bench Press",
+     "loai": "C",
+     "dung_cu": "Tầng 2"
+    },
+    {
+     "id": "db_bench",
+     "ten": "Dumbbell Bench Press",
+     "loai": "C",
+     "dung_cu": "Tạ đơn + ghế"
+    },
+    {
+     "id": "bb_incline",
+     "ten": "Barbell Incline Bench Press",
+     "loai": "C",
+     "dung_cu": "Tầng 2"
+    },
+    {
+     "id": "db_incline",
+     "ten": "Dumbbell Incline Bench Press",
+     "loai": "C",
+     "dung_cu": "Tạ đơn + ghế"
+    },
+    {
+     "id": "push_up",
+     "ten": "Push Up",
+     "loai": "C",
+     "dung_cu": "Không cần"
+    },
+    {
+     "id": "chest_press",
+     "ten": "Chest Press (máy)",
+     "loai": "M",
+     "dung_cu": "Tầng 2"
+    }
+   ]
+  },
+  "keo_ngang": {
+   "ten": "Kéo ngang · lưng giữa",
+   "bai": [
+    {
+     "id": "db_row",
+     "ten": "One-arm Dumbbell Row",
+     "loai": "C",
+     "dung_cu": "Tạ đơn + ghế"
+    },
+    {
+     "id": "bb_row",
+     "ten": "Barbell Bent-over Row",
+     "loai": "C",
+     "dung_cu": "Thanh đòn"
+    },
+    {
+     "id": "cable_row",
+     "ten": "Seated Cable Row",
+     "loai": "M",
+     "dung_cu": "Tầng 2"
+    },
+    {
+     "id": "smith_inverted",
+     "ten": "Inverted Row (thanh Smith)",
+     "loai": "M",
+     "dung_cu": "Smith"
+    }
+   ]
+  },
+  "keo_dung": {
+   "ten": "Kéo dọc · xô",
+   "bai": [
+    {
+     "id": "lat_pulldown",
+     "ten": "Lat Pulldown (máy)",
+     "loai": "M",
+     "dung_cu": "Tầng 2"
+    },
+    {
+     "id": "assisted_pullup",
+     "ten": "Assisted Pull Up (máy hỗ trợ)",
+     "loai": "C",
+     "dung_cu": "Tầng 2"
+    },
+    {
+     "id": "pull_up",
+     "ten": "Pull Up",
+     "loai": "C",
+     "dung_cu": "Xà"
+    }
+   ]
+  },
+  "day_dung": {
+   "ten": "Đẩy dọc · vai",
+   "bai": [
+    {
+     "id": "db_shoulder",
+     "ten": "Dumbbell Shoulder Press",
+     "loai": "C",
+     "dung_cu": "Tạ đơn + ghế"
+    },
+    {
+     "id": "smith_ohp",
+     "ten": "Smith Overhead Press",
+     "loai": "C",
+     "dung_cu": "Smith"
+    },
+    {
+     "id": "shoulder_press",
+     "ten": "Shoulder Press (máy)",
+     "loai": "M",
+     "dung_cu": "Tầng 2"
+    }
+   ]
+  },
+  "iso_chan": {
+   "ten": "Cô lập chân, mông",
+   "bai": [
+    {
+     "id": "leg_curl",
+     "ten": "Leg Curl (máy)",
+     "loai": "I",
+     "dung_cu": "Tầng 1"
+    },
+    {
+     "id": "leg_ext",
+     "ten": "Leg Extension (máy)",
+     "loai": "I",
+     "dung_cu": "Tầng 1"
+    },
+    {
+     "id": "abduction",
+     "ten": "Hip Abduction (máy)",
+     "loai": "I",
+     "dung_cu": "Tầng 1"
+    },
+    {
+     "id": "cable_kickback",
+     "ten": "Cable Glute Kickback",
+     "loai": "I",
+     "dung_cu": "Cáp"
+    },
+    {
+     "id": "frog_pump",
+     "ten": "Frog Pump (cầu mông chân ếch)",
+     "loai": "I",
+     "dung_cu": "Thảm"
+    }
+   ]
+  },
+  "iso_vai_nguc": {
+   "ten": "Cô lập vai, ngực",
+   "bai": [
+    {
+     "id": "db_lateral",
+     "ten": "Dumbbell Lateral Raise",
+     "loai": "I",
+     "dung_cu": "Tạ đơn"
+    },
+    {
+     "id": "rear_delt",
+     "ten": "Rear Delt Fly (máy Pec Deck)",
+     "loai": "I",
+     "dung_cu": "Tầng 2"
+    },
+    {
+     "id": "cable_face_pull",
+     "ten": "Cable Face Pull",
+     "loai": "I",
+     "dung_cu": "Cáp"
+    },
+    {
+     "id": "pec_deck",
+     "ten": "Pec Deck Fly (máy)",
+     "loai": "I",
+     "dung_cu": "Tầng 2"
+    },
+    {
+     "id": "cable_crossover",
+     "ten": "Cable Crossover",
+     "loai": "I",
+     "dung_cu": "Tầng 2"
+    }
+   ]
+  },
+  "iso_tay": {
+   "ten": "Cô lập tay",
+   "bai": [
+    {
+     "id": "db_curl",
+     "ten": "Dumbbell Biceps Curl",
+     "loai": "I",
+     "dung_cu": "Tạ đơn"
+    },
+    {
+     "id": "db_hammer",
+     "ten": "Dumbbell Hammer Curl",
+     "loai": "I",
+     "dung_cu": "Tạ đơn"
+    },
+    {
+     "id": "cable_pushdown",
+     "ten": "Cable Triceps Pushdown",
+     "loai": "I",
+     "dung_cu": "Cáp"
+    },
+    {
+     "id": "cable_overhead_ext",
+     "ten": "Cable Overhead Triceps Extension",
+     "loai": "I",
+     "dung_cu": "Cáp"
+    }
+   ]
+  },
+  "core": {
+   "ten": "Core · bụng, lưng dưới",
+   "bai": [
+    {
+     "id": "weighted_plank",
+     "ten": "Plank có tạ",
+     "loai": "Core",
+     "dung_cu": "Bánh tạ"
+    },
+    {
+     "id": "lying_leg_raise",
+     "ten": "Lying Leg Raise (ghế Tầng 1)",
+     "loai": "Core",
+     "dung_cu": "Tầng 1"
+    },
+    {
+     "id": "cable_crunch",
+     "ten": "Cable Crunch",
+     "loai": "Core",
+     "dung_cu": "Cáp"
+    },
+    {
+     "id": "dead_bug",
+     "ten": "Dead Bug",
+     "loai": "Core",
+     "dung_cu": "Thảm"
+    },
+    {
+     "id": "side_plank",
+     "ten": "Side Plank",
+     "loai": "Core",
+     "dung_cu": "Thảm"
+    }
+   ]
+  },
+  "strongman": {
+   "ten": "Strongman · sled, slam, mang vác (cuối buổi)",
+   "bai": [
+    {
+     "id": "sled_push",
+     "ten": "Sled Push (đẩy xe trượt)",
+     "loai": "S",
+     "dung_cu": "Sled"
+    },
+    {
+     "id": "sled_pull",
+     "ten": "Sled Pull (kéo xe trượt đi lùi)",
+     "loai": "S",
+     "dung_cu": "Sled"
+    },
+    {
+     "id": "ball_slam",
+     "ten": "Slam Ball (ném bóng tạ xuống sàn)",
+     "loai": "S",
+     "dung_cu": "Bóng tạ"
+    },
+    {
+     "id": "farmer_carry",
+     "ten": "Farmer Carry (xách tạ đi bộ)",
+     "loai": "S",
+     "dung_cu": "Tạ đơn"
+    },
+    {
+     "id": "suitcase_carry",
+     "ten": "Suitcase Carry (xách tạ 1 bên đi bộ)",
+     "loai": "S",
+     "dung_cu": "Tạ đơn"
+    },
+    {
+     "id": "front_plate_carry",
+     "ten": "Plate Carry (ôm bánh tạ trước ngực đi bộ)",
+     "loai": "S",
+     "dung_cu": "Bánh tạ"
+    },
+    {
+     "id": "overhead_carry",
+     "ten": "Overhead Carry (giữ tạ đơn trên đầu đi bộ)",
+     "loai": "S",
+     "dung_cu": "Tạ đơn"
+    },
+    {
+     "id": "kb_rack_carry",
+     "ten": "Rack Carry (giữ kettlebell trước vai đi bộ)",
+     "loai": "S",
+     "dung_cu": "Kettlebell"
+    },
+    {
+     "id": "ball_carry",
+     "ten": "Bear Hug Carry (ôm bóng tạ đi bộ)",
+     "loai": "S",
+     "dung_cu": "Bóng tạ"
+    }
+   ]
+  },
+  "phuc_hoi": {
+   "ten": "Sửa tư thế · kích hoạt · giãn cơ",
+   "bai": [
+    {
+     "id": "band_pull_apart",
+     "ten": "Kéo dây kháng lực mở ngực (Band Pull Apart)",
+     "loai": "A",
+     "dung_cu": "Dây kháng lực"
+    },
+    {
+     "id": "chin_tuck",
+     "ten": "Thu cằm áp tường (Chin Tuck)",
+     "loai": "A",
+     "dung_cu": "Tường"
+    },
+    {
+     "id": "wall_angel",
+     "ten": "Thiên thần áp tường (Wall Angel)",
+     "loai": "A",
+     "dung_cu": "Tường"
+    },
+    {
+     "id": "open_book",
+     "ten": "Xoay cột sống ngực nằm nghiêng (Open Book)",
+     "loai": "A",
+     "dung_cu": "Thảm"
+    },
+    {
+     "id": "cat_cow",
+     "ten": "Mèo – bò (Cat-Cow)",
+     "loai": "A",
+     "dung_cu": "Thảm"
+    },
+    {
+     "id": "bird_dog",
+     "ten": "Bird Dog (chống 4 điểm duỗi chéo)",
+     "loai": "A",
+     "dung_cu": "Thảm"
+    },
+    {
+     "id": "glute_bridge",
+     "ten": "Cầu mông (Glute Bridge)",
+     "loai": "A",
+     "dung_cu": "Thảm"
+    },
+    {
+     "id": "side_lying_clam",
+     "ten": "Clamshell nằm nghiêng (dây kháng lực)",
+     "loai": "A",
+     "dung_cu": "Dây kháng lực"
+    },
+    {
+     "id": "hip_flexor_stretch",
+     "ten": "Giãn cơ gập hông quỳ 1 chân",
+     "loai": "A",
+     "dung_cu": "Thảm"
+    },
+    {
+     "id": "pec_stretch",
+     "ten": "Giãn ngực áp tường / khung cửa",
+     "loai": "A",
+     "dung_cu": "Tường"
+    },
+    {
+     "id": "dead_hang",
+     "ten": "Treo xà thụ động (Dead Hang)",
+     "loai": "A",
+     "dung_cu": "Xà đơn"
+    },
+    {
+     "id": "hang_knee_raise",
+     "ten": "Treo xà co gối (Hanging Knee Raise)",
+     "loai": "A",
+     "dung_cu": "Xà đơn"
+    }
+   ]
+  },
+  "bat_nhay": {
+   "ten": "Bật nhảy · sức bật",
+   "bai": [
+    {
+     "id": "box_jump",
+     "ten": "Bật nhảy lên hộp (Box Jump)",
+     "loai": "P",
+     "dung_cu": "Hộp nhảy"
+    },
+    {
+     "id": "jump_squat",
+     "ten": "Squat bật nhảy",
+     "loai": "P",
+     "dung_cu": "Không dụng cụ"
+    },
+    {
+     "id": "broad_jump",
+     "ten": "Bật xa tại chỗ",
+     "loai": "P",
+     "dung_cu": "Không dụng cụ"
+    },
+    {
+     "id": "jump_rope",
+     "ten": "Nhảy dây",
+     "loai": "P",
+     "dung_cu": "Dây nhảy"
+    },
+    {
+     "id": "skater_jump",
+     "ten": "Bật nhảy sang ngang (Skater Jump)",
+     "loai": "P",
+     "dung_cu": "Không dụng cụ"
+    },
+    {
+     "id": "tuck_jump",
+     "ten": "Bật nhảy co gối (Tuck Jump)",
+     "loai": "P",
+     "dung_cu": "Không dụng cụ"
+    }
+   ]
+  },
+  "the_luc": {
+   "ten": "Thể lực · mạch bài (circuit)",
+   "bai": [
+    {
+     "id": "kb_swing",
+     "ten": "Kettlebell Swing",
+     "loai": "T",
+     "dung_cu": "Kettlebell"
+    },
+    {
+     "id": "battle_rope",
+     "ten": "Battle Rope (đánh sóng dây)",
+     "loai": "T",
+     "dung_cu": "Dây thừng"
+    },
+    {
+     "id": "air_bike_sprint",
+     "ten": "Air Bike nước rút",
+     "loai": "T",
+     "dung_cu": "Air bike"
+    },
+    {
+     "id": "mountain_climber",
+     "ten": "Mountain Climber (leo núi)",
+     "loai": "T",
+     "dung_cu": "Không dụng cụ"
+    },
+    {
+     "id": "burpee",
+     "ten": "Burpee",
+     "loai": "T",
+     "dung_cu": "Không dụng cụ"
+    },
+    {
+     "id": "db_thruster",
+     "ten": "Dumbbell Thruster (squat đẩy tạ)",
+     "loai": "T",
+     "dung_cu": "Tạ đơn"
+    },
+    {
+     "id": "jumping_jack",
+     "ten": "Jumping Jack (bật nhảy dang tay chân)",
+     "loai": "T",
+     "dung_cu": "Không dụng cụ"
+    },
+    {
+     "id": "high_knees",
+     "ten": "High Knees (chạy nâng cao gối tại chỗ)",
+     "loai": "T",
+     "dung_cu": "Không dụng cụ"
+    },
+    {
+     "id": "squat_thrust",
+     "ten": "Squat Thrust (burpee không bật)",
+     "loai": "T",
+     "dung_cu": "Không dụng cụ"
+    }
+   ]
+  }
+ },
+ "giao_an": {
+  "giam_mo": {
+   "cuong_do": "3 hiệp · 12–15 lần · nghỉ 45–60 giây · chừa 2–3 lần (RIR 2–3)",
+   "cardio": "Kết buổi: máy đi bộ dốc 15 phút, vẫn nói chuyện được (RPE 5–6)",
+   "bai": [
+    [
+     "squat",
+     "smith_squat",
+     "3×12"
+    ],
+    [
+     "day_ngang",
+     "db_bench",
+     "3×12"
+    ],
+    [
+     "hinge",
+     "db_rdl",
+     "3×12"
+    ],
+    [
+     "keo_dung",
+     "lat_pulldown",
+     "3×12"
+    ],
+    [
+     "mot_chan",
+     "db_reverse_lunge",
+     "2×10/chân"
+    ],
+    [
+     "iso_vai_nguc",
+     "db_lateral",
+     "2×15"
+    ],
+    [
+     "core",
+     "weighted_plank",
+     "3×30 giây"
+    ]
+   ]
+  },
+  "tang_co": {
+   "cuong_do": "3–4 hiệp · 8–12 lần · nghỉ 90–120 giây với compound, 60 giây với isolate · RIR 1–2",
+   "cardio": "Kết buổi: đi bộ nhẹ 8–10 phút để hồi phục",
+   "bai": [
+    [
+     "squat",
+     "smith_squat",
+     "4×8–10"
+    ],
+    [
+     "day_ngang",
+     "bb_bench",
+     "4×8–10"
+    ],
+    [
+     "keo_ngang",
+     "db_row",
+     "3×10/tay"
+    ],
+    [
+     "day_dung",
+     "db_shoulder",
+     "3×10"
+    ],
+    [
+     "keo_dung",
+     "lat_pulldown",
+     "3×10–12"
+    ],
+    [
+     "iso_chan",
+     "leg_curl",
+     "3×12"
+    ],
+    [
+     "iso_tay",
+     "cable_pushdown",
+     "2×12"
+    ],
+    [
+     "iso_tay",
+     "db_curl",
+     "2×12"
+    ]
+   ]
+  },
+  "recomp": {
+   "cuong_do": "3 hiệp · 10–12 lần · nghỉ 60–90 giây · RIR 2",
+   "cardio": "Kết buổi: air bike 6 hiệp × 20 giây nhanh / 40 giây chậm, hoặc đi bộ dốc 12 phút",
+   "bai": [
+    [
+     "squat",
+     "smith_squat",
+     "3×10"
+    ],
+    [
+     "hinge",
+     "db_rdl",
+     "3×10"
+    ],
+    [
+     "day_ngang",
+     "db_bench",
+     "3×10"
+    ],
+    [
+     "keo_ngang",
+     "cable_row",
+     "3×12"
+    ],
+    [
+     "mot_chan",
+     "db_walking_lunge",
+     "2×10/chân"
+    ],
+    [
+     "iso_vai_nguc",
+     "db_lateral",
+     "3×15"
+    ],
+    [
+     "core",
+     "lying_leg_raise",
+     "3×12"
+    ]
+   ]
+  },
+  "suc_khoe": {
+   "cuong_do": "2 hiệp · 12–15 lần · nghỉ 60 giây · nhẹ nhàng, RIR 3–4, không đau",
+   "cardio": "Kết buổi: đi bộ 10–12 phút tốc độ thoải mái + giãn cơ 8 phút",
+   "bai": [
+    [
+     "squat",
+     "db_goblet",
+     "2×12"
+    ],
+    [
+     "hinge",
+     "glute_trainer",
+     "2×12"
+    ],
+    [
+     "keo_ngang",
+     "cable_row",
+     "2×12"
+    ],
+    [
+     "day_ngang",
+     "chest_press",
+     "2×12"
+    ],
+    [
+     "iso_vai_nguc",
+     "cable_face_pull",
+     "2×15"
+    ],
+    [
+     "core",
+     "dead_bug",
+     "2×10/bên"
+    ],
+    [
+     "core",
+     "side_plank",
+     "2×20 giây/bên"
+    ]
+   ]
+  },
+  "suc_manh": {
+   "cuong_do": "4–5 hiệp · 3–6 lần · nghỉ 2–3 phút với compound · RIR 1–2, kỹ thuật tuyệt đối",
+   "cardio": "Kết buổi: đẩy sled 4 lượt hoặc đi bộ nhẹ 8 phút",
+   "bai": [
+    [
+     "squat",
+     "smith_squat",
+     "5×5"
+    ],
+    [
+     "day_ngang",
+     "bb_bench",
+     "5×5"
+    ],
+    [
+     "hinge",
+     "bb_deadlift",
+     "3×5"
+    ],
+    [
+     "keo_ngang",
+     "bb_row",
+     "4×6"
+    ],
+    [
+     "day_dung",
+     "smith_ohp",
+     "3×6"
+    ],
+    [
+     "core",
+     "weighted_plank",
+     "3×30 giây"
+    ]
+   ]
+  }
+ }
+}

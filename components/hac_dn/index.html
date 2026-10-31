@@ -1,0 +1,38 @@
+<!doctype html>
+<!-- Hoàng Anh Coaching v1.0 (2026-10-31) — đọc vé ghi nhớ đăng nhập trong trình duyệt, gửi về máy chủ
+     (thay cách nạp lại trang ?dn= của v3.6–3.7). Không hiển thị gì. -->
+<html><head><meta charset="utf-8"></head><body style="margin:0">
+<script>
+(function () {
+  function send(type, data) {
+    window.parent.postMessage(Object.assign({ isStreamlitMessage: true, type: type }, data || {}), "*");
+  }
+  function cookies() {
+    var s = "";
+    try { s = window.parent.document.cookie || ""; } catch (e) {}
+    if (!s) { try { s = document.cookie || ""; } catch (e) {} }
+    var out = {};
+    s.split(/;\s*/).forEach(function (c) {
+      var i = c.indexOf("=");
+      if (i > 0) out[c.slice(0, i)] = c.slice(i + 1);
+    });
+    return out;
+  }
+  function payload() {
+    var c = cookies(), dn = c.hac_dn || "";
+    if (!dn) { try { dn = window.localStorage.getItem("hac_dn") || ""; } catch (e) {} }
+    return { dn: dn };
+  }
+  var sent = false;
+  window.addEventListener("message", function (ev) {
+    var d = ev.data || {};
+    if (d.type === "streamlit:render" && !sent) {
+      sent = true;
+      send("streamlit:setComponentValue", { value: payload(), dataType: "json" });
+    }
+  });
+  send("streamlit:componentReady", { apiVersion: 1 });
+  send("streamlit:setFrameHeight", { height: 0 });
+})();
+</script>
+</body></html>

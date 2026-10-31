@@ -8,6 +8,28 @@ ROOT = Path(__file__).parent
 st.set_page_config(page_title="Hoàng Anh Coaching", page_icon=str(ROOT / "static" / "icon-192.png")
                    if (ROOT / "static" / "icon-192.png").exists() else "💪", layout="wide")
 
+def _fresh_core():
+    """Streamlit Cloud sau mỗi lần đẩy bản mới đôi khi nạp lại trang (views) nhưng giữ module core.* cũ → AttributeError.
+    File VERSION khác bản đang chạy → nạp lại toàn bộ core.* (config trước), rồi views.* (giống Atlas Academy v3.30)."""
+    import importlib
+    import sys
+    cfg = sys.modules.get("core.config")
+    if not cfg:
+        return
+    try:
+        v = (ROOT / "VERSION").read_text(encoding="utf-8").split("·")[0].strip()
+    except OSError:
+        return
+    if v and v != getattr(cfg, "VERSION", v):
+        importlib.reload(cfg)
+        for n in sorted(m for m in list(sys.modules) if m.startswith(("core.", "views.")) and m != "core.config"):
+            try:
+                importlib.reload(sys.modules[n])
+            except Exception:  # noqa: BLE001
+                pass
+
+
+_fresh_core()
 from core import auth, config, db, ui  # noqa: E402
 
 ui.setup()

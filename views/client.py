@@ -22,7 +22,8 @@ def _k() -> dict:
 
 def _ten(k: dict) -> str:
     goi, _ = store.xung(k)
-    return (goi if goi != "bạn" else k["ho_ten"].split()[-1]).capitalize()
+    t = goi if goi != "bạn" else k["ho_ten"].split()[-1]
+    return t[:1].upper() + t[1:]
 
 
 def trang_chu():

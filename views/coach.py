@@ -106,10 +106,9 @@ def lich():
                         + (" · HÔM NAY" if b["ngay"] == hom else "") + "</div>", unsafe_allow_html=True)
             truoc = b["ngay"]
         mau, nhan = MAU.get(b["trang_thai"], MAU["hen"])
-        con = store.con_lai(k, H) if k else None
         st.markdown(f'<div class="hac-b"><span class="t">{E(store.gio_s(b["gio"]))}</span><span class="n">{E(k.get("ho_ten", ""))}</span>'
                     f'<span class="hac-chip" style="background:{mau}">{nhan}</span>'
-                    f'<span class="m">{E(b.get("dia_diem") or "")}' + (f" · còn {con} buổi" if con is not None else "")
+                    f'<span class="m">{E(b.get("dia_diem") or "")}' + (f" · {E(store.mo_ta_goi(k, H, hom))}" if k else "")
                     + (" · hẹn thêm" if not b.get("co_dinh") else "") + "</span></div>", unsafe_allow_html=True)
         c1, c2, c3, c4 = st.columns(4)
         if b["trang_thai"] != "xong" and c1.button("✅ Đã tập", key=f"x_{b['id']}", use_container_width=True):
@@ -186,15 +185,26 @@ def khach():
             tz = a.text_input("Tên Zalo", value=k0.get("ten_zalo", ""), help="Tên hiện trong Zalo — Claude tìm theo tên này khi gửi")
             gk = b.text_input("Gọi khách là", value=k0.get("goi_khach", ""), placeholder="VD chị Lan, anh Tuấn, em Vy")
             xt = c.text_input("Tự xưng", value=k0.get("xung_toi", ""), placeholder="em / anh / mình")
-            a, b, c, d = st.columns(4)
-            goi = a.number_input("Gói (số buổi)", 0, 300, int(float(k0.get("goi_buoi") or 0)))
-            truoc = b.number_input("Đã tập trước đó", 0, 300, int(float(k0.get("da_tap_truoc") or 0)))
-            gia = c.text_input("Giá gói", value=str(k0.get("gia", "")), placeholder="VD 6.000.000")
+            GOI = store.goi_list()
+            ten_goi = ["— Tự nhập —"] + [g["ten"] for g in GOI]
+            a, b, c, d = st.columns([1.6, 1, 0.8, 1.2])
+            g_chon = a.selectbox("Gói", ten_goi, index=ten_goi.index(k0.get("goi_ten")) if k0.get("goi_ten") in ten_goi else 0,
+                                 help="Chọn gói có sẵn (sửa bảng gói ở cuối trang) — loại, thời lượng, giá tự điền khi lưu")
+            lo0 = store.loai_goi(k0)
+            g_lo = b.selectbox("Tính theo", list(store.LOAI_GOI), index=list(store.LOAI_GOI).index(lo0), format_func=store.LOAI_GOI.get)
+            so0 = int(float((k0.get("goi_so") if lo0 != "buoi" else k0.get("goi_buoi")) or 0))
+            g_so = c.number_input("Số", 0, 300, so0, help="Số buổi / tuần / tháng của gói")
+            gia = d.text_input("Giá gói", value=str(k0.get("gia", "")), placeholder="VD 6.000.000")
+            a, b, c = st.columns(3)
+            truoc = a.number_input("Đã tập trước đó (buổi)", 0, 300, int(float(k0.get("da_tap_truoc") or 0)))
             try:
                 bd0 = date.fromisoformat(str(k0.get("ngay_bat_dau"))[:10])
             except ValueError:
                 bd0 = hom
-            bd = d.date_input("Bắt đầu", value=bd0, format="DD/MM/YYYY")
+            bd = b.date_input("Bắt đầu gói", value=bd0, format="DD/MM/YYYY")
+            if k0 and store.han_goi(k0):
+                c.markdown(f"<div style='padding-top:30px;color:#7A5B14;font-weight:700'>Hết gói {store.han_goi(k0):%d/%m/%Y}</div>",
+                           unsafe_allow_html=True)
             try:
                 ns0 = date.fromisoformat(str(k0.get("ngay_sinh"))[:10])
             except ValueError:
@@ -232,9 +242,14 @@ def khach():
                     if th in store.THU and g:
                         sl.append({"thu": store.THU.index(th), "gio": g,
                                    **({"dia_diem": r["Nơi tập (nếu khác)"]} if str(r.get("Nơi tập (nếu khác)") or "").strip() else {})})
-                k1 = {**k0, "gioi_tinh": gt, "chieu_cao": cc or "", "can_muc_tieu": cmt or "", "muc_tieu": mt_.strip(),
+                gc_ = next((g for g in GOI if g["ten"] == g_chon), None)
+                if gc_:
+                    g_lo, g_so = gc_.get("loai", "buoi"), int(gc_.get("so") or 0)
+                    gia = gia.strip() or f"{int(gc_.get('gia') or 0):,}".replace(",", ".")
+                k1 = {**k0, "goi_ten": g_chon if gc_ else "", "goi_loai": g_lo, "goi_so": g_so if g_lo != "buoi" else "",
+                      "gioi_tinh": gt, "chieu_cao": cc or "", "can_muc_tieu": cmt or "", "muc_tieu": mt_.strip(),
                       "ma": k0.get("ma") or store.ma_moi(DS), "ho_ten": ten.strip(), "sdt": sdt.strip(), "ten_zalo": tz.strip(),
-                      "goi_khach": gk.strip(), "xung_toi": xt.strip(), "dia_diem": dd_.strip(), "goi_buoi": goi, "da_tap_truoc": truoc,
+                      "goi_khach": gk.strip(), "xung_toi": xt.strip(), "dia_diem": dd_.strip(), "goi_buoi": g_so if g_lo == "buoi" else "", "da_tap_truoc": truoc,
                       "gia": gia.strip(), "ngay_bat_dau": bd.isoformat(), "lich": sl, "trang_thai": tt, "ghi_chu": gc.strip(),
                       "ngay_sinh": ns.isoformat() if ns else "", "hinh_thuc": ht, "chan_thuong": ct.strip(), "xoa": bool(xoa)}
                 if store.save_client(k1, u["name"]):
@@ -281,9 +296,27 @@ def khach():
         TK = {v.get("ma_kh"): v for v in auth.accounts().values()}
         st.dataframe(pd.DataFrame([{"Khách": k["ho_ten"], "Hình thức": k.get("hinh_thuc") or "Trực tiếp",
                                     "Lịch": ", ".join(f"{store.THU[int(x['thu'])]} {store.gio_s(x['gio'])}" for x in store.lich_co_dinh(k)),
-                                    "Đã tập": store.da_tap(k, H), "Còn": store.con_lai(k, H) if store.con_lai(k, H) is not None else "—",
+                                    "Đã tập": store.da_tap(k, H), "Gói": store.mo_ta_goi(k, H, hom),
                                     "Tài khoản": ("🔒 " if TK[k["ma"]].get("khoa") else "✅ ") + TK[k["ma"]]["_khoa"] if k["ma"] in TK else "—",
                                     "Trạng thái": k.get("trang_thai") or "Đang tập"} for k in DS]), hide_index=True, use_container_width=True)
+    _bang_goi(u)
+
+
+def _bang_goi(u: dict):
+    with st.expander("📦 Bảng gói của anh (Online 12 tuần, 1 tháng, gói buổi…)"):
+        st.caption("Lưu trong Google Sheet riêng của anh, không nằm trong code công khai. Chọn gói ở hồ sơ khách là tự điền loại, thời lượng, giá.")
+        df = pd.DataFrame([{"Tên gói": g["ten"], "Tính theo": store.LOAI_GOI.get(g.get("loai"), "buổi"), "Số": int(g.get("so") or 0),
+                            "Giá (đ)": int(g.get("gia") or 0)} for g in store.goi_list()] or [{"Tên gói": "", "Tính theo": "tuần", "Số": 0, "Giá (đ)": 0}])
+        ed = st.data_editor(df, num_rows="dynamic", hide_index=True, use_container_width=True, key="bang_goi",
+                            column_config={"Tính theo": st.column_config.SelectboxColumn(options=list(store.LOAI_GOI.values())),
+                                           "Giá (đ)": st.column_config.NumberColumn(format="%d", step=50000)})
+        if st.button("💾 Lưu bảng gói"):
+            nguoc = {v: k_ for k_, v in store.LOAI_GOI.items()}
+            ds = [{"ten": str(r["Tên gói"]).strip(), "loai": nguoc.get(r["Tính theo"], "buoi"), "so": int(r["Số"] or 0),
+                   "gia": int(r["Giá (đ)"] or 0)} for r in ed.to_dict("records") if str(r.get("Tên gói") or "").strip()]
+            if store.save_goi_list(ds, u["name"]):
+                st.toast("Đã lưu bảng gói")
+                st.rerun()
 
 
 # =================================================================== GIÁO ÁN, DINH DƯỠNG

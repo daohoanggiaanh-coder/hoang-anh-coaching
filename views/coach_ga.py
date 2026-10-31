@@ -81,11 +81,12 @@ def trang(user: dict, k: dict):
     hist = bt.sessions(ma)
     plan = ga.current(ma)
     H = store.hens(ma)
-    da, tong = store.da_tap(k, H), int(float(k.get("goi_buoi") or 0))
+    da = store.da_tap(k, H)
+    tong = int(float(k.get("goi_buoi") or 0)) if store.loai_goi(k) == "buoi" else 0
     week = ga.week_no(plan["ngay_bat_dau"], bt.today()) if plan else 1
     CT = ga.guess_limits(k.get("chan_thuong"))
     st.markdown(f'<div style="font-size:.85rem;color:#8b8577;margin:-4px 0 6px">{E(k.get("muc_tieu") or "chưa ghi mục tiêu")} · '
-                f'đã tập {da}/{tong or "—"} buổi' + (f' · tuần {week} · {ga.PHASES[ga.phase_of(week)]}' if plan else "") + "</div>",
+                f'đã tập {da}' + (f'/{tong}' if tong else '') + f' buổi · {E(store.mo_ta_goi(k, H))}' + (f' · tuần {week} · {ga.PHASES[ga.phase_of(week)]}' if plan else "") + "</div>",
                 unsafe_allow_html=True)
     if CT or k.get("chan_thuong"):
         st.markdown(f'<div style="background:#FDECEA;border:1px solid #E6A49B;border-left:5px solid #C0392B;border-radius:12px;'

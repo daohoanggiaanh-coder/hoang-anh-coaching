@@ -48,7 +48,9 @@ def trang_chu():
             ch = round(MOI["can_nang"] - DAU["can_nang"], 1)
             ch_s = f"{ch:+g} kg từ đầu khoá" if ch else ""
     pt = td.tien_do_can(DAU.get("can_nang") if DAU else None, MOI.get("can_nang") if MOI else None, k.get("can_muc_tieu"))
-    ui.tiles([(str(da), "buổi đã tập", f"còn {con} buổi trong gói" if con is not None else ""),
+    cn = store.con_ngay(k, hom)
+    ui.tiles([(str(da), "buổi đã tập", f"còn {con} buổi trong gói" if con is not None else
+               (f"gói còn {cn} ngày" if cn is not None else "")),
               (can_s, "cân hiện tại", ch_s),
               (f"{pt}%" if pt is not None else "—", "tới mục tiêu cân", f"mục tiêu {k['can_muc_tieu']} kg" if k.get("can_muc_tieu") else ""),
               (str(ga.chuoi_tuan(L, hom)), "tuần liên tiếp", "có ghi buổi tập")])

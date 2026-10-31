@@ -222,3 +222,15 @@ def test_lo_trinh_tien_do():
     kq = lt.tien_do(store.client("R001"), date(2026, 10, 30))
     can = next(r for r in kq["rows"] if r["ma"] == "can_nang")
     assert can["dich"] == 56 and can["pct"] > 0 and can["toc_do_tuan"] < 0 and can["du_kien"]
+
+
+def test_goi_theo_thoi_gian():
+    k = _khach("R002", goi_buoi="", goi_ten="Online 12 tuần", goi_loai="tuan", goi_so=12, ngay_bat_dau="2026-10-29")
+    assert store.han_goi(k) == date(2026, 1, 21).replace(year=2027)
+    assert store.con_ngay(k, date(2026, 10, 31)) == 82
+    assert store.con_lai(k) is None
+    assert "còn 82 ngày" in store.mo_ta_goi(k, hom_nay=date(2026, 10, 31))
+    t = _khach("R003", goi_loai="thang", goi_so=1, ngay_bat_dau="2026-01-31")
+    assert store.han_goi(t) == date(2026, 2, 28)
+    assert store.save_goi_list([{"ten": "Online 1 tháng", "loai": "thang", "so": 1, "gia": 2500000}], "HLV")
+    assert store.goi_list()[0]["gia"] == 2500000

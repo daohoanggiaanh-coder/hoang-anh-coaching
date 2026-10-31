@@ -14,7 +14,9 @@ HINH_THUC = ["Trực tiếp", "Online", "Kết hợp"]
 FIELDS = ["ma", "ho_ten", "sdt", "ten_zalo", "goi_khach", "xung_toi", "dia_diem", "goi_buoi", "da_tap_truoc", "gia",
           "ngay_bat_dau", "lich", "trang_thai", "ghi_chu", "xoa", "ngay_sinh",
           "gioi_tinh", "chieu_cao", "muc_tieu", "can_muc_tieu", "hinh_thuc", "chan_thuong",
-          "muc_tieu_loai", "muc_tieu_mo", "muc_tieu_co", "muc_tieu_eo", "muc_tieu_ngay"]     # v1.1: lộ trình (chỉ HLV xem)
+          "muc_tieu_loai", "muc_tieu_mo", "muc_tieu_co", "muc_tieu_eo", "muc_tieu_ngay",     # v1.1: lộ trình (chỉ HLV xem)
+          "goi_ten", "goi_loai", "goi_so"]                                                      # v1.2: gói theo buổi / tuần / tháng
+LOAI_GOI = {"buoi": "buổi", "tuan": "tuần", "thang": "tháng"}
 
 
 # ------------------------------------------------------------------ khách
@@ -124,7 +126,60 @@ def da_tap(k: dict, H: dict[str, dict] | None = None) -> int:
     return n
 
 
+# ------------------------------------------------------------------ v1.2: gói theo thời gian (Online 12 tuần, 1 tháng…)
+def loai_goi(k: dict) -> str:
+    lo = str(k.get("goi_loai") or "").strip()
+    return lo if lo in LOAI_GOI else "buoi"
+
+
+def han_goi(k: dict) -> date | None:
+    """Ngày hết gói với gói tuần / tháng (ngày bắt đầu + thời lượng); gói buổi → None."""
+    lo, bd = loai_goi(k), _d(k.get("ngay_bat_dau"))
+    try:
+        n = int(float(k.get("goi_so") or 0))
+    except ValueError:
+        n = 0
+    if lo == "buoi" or not bd or n <= 0:
+        return None
+    if lo == "tuan":
+        return bd + timedelta(weeks=n)
+    m = bd.month - 1 + n
+    y, m = bd.year + m // 12, m % 12 + 1
+    import calendar
+    return date(y, m, min(bd.day, calendar.monthrange(y, m)[1]))
+
+
+def con_ngay(k: dict, hom_nay: date | None = None) -> int | None:
+    h = han_goi(k)
+    if not h:
+        return None
+    return max((h - (hom_nay or db.now_vn().date())).days, 0)
+
+
+def mo_ta_goi(k: dict, H: dict | None = None, hom_nay: date | None = None) -> str:
+    """VD 'Online 12 tuần · còn 81 ngày (hết 21/01/2027)' hoặc 'Gói 12 buổi · còn 9 buổi'."""
+    ten = str(k.get("goi_ten") or "").strip()
+    if loai_goi(k) != "buoi":
+        h, c = han_goi(k), con_ngay(k, hom_nay)
+        return (ten or f"Gói {k.get('goi_so')} {LOAI_GOI[loai_goi(k)]}") + (f" · còn {c} ngày (hết {h:%d/%m/%Y})" if h else "")
+    c = con_lai(k, H)
+    return (ten or (f"Gói {int(float(k.get('goi_buoi') or 0))} buổi" if k.get("goi_buoi") else "Chưa ghi gói")) + \
+        (f" · còn {c} buổi" if c is not None else "")
+
+
+def goi_list() -> list[dict]:
+    """Bảng gói của HLV (lưu trong Sheet riêng, không nằm trong code công khai)."""
+    v = db.latest("DinhDuong").get("cai_dat|goi") or {}
+    return [g for g in v.get("ds", []) if g.get("ten")]
+
+
+def save_goi_list(ds: list[dict], nguoi: str) -> bool:
+    return db.append("DinhDuong", "cai_dat|goi", {"ds": ds}, nguoi)
+
+
 def con_lai(k: dict, H: dict[str, dict] | None = None) -> int | None:
+    if loai_goi(k) != "buoi":
+        return None
     try:
         g = int(float(k.get("goi_buoi") or 0))
     except ValueError:
@@ -203,6 +258,9 @@ def tin_tuan(k: dict, ds_buoi: list[dict], hom_nay: date, H: dict | None = None)
     con = con_lai(k, H)
     if con is not None and con <= 3:
         dong += ["", f"Gói của {goi} còn {con} buổi nữa nha."]
+    cn = con_ngay(k, hom_nay)
+    if cn is not None and cn <= 7:
+        dong += ["", f"Gói của {goi} còn {cn} ngày nữa là hết nha."]
     dong += ["", f"Hôm nào bận thì nhắn {toi} sớm để {toi} dời lịch cho {goi} nhé 😊"]
     return "\n".join(dong)
 

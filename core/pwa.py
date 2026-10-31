@@ -17,6 +17,7 @@ _JS = """<script>
  var R=%r;
  function chen(d){ try{
    if(!d||!d.head||d.getElementById('hac-pwa'))return;
+   d.querySelectorAll('link[rel="apple-touch-icon"],link[rel="manifest"],meta[name="apple-mobile-web-app-title"]').forEach(function(e){e.remove();});
    var add=function(tag,at){var e=d.createElement(tag);for(var k in at)e.setAttribute(k,at[k]);d.head.appendChild(e);return e;};
    add('meta',{id:'hac-pwa',name:'apple-mobile-web-app-capable',content:'yes'});
    add('meta',{name:'mobile-web-app-capable',content:'yes'});
@@ -26,7 +27,7 @@ _JS = """<script>
    add('link',{rel:'apple-touch-icon',sizes:'180x180',href:R+'apple-touch-icon.png'});
    add('link',{rel:'manifest',href:R+'manifest.json',crossorigin:'anonymous'});
    d.querySelectorAll('link[rel*="icon"]:not([rel="apple-touch-icon"])').forEach(function(l){l.href=R+'icon-192.png';});
-   if(d.title.indexOf('Streamlit')>=0||!d.title)d.title='Hoàng Anh Coaching';
+   d.title='Hoàng Anh Coaching';
  }catch(e){} }
  try{chen(window.parent.document);}catch(e){}
  try{chen(window.top.document);}catch(e){}

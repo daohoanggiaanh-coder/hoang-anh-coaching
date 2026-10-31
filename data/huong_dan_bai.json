@@ -1,0 +1,895 @@
+{
+ "_ghi_chu": "Mẹo chính + lỗi hay sai — kinh nghiệm huấn luyện phổ biến, HLV duyệt / sửa được. Ảnh minh hoạ: free-exercise-db (public domain, github.com/yuhonas/free-exercise-db).",
+ "bai": {
+  "smith_squat": {
+   "meo": "Chân đặt hơi trước thanh, ngồi xuống như ngồi ghế, đầu gối hướng theo mũi chân.",
+   "loi": [
+    "Gót chân nhấc khỏi sàn",
+    "Đầu gối sụp vào trong khi đứng lên",
+    "Ngồi nông, chưa tới song song"
+   ],
+   "anh": "Smith_Machine_Squat",
+   "gan_dung": false
+  },
+  "smith_sumo": {
+   "meo": "Chân rộng hơn vai, mũi chân xoay ngoài 30–45°, gối mở theo mũi chân.",
+   "loi": [
+    "Gối khép vào trong",
+    "Gập lưng đổ người về trước",
+    "Dồn lực mũi chân thay vì cả bàn chân"
+   ],
+   "anh": "Plie_Dumbbell_Squat",
+   "gan_dung": true
+  },
+  "db_goblet": {
+   "meo": "Ôm tạ sát ngực, khuỷu tay đi vào giữa hai gối khi ngồi xuống.",
+   "loi": [
+    "Tạ rời xa ngực kéo người đổ trước",
+    "Lưng cong khi xuống sâu",
+    "Gót chân nhấc lên"
+   ],
+   "anh": "Goblet_Squat",
+   "gan_dung": false
+  },
+  "leg_press": {
+   "meo": "Lưng và mông áp sát đệm, hạ tới khi gối khoảng 90°.",
+   "loi": [
+    "Hạ quá sâu làm mông nhấc khỏi đệm (cong lưng dưới)",
+    "Khoá thẳng cứng gối ở trên cùng",
+    "Gối sụp vào trong"
+   ],
+   "anh": "Leg_Press",
+   "gan_dung": false
+  },
+  "db_rdl": {
+   "meo": "Đẩy hông ra sau, tạ trượt sát đùi, lưng thẳng, gối hơi chùng.",
+   "loi": [
+    "Cúi lưng thay vì đẩy hông",
+    "Tạ xa người",
+    "Gập gối thành squat"
+   ],
+   "anh": "Romanian_Deadlift",
+   "gan_dung": true
+  },
+  "bb_rdl": {
+   "meo": "Thanh đòn sát đùi, đẩy hông ra sau tới khi căng đùi sau, siết mông đứng lên.",
+   "loi": [
+    "Cong lưng dưới",
+    "Hạ quá thấp khi đùi sau đã hết căng",
+    "Ngửa người ra sau ở trên cùng"
+   ],
+   "anh": "Romanian_Deadlift",
+   "gan_dung": false
+  },
+  "bb_deadlift": {
+   "meo": "Thanh đòn trên giữa bàn chân, siết lưng xô, đẩy sàn đứng lên.",
+   "loi": [
+    "Cong lưng khi kéo",
+    "Hông lên trước vai (kéo bằng lưng)",
+    "Thanh đòn rời xa ống chân"
+   ],
+   "anh": "Barbell_Deadlift",
+   "gan_dung": false
+  },
+  "bb_hip_thrust": {
+   "meo": "Bả vai tựa ghế, cằm thu, đẩy hông lên tới thân thẳng, siết mông 1 giây.",
+   "loi": [
+    "Ưỡn lưng dưới thay vì siết mông",
+    "Đẩy bằng mũi chân",
+    "Ngửa đầu ra sau"
+   ],
+   "anh": "Barbell_Hip_Thrust",
+   "gan_dung": false
+  },
+  "glute_trainer": {
+   "meo": "Đẩy bằng gót, siết mông ở trên cùng, hạ chậm có kiểm soát.",
+   "loi": [
+    "Ưỡn lưng ở đỉnh",
+    "Đẩy quá nhanh, dùng đà",
+    "Gối mở / khép lệch"
+   ],
+   "anh": "Barbell_Hip_Thrust",
+   "gan_dung": true
+  },
+  "back_ext": {
+   "meo": "Gập ở hông, lưng thẳng, lên tới thân thẳng hàng với chân là đủ.",
+   "loi": [
+    "Ngửa quá thẳng ra sau ở đỉnh",
+    "Dùng đà quăng người",
+    "Đệm đặt quá cao chặn hông"
+   ],
+   "anh": "Hyperextensions_Back_Extensions",
+   "gan_dung": false
+  },
+  "b_stance_rdl": {
+   "meo": "Chân trước chịu ~80% lực, chân sau chỉ chạm mũi để giữ thăng bằng.",
+   "loi": [
+    "Dồn đều 2 chân (mất tác dụng 1 chân)",
+    "Xoay hông lệch",
+    "Cong lưng"
+   ],
+   "anh": "Romanian_Deadlift",
+   "gan_dung": true
+  },
+  "cable_pull_through": {
+   "meo": "Quay lưng vào cáp, đẩy hông ra sau rồi siết mông kéo hông về trước.",
+   "loi": [
+    "Kéo bằng tay",
+    "Squat thay vì đẩy hông",
+    "Ngửa người ở cuối động tác"
+   ],
+   "anh": "Pull_Through",
+   "gan_dung": false
+  },
+  "sl_hip_thrust": {
+   "meo": "Chân tự do co lên, hông giữ ngang, đẩy bằng gót chân trụ.",
+   "loi": [
+    "Hông lệch xuống một bên",
+    "Ưỡn lưng",
+    "Chân trụ đặt quá xa"
+   ],
+   "anh": "Single_Leg_Glute_Bridge",
+   "gan_dung": true
+  },
+  "db_reverse_lunge": {
+   "meo": "Bước lùi dài vừa, gối sau gần chạm sàn, đẩy bằng gót chân trước.",
+   "loi": [
+    "Gối trước sụp vào trong",
+    "Thân đổ quá về trước",
+    "Bước quá ngắn"
+   ],
+   "anh": "Dumbbell_Rear_Lunge",
+   "gan_dung": false
+  },
+  "db_walking_lunge": {
+   "meo": "Bước dài vừa, thân thẳng, đứng vững rồi mới bước tiếp.",
+   "loi": [
+    "Bước như dây (mất thăng bằng)",
+    "Gối trước sụp vào trong",
+    "Dậm gối sau xuống sàn"
+   ],
+   "anh": "Bodyweight_Walking_Lunge",
+   "gan_dung": true
+  },
+  "db_bulgarian": {
+   "meo": "Mu bàn chân sau gác ghế, chân trước đủ xa để gối không vượt nhiều mũi chân.",
+   "loi": [
+    "Chân trước quá gần ghế",
+    "Đẩy bằng chân sau",
+    "Gối trước sụp vào trong"
+   ],
+   "anh": "Split_Squat_with_Dumbbells",
+   "gan_dung": true
+  },
+  "db_stepup": {
+   "meo": "Cả bàn chân trên bục, đẩy bằng chân trên, không bật chân dưới.",
+   "loi": [
+    "Bật chân dưới để lấy đà",
+    "Bục quá cao làm cong lưng",
+    "Gối sụp vào trong"
+   ],
+   "anh": "Dumbbell_Step_Ups",
+   "gan_dung": false
+  },
+  "curtsy_lunge": {
+   "meo": "Bước chéo ra sau, hông vẫn hướng thẳng trước, hạ chậm.",
+   "loi": [
+    "Xoay hông theo chân bước",
+    "Gối trước sụp vào trong",
+    "Bước chéo quá xa"
+   ],
+   "anh": "Crossover_Reverse_Lunge",
+   "gan_dung": false
+  },
+  "bb_bench": {
+   "meo": "Bả vai siết ra sau và xuống, hạ thanh tới giữa ngực, khuỷu ~45–70°.",
+   "loi": [
+    "Khuỷu tay bè 90° (đau vai)",
+    "Nảy thanh đòn trên ngực",
+    "Nhấc mông khỏi ghế"
+   ],
+   "anh": "Barbell_Bench_Press_-_Medium_Grip",
+   "gan_dung": false
+  },
+  "db_bench": {
+   "meo": "Bả vai siết, hạ tạ ngang ngực, đẩy lên hơi chụm.",
+   "loi": [
+    "Hạ tạ quá sâu dưới ngực",
+    "Khuỷu bè ngang vai",
+    "Hai tạ lệch nhịp"
+   ],
+   "anh": "Dumbbell_Bench_Press",
+   "gan_dung": false
+  },
+  "bb_incline": {
+   "meo": "Ghế 30–45°, hạ thanh tới ngực trên dưới xương đòn.",
+   "loi": [
+    "Ghế quá dốc thành đẩy vai",
+    "Ưỡn lưng nhấc mông",
+    "Hạ quá nhanh"
+   ],
+   "anh": "Barbell_Incline_Bench_Press_-_Medium_Grip",
+   "gan_dung": false
+  },
+  "db_incline": {
+   "meo": "Ghế 30–45°, cổ tay thẳng trên khuỷu, đẩy lên theo đường hơi chụm.",
+   "loi": [
+    "Ghế quá dốc",
+    "Cổ tay gập ra sau",
+    "Đập tạ vào nhau ở trên"
+   ],
+   "anh": "Incline_Dumbbell_Press",
+   "gan_dung": false
+  },
+  "push_up": {
+   "meo": "Thân thẳng như tấm ván, ngực chạm gần sàn, khuỷu ~45°.",
+   "loi": [
+    "Võng hông",
+    "Chổng mông",
+    "Chỉ xuống nửa chừng"
+   ],
+   "anh": "Pushups",
+   "gan_dung": false
+  },
+  "chest_press": {
+   "meo": "Chỉnh ghế để tay cầm ngang ngực giữa, lưng áp đệm.",
+   "loi": [
+    "Ghế sai độ cao",
+    "Nhô vai về trước khi đẩy",
+    "Thả rơi tạ khi về"
+   ],
+   "anh": "Leverage_Chest_Press",
+   "gan_dung": false
+  },
+  "db_row": {
+   "meo": "Lưng thẳng song song sàn, kéo khuỷu về phía hông.",
+   "loi": [
+    "Xoay người để kéo",
+    "Kéo bằng tay trước thay vì lưng",
+    "Nhún vai lên tai"
+   ],
+   "anh": "One-Arm_Dumbbell_Row",
+   "gan_dung": false
+  },
+  "bb_row": {
+   "meo": "Gập người ~45°, lưng thẳng, kéo thanh về bụng dưới.",
+   "loi": [
+    "Cong lưng",
+    "Dùng đà đứng thẳng lên",
+    "Kéo lên ngực"
+   ],
+   "anh": "Bent_Over_Barbell_Row",
+   "gan_dung": false
+  },
+  "cable_row": {
+   "meo": "Ngồi thẳng, kéo tay cầm về bụng, siết bả vai lại.",
+   "loi": [
+    "Ngả người ra sau lấy đà",
+    "Gù lưng khi duỗi tay",
+    "Nhún vai"
+   ],
+   "anh": "Seated_Cable_Rows",
+   "gan_dung": false
+  },
+  "smith_inverted": {
+   "meo": "Thân thẳng, kéo ngực lên chạm thanh, siết bả vai.",
+   "loi": [
+    "Võng hông",
+    "Rướn cằm lên thanh",
+    "Kéo nửa chừng"
+   ],
+   "anh": "Inverted_Row",
+   "gan_dung": false
+  },
+  "lat_pulldown": {
+   "meo": "Ngực hướng lên, kéo thanh về ngực trên, khuỷu hướng xuống sàn.",
+   "loi": [
+    "Ngả người quá nhiều",
+    "Kéo ra sau gáy",
+    "Kéo bằng tay trước"
+   ],
+   "anh": "Wide-Grip_Lat_Pulldown",
+   "gan_dung": false
+  },
+  "assisted_pullup": {
+   "meo": "Bắt đầu treo thẳng tay, siết bả vai xuống rồi kéo ngực lên.",
+   "loi": [
+    "Đỡ quá nhiều (máy làm hộ)",
+    "Không duỗi hết tay ở dưới",
+    "Đung đưa chân"
+   ],
+   "anh": "Band_Assisted_Pull-Up",
+   "gan_dung": true
+  },
+  "pull_up": {
+   "meo": "Treo thẳng tay, kéo ngực về thanh, hạ có kiểm soát.",
+   "loi": [
+    "Đung đưa lấy đà",
+    "Kéo nửa biên độ",
+    "Rướn cổ qua thanh"
+   ],
+   "anh": "Pullups",
+   "gan_dung": false
+  },
+  "db_shoulder": {
+   "meo": "Siết bụng, đẩy tạ thẳng lên trên đầu, không ưỡn lưng.",
+   "loi": [
+    "Ưỡn lưng dưới",
+    "Hạ quá thấp dưới tai",
+    "Khuỷu tay ra sau quá"
+   ],
+   "anh": "Dumbbell_Shoulder_Press",
+   "gan_dung": false
+  },
+  "smith_ohp": {
+   "meo": "Ngồi thẳng, thanh đi xuống ngang cằm, đẩy thẳng lên.",
+   "loi": [
+    "Hạ ra sau gáy",
+    "Ưỡn lưng",
+    "Khoá cứng khuỷu tay ở trên"
+   ],
+   "anh": "Smith_Machine_Overhead_Shoulder_Press",
+   "gan_dung": false
+  },
+  "shoulder_press": {
+   "meo": "Tay cầm ngang vai khi bắt đầu, lưng áp đệm.",
+   "loi": [
+    "Ghế quá thấp / cao",
+    "Ưỡn lưng rời đệm",
+    "Thả rơi tạ"
+   ],
+   "anh": "Machine_Shoulder_Military_Press",
+   "gan_dung": false
+  },
+  "leg_curl": {
+   "meo": "Trục máy thẳng gối, hông áp đệm, cuộn gót về mông chậm.",
+   "loi": [
+    "Nhấc hông khỏi đệm",
+    "Quăng tạ",
+    "Không duỗi hết chân khi về"
+   ],
+   "anh": "Lying_Leg_Curls",
+   "gan_dung": false
+  },
+  "leg_ext": {
+   "meo": "Lưng áp đệm, duỗi thẳng gối, giữ 1 giây, hạ chậm.",
+   "loi": [
+    "Đá tạ lên bằng đà",
+    "Nhấc mông khỏi ghế",
+    "Hạ thả rơi"
+   ],
+   "anh": "Leg_Extensions",
+   "gan_dung": false
+  },
+  "abduction": {
+   "meo": "Ngồi thẳng hoặc hơi đổ trước, mở chân chậm, giữ 1 giây.",
+   "loi": [
+    "Đập tạ khi khép",
+    "Dùng đà nảy người",
+    "Biên độ quá ngắn"
+   ],
+   "anh": "Thigh_Abductor",
+   "gan_dung": false
+  },
+  "cable_kickback": {
+   "meo": "Hơi gập người, đá chân ra sau bằng mông, không ưỡn lưng.",
+   "loi": [
+    "Ưỡn lưng để đá cao",
+    "Xoay hông mở ra",
+    "Quăng chân"
+   ],
+   "anh": "One-Legged_Cable_Kickback",
+   "gan_dung": false
+  },
+  "frog_pump": {
+   "meo": "Lòng bàn chân chạm nhau, gối mở, đẩy hông lên siết mông.",
+   "loi": [
+    "Ưỡn lưng",
+    "Đẩy quá nhanh không siết",
+    "Gối khép lại"
+   ],
+   "anh": "Butt_Lift_Bridge",
+   "gan_dung": true
+  },
+  "db_lateral": {
+   "meo": "Khuỷu hơi chùng, nâng tạ sang ngang tới ngang vai.",
+   "loi": [
+    "Nhún vai lên tai",
+    "Dùng đà lắc người",
+    "Nâng quá cao trên vai"
+   ],
+   "anh": "Side_Lateral_Raise",
+   "gan_dung": false
+  },
+  "rear_delt": {
+   "meo": "Ngực áp đệm, mở tay ra sau bằng vai sau, không kéo bả vai.",
+   "loi": [
+    "Siết bả vai quá mức (thành lưng giữa)",
+    "Gập khuỷu nhiều",
+    "Quăng tạ"
+   ],
+   "anh": "Reverse_Machine_Flyes",
+   "gan_dung": false
+  },
+  "cable_face_pull": {
+   "meo": "Dây cáp ngang mặt, kéo về trán, xoay tay ra ngoài.",
+   "loi": [
+    "Kéo xuống cổ / ngực",
+    "Ngả người ra sau",
+    "Nhún vai"
+   ],
+   "anh": "Face_Pull",
+   "gan_dung": false
+  },
+  "pec_deck": {
+   "meo": "Tay cầm ngang ngực, khuỷu hơi chùng, khép tay bằng ngực.",
+   "loi": [
+    "Mở tay quá rộng ra sau (đau vai)",
+    "Nhô vai về trước",
+    "Đập tạ"
+   ],
+   "anh": "Butterfly",
+   "gan_dung": false
+  },
+  "cable_crossover": {
+   "meo": "Hơi đổ người, khuỷu cố định hơi chùng, ép tay về trước ngực.",
+   "loi": [
+    "Biến thành động tác đẩy (gập khuỷu)",
+    "Nhô vai",
+    "Mất thăng bằng do đứng sai"
+   ],
+   "anh": "Cable_Crossover",
+   "gan_dung": false
+  },
+  "db_curl": {
+   "meo": "Khuỷu sát thân, cuộn tạ lên, hạ chậm duỗi gần hết.",
+   "loi": [
+    "Đung đưa thân",
+    "Khuỷu tay đưa ra trước",
+    "Hạ nửa chừng"
+   ],
+   "anh": "Dumbbell_Bicep_Curl",
+   "gan_dung": false
+  },
+  "db_hammer": {
+   "meo": "Lòng bàn tay hướng vào nhau, khuỷu cố định.",
+   "loi": [
+    "Lắc người lấy đà",
+    "Xoay cổ tay",
+    "Nhún vai"
+   ],
+   "anh": "Hammer_Curls",
+   "gan_dung": false
+  },
+  "cable_pushdown": {
+   "meo": "Khuỷu sát thân, đẩy dây xuống tới duỗi thẳng, tách dây ở cuối.",
+   "loi": [
+    "Khuỷu tay nhấc lên",
+    "Đổ người đè tạ",
+    "Biên độ ngắn"
+   ],
+   "anh": "Triceps_Pushdown_-_Rope_Attachment",
+   "gan_dung": false
+  },
+  "cable_overhead_ext": {
+   "meo": "Khuỷu hướng lên trước, duỗi tay qua đầu, siết tay sau.",
+   "loi": [
+    "Khuỷu bè ra ngoài",
+    "Ưỡn lưng",
+    "Hạ quá nhanh"
+   ],
+   "anh": "Cable_Rope_Overhead_Triceps_Extension",
+   "gan_dung": false
+  },
+  "weighted_plank": {
+   "meo": "Siết mông + bụng, thân thẳng từ đầu tới gót, thở đều.",
+   "loi": [
+    "Võng hông (đau lưng)",
+    "Chổng mông",
+    "Nín thở"
+   ],
+   "anh": "Plank",
+   "gan_dung": true
+  },
+  "lying_leg_raise": {
+   "meo": "Lưng dưới ép xuống ghế, nâng chân chậm, hạ có kiểm soát.",
+   "loi": [
+    "Lưng dưới cong khỏi ghế",
+    "Quăng chân",
+    "Hạ chân chạm sàn mất căng"
+   ],
+   "anh": "Flat_Bench_Lying_Leg_Raise",
+   "gan_dung": false
+  },
+  "cable_crunch": {
+   "meo": "Quỳ, cuộn cột sống kéo khuỷu về gối, hông đứng yên.",
+   "loi": [
+    "Kéo bằng tay",
+    "Ngồi phịch hông xuống",
+    "Không cuộn người, chỉ cúi"
+   ],
+   "anh": "Cable_Crunch",
+   "gan_dung": false
+  },
+  "dead_bug": {
+   "meo": "Lưng dưới ép sàn suốt bài, duỗi tay – chân đối diện chậm.",
+   "loi": [
+    "Lưng dưới bật khỏi sàn",
+    "Làm quá nhanh",
+    "Nín thở"
+   ],
+   "anh": "Dead_Bug",
+   "gan_dung": false
+  },
+  "side_plank": {
+   "meo": "Khuỷu dưới vai, thân thẳng một đường, hông đẩy lên.",
+   "loi": [
+    "Hông xệ xuống",
+    "Xoay người về trước",
+    "Khuỷu không dưới vai"
+   ],
+   "anh": "Side_Bridge",
+   "gan_dung": false
+  },
+  "pallof_press": {
+   "meo": "Đứng nghiêng với cáp, đẩy tay thẳng trước ngực, không để thân xoay.",
+   "loi": [
+    "Thân xoay theo cáp",
+    "Đứng quá gần (quá nhẹ)",
+    "Nhún vai"
+   ],
+   "anh": "Pallof_Press",
+   "gan_dung": false
+  },
+  "mcgill_curl_up": {
+   "meo": "1 gối co, tay đỡ lưng dưới, nâng đầu vai lên vài cm, giữ 8–10 giây.",
+   "loi": [
+    "Gập cổ kéo đầu",
+    "Cuộn cả lưng như gập bụng",
+    "Ép phẳng lưng dưới"
+   ]
+  },
+  "bird_dog_core": {
+   "meo": "Chống 4 điểm, duỗi tay – chân đối diện, hông giữ ngang như có ly nước trên lưng.",
+   "loi": [
+    "Xoay hông khi duỗi chân",
+    "Ưỡn lưng nâng chân quá cao",
+    "Làm nhanh không giữ"
+   ]
+  },
+  "sled_push": {
+   "meo": "Thân đổ ~45°, tay thẳng, bước ngắn nhanh đẩy bằng mũi chân.",
+   "loi": [
+    "Cong lưng",
+    "Bước quá dài",
+    "Khuỷu tay gập sụp"
+   ],
+   "anh": "Sled_Push",
+   "gan_dung": false
+  },
+  "sled_pull": {
+   "meo": "Đi lùi, gối hơi khuỵu, kéo bằng chân, lưng thẳng.",
+   "loi": [
+    "Kéo bằng tay",
+    "Gù lưng",
+    "Bước chéo vấp chân"
+   ],
+   "anh": "Sled_Drag_-_Harness",
+   "gan_dung": true
+  },
+  "ball_slam": {
+   "meo": "Nâng bóng qua đầu, siết bụng ném mạnh xuống, gập hông.",
+   "loi": [
+    "Cong lưng khi nhặt bóng",
+    "Ném bằng tay không dùng thân",
+    "Bóng nảy vào mặt (dùng bóng không nảy)"
+   ],
+   "anh": "Overhead_Slam",
+   "gan_dung": false
+  },
+  "farmer_carry": {
+   "meo": "Đứng thẳng, vai hạ, bước ngắn đều, siết bụng.",
+   "loi": [
+    "Nhún vai",
+    "Nghiêng người",
+    "Bước dài lắc lư"
+   ],
+   "anh": "Farmers_Walk",
+   "gan_dung": false
+  },
+  "suitcase_carry": {
+   "meo": "Xách 1 bên, giữ thân thẳng không nghiêng về bên có tạ.",
+   "loi": [
+    "Nghiêng người về bên tạ",
+    "Nghiêng bù quá sang bên kia",
+    "Nhún vai"
+   ],
+   "anh": "Farmers_Walk",
+   "gan_dung": true
+  },
+  "front_plate_carry": {
+   "meo": "Ôm bánh tạ trước ngực, siết bụng, không ngửa người ra sau.",
+   "loi": [
+    "Ngửa lưng ra sau",
+    "Thả tạ trễ xuống bụng",
+    "Nín thở"
+   ]
+  },
+  "overhead_carry": {
+   "meo": "Tạ thẳng trên vai, tay khoá, sườn thu xuống, bước chậm.",
+   "loi": [
+    "Ưỡn lưng",
+    "Tạ đổ ra trước / sau",
+    "Gập khuỷu"
+   ]
+  },
+  "kb_rack_carry": {
+   "meo": "Kettlebell tựa cẳng tay trước vai, cổ tay thẳng, đứng thẳng.",
+   "loi": [
+    "Gập cổ tay",
+    "Nghiêng người",
+    "Nhún vai"
+   ]
+  },
+  "ball_carry": {
+   "meo": "Ôm bóng sát ngực, lưng thẳng, bước ngắn.",
+   "loi": [
+    "Gù lưng",
+    "Bóng trễ xuống bụng",
+    "Nín thở"
+   ]
+  },
+  "band_pull_apart": {
+   "meo": "Tay thẳng ngang vai, kéo dây ra 2 bên bằng bả vai.",
+   "loi": [
+    "Nhún vai",
+    "Gập khuỷu",
+    "Ưỡn lưng"
+   ],
+   "anh": "Band_Pull_Apart",
+   "gan_dung": false
+  },
+  "chin_tuck": {
+   "meo": "Lưng áp tường, thu cằm ra sau (tạo cằm đôi), giữ 3–5 giây.",
+   "loi": [
+    "Cúi đầu xuống",
+    "Ngửa đầu",
+    "Gồng vai"
+   ]
+  },
+  "wall_angel": {
+   "meo": "Lưng, đầu, tay áp tường, trượt tay lên xuống chậm.",
+   "loi": [
+    "Ưỡn lưng dưới rời tường",
+    "Tay rời tường",
+    "Nhún vai"
+   ]
+  },
+  "open_book": {
+   "meo": "Nằm nghiêng, gối co, mở tay trên ra sau theo mắt, hông đứng yên.",
+   "loi": [
+    "Gối trên trượt theo",
+    "Xoay bằng thắt lưng",
+    "Làm nhanh"
+   ]
+  },
+  "cat_cow": {
+   "meo": "Thở ra cuộn lưng lên, hít vào võng lưng xuống, chậm theo nhịp thở.",
+   "loi": [
+    "Chỉ cử động cổ",
+    "Làm quá nhanh",
+    "Khuỷu tay gập"
+   ],
+   "anh": "Cat_Stretch",
+   "gan_dung": false
+  },
+  "bird_dog": {
+   "meo": "Chống 4 điểm, duỗi tay – chân đối diện, hông ngang.",
+   "loi": [
+    "Xoay hông",
+    "Ưỡn lưng",
+    "Mất thăng bằng do làm nhanh"
+   ]
+  },
+  "glute_bridge": {
+   "meo": "Gót gần mông, đẩy hông lên, siết mông, không ưỡn lưng.",
+   "loi": [
+    "Ưỡn lưng dưới",
+    "Đẩy bằng mũi chân",
+    "Gối mở / khép"
+   ],
+   "anh": "Butt_Lift_Bridge",
+   "gan_dung": false
+  },
+  "side_lying_clam": {
+   "meo": "Nằm nghiêng, gót chạm nhau, mở gối trên, hông không xoay.",
+   "loi": [
+    "Xoay hông ra sau",
+    "Mở quá rộng",
+    "Làm nhanh"
+   ]
+  },
+  "hip_flexor_stretch": {
+   "meo": "Quỳ 1 chân, siết mông chân sau, đẩy hông nhẹ về trước.",
+   "loi": [
+    "Ưỡn lưng dưới",
+    "Không siết mông",
+    "Gối trước vượt quá xa"
+   ],
+   "anh": "Kneeling_Hip_Flexor",
+   "gan_dung": false
+  },
+  "pec_stretch": {
+   "meo": "Cẳng tay áp khung cửa, bước nhẹ về trước tới căng ngực.",
+   "loi": [
+    "Ép quá mạnh (đau vai)",
+    "Ưỡn lưng",
+    "Nhún vai"
+   ],
+   "anh": "Dynamic_Chest_Stretch",
+   "gan_dung": true
+  },
+  "dead_hang": {
+   "meo": "Treo thả lỏng, thở đều, vai không nhún tận tai.",
+   "loi": [
+    "Đung đưa",
+    "Nín thở",
+    "Buông tay đột ngột khi mỏi"
+   ]
+  },
+  "hang_knee_raise": {
+   "meo": "Treo thẳng, cuộn hông kéo gối lên ngực, hạ chậm.",
+   "loi": [
+    "Đung đưa lấy đà",
+    "Chỉ nâng đùi không cuộn hông",
+    "Thả rơi chân"
+   ],
+   "anh": "Hanging_Leg_Raise",
+   "gan_dung": true
+  },
+  "box_jump": {
+   "meo": "Bật bằng 2 chân, tiếp đất êm cả bàn chân, bước xuống (không nhảy xuống).",
+   "loi": [
+    "Hộp quá cao",
+    "Tiếp đất gối sụp vào trong",
+    "Nhảy lùi xuống"
+   ],
+   "anh": "Front_Box_Jump",
+   "gan_dung": false
+  },
+  "jump_squat": {
+   "meo": "Ngồi nửa chừng rồi bật lên, tiếp đất êm khuỵu gối.",
+   "loi": [
+    "Tiếp đất thẳng chân",
+    "Gối sụp vào trong",
+    "Gù lưng"
+   ],
+   "anh": "Freehand_Jump_Squat",
+   "gan_dung": false
+  },
+  "broad_jump": {
+   "meo": "Vung tay, bật xa bằng hông, tiếp đất êm giữ 1 giây.",
+   "loi": [
+    "Tiếp đất gối khép",
+    "Ngã chúi về trước",
+    "Không vung tay"
+   ],
+   "anh": "Standing_Long_Jump",
+   "gan_dung": false
+  },
+  "jump_rope": {
+   "meo": "Bật thấp bằng mũi chân, quay dây bằng cổ tay.",
+   "loi": [
+    "Nhảy quá cao",
+    "Quay bằng cả cánh tay",
+    "Tiếp đất gót"
+   ],
+   "anh": "Rope_Jumping",
+   "gan_dung": false
+  },
+  "skater_jump": {
+   "meo": "Bật ngang, tiếp đất 1 chân êm, giữ thăng bằng rồi bật lại.",
+   "loi": [
+    "Gối sụp vào trong khi tiếp đất",
+    "Không giữ thăng bằng",
+    "Thân đổ quá nhiều"
+   ],
+   "anh": "Lateral_Bound",
+   "gan_dung": false
+  },
+  "tuck_jump": {
+   "meo": "Bật cao kéo gối về ngực, tiếp đất êm.",
+   "loi": [
+    "Tiếp đất cứng chân",
+    "Gù lưng thay vì kéo gối",
+    "Làm khi đã quá mệt"
+   ],
+   "anh": "Knee_Tuck_Jump",
+   "gan_dung": false
+  },
+  "kb_swing": {
+   "meo": "Đẩy hông bật kettlebell lên ngang ngực — lực từ hông, không từ tay.",
+   "loi": [
+    "Squat thay vì gập hông",
+    "Nâng bằng tay / vai",
+    "Cong lưng ở đáy"
+   ],
+   "anh": "One-Arm_Kettlebell_Swings",
+   "gan_dung": true
+  },
+  "battle_rope": {
+   "meo": "Khuỵu gối, lưng thẳng, đánh sóng đều bằng vai và tay.",
+   "loi": [
+    "Đứng thẳng chân",
+    "Gù lưng",
+    "Sóng nhỏ yếu do chỉ dùng cổ tay"
+   ],
+   "anh": "Battling_Ropes",
+   "gan_dung": false
+  },
+  "air_bike_sprint": {
+   "meo": "Yên ngang hông, đạp + đẩy tay hết sức trong thời gian ngắn.",
+   "loi": [
+    "Yên quá thấp",
+    "Chỉ dùng chân",
+    "Gù lưng"
+   ],
+   "anh": "Bicycling_Stationary",
+   "gan_dung": true
+  },
+  "mountain_climber": {
+   "meo": "Tư thế chống đẩy, hông thấp, kéo gối về ngực nhanh đều.",
+   "loi": [
+    "Chổng mông",
+    "Tay không dưới vai",
+    "Nảy hông lên xuống"
+   ],
+   "anh": "Mountain_Climbers",
+   "gan_dung": false
+  },
+  "burpee": {
+   "meo": "Ngồi xuống, bật chân ra sau thành plank, thu chân, đứng lên bật nhẹ.",
+   "loi": [
+    "Võng hông khi ở plank",
+    "Tiếp đất cứng chân",
+    "Cong lưng khi cúi"
+   ]
+  },
+  "db_thruster": {
+   "meo": "Squat đứng lên rồi dùng đà hông đẩy tạ lên đầu liền mạch.",
+   "loi": [
+    "Đẩy tạ trước khi đứng thẳng",
+    "Ưỡn lưng ở trên",
+    "Gối sụp vào trong"
+   ],
+   "anh": "Kettlebell_Thruster",
+   "gan_dung": true
+  },
+  "jumping_jack": {
+   "meo": "Bật nhẹ bằng mũi chân, tay chân mở – khép nhịp nhàng.",
+   "loi": [
+    "Tiếp đất gót",
+    "Gối khép khi tiếp đất",
+    "Gồng vai"
+   ],
+   "anh": "Star_Jump",
+   "gan_dung": true
+  },
+  "high_knees": {
+   "meo": "Chạy tại chỗ, gối lên ngang hông, thân thẳng.",
+   "loi": [
+    "Ngả người ra sau",
+    "Tiếp đất gót",
+    "Gối thấp"
+   ]
+  },
+  "squat_thrust": {
+   "meo": "Ngồi xuống, chống tay, bật chân ra sau thành plank rồi thu về.",
+   "loi": [
+    "Võng hông ở plank",
+    "Cong lưng khi cúi",
+    "Đầu gối dậm sàn"
+   ]
+  }
+ }
+}

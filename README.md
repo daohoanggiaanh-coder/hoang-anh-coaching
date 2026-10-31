@@ -27,6 +27,10 @@ Streamlit Community Cloud + Google Sheets / Drive đứng tên Gmail cá nhân.
   được **bù chia đều** cho các ngày còn lại (có mức tối đa / ngày, khách rảnh mới cho vượt), biểu đồ hoàn thành tuần + 8 tuần.
 - 🍽 v1.4: thực đơn **món Việt** (phở, bún, hủ tiếu, xôi, cháo, cơm phần…) — web vẫn tính gram từng thành phần; đạm mặc định
   **2 g / kg cân nặng**. Giáo án: buổi nào cũng có ≥ 1 bài core; lưng dưới yếu → chỉ core giữ thẳng cột sống.
+- 🔥 **Động lực & cam kết** (v1.5): khách có nhiệm vụ mỗi ngày (cân, check-in ăn · ngủ · nước, ghi buổi tập, cardio), chuỗi lửa
+  có khiên bảo vệ, điểm, 6 cấp độ, 11 huy hiệu, điểm chăm chỉ tuần; HLV có trang **Cam kết khách** + tin nhắc soạn sẵn.
+- 📘 Hướng dẫn lần đầu (chỉ hiện 1 lần / khách, lưu trên máy chủ) + hướng dẫn cài app lên iPhone / Android; logo app + icon.
+- 🖼 Hình minh hoạ (free-exercise-db, public domain) + mẹo + lỗi hay sai cho 92 bài tập.
 - 👁 **Khách thấy gì** (v1.3): bật / tắt 13 mục cổng khách cho từng khách + **xem trước đúng màn hình khách**.
 - 📈 **Tiến độ & báo cáo**: cân hằng ngày (TB 7 ngày), số đo theo đợt, ảnh 3 góc, báo cáo đầu khoá / tiến độ (tin Zalo + PDF).
 - ✉️ Soạn tin Zalo · 🥗 Bảng thực phẩm (sửa số theo nhãn) · 📥 Chuyển dữ liệu từ Atlas.

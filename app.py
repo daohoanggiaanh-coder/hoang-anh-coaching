@@ -5,8 +5,8 @@ from pathlib import Path
 import streamlit as st
 
 ROOT = Path(__file__).parent
-st.set_page_config(page_title="Hoàng Anh Coaching", page_icon=str(ROOT / "static" / "icon-192.png")
-                   if (ROOT / "static" / "icon-192.png").exists() else "💪", layout="wide")
+st.set_page_config(page_title="Hoàng Anh Coaching", page_icon=str(ROOT / "assets" / "app" / "icon-192.png")
+                   if (ROOT / "assets" / "app" / "icon-192.png").exists() else "💪", layout="wide")
 
 def _fresh_core():
     """Streamlit Cloud sau mỗi lần đẩy bản mới đôi khi nạp lại trang (views) nhưng giữ module core.* cũ → AttributeError.
@@ -30,7 +30,7 @@ def _fresh_core():
 
 
 _fresh_core()
-from core import auth, config, db, ui  # noqa: E402
+from core import auth, config, db, pwa, ui  # noqa: E402
 
 ui.setup()
 auth.sync_cookie()
@@ -44,6 +44,9 @@ def _duong_dan() -> str:
         return ""
 
 
+pwa.chen_icon()
+
+
 def man_dang_nhap():
     if "_dich" not in st.session_state:
         st.session_state["_dich"] = _duong_dan()        # mở link trang con → đăng nhập xong vào thẳng trang đó
@@ -52,7 +55,10 @@ def man_dang_nhap():
                 unsafe_allow_html=True)
     _, giua, _ = st.columns([1, 1.3, 1])
     with giua:
-        st.markdown("<div style='height:6vh'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height:4vh'></div>"
+                    f"<div style='text-align:center;margin-bottom:10px'><img src='data:image/png;base64,{pwa.logo_b64()}' "
+                    "style='width:92px;height:92px;border-radius:22px;box-shadow:0 10px 30px rgba(0,0,0,.25)'></div>",
+                    unsafe_allow_html=True)
         ui.hero(config.BRAND, "Chào mừng bạn quay lại 💪", "Giáo án · thực đơn · số tạ · tiến độ — riêng cho bạn.")
         with st.form("login"):
             u = st.text_input("Tên đăng nhập", autocomplete="username")
@@ -79,6 +85,7 @@ if user["role"] == "coach":
     from views import coach as V
     pages = {
         "Huấn luyện": [st.Page(V.lich, title="Lịch & nhắc tập", icon="📅", url_path="lich", default=True),
+                       st.Page(V.cam_ket, title="Cam kết khách", icon="🔥", url_path="cam_ket"),
                        st.Page(V.khach, title="Khách & tài khoản", icon="👤", url_path="khach"),
                        st.Page(V.tap, title="Giáo án khách", icon="🏋️", url_path="tap"),
                        st.Page(V.cardio, title="Cardio", icon="🏃", url_path="cardio"),

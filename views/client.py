@@ -46,6 +46,17 @@ def trang_chu():
             (f"Mục tiêu: {ui.E(k['muc_tieu'])}" if k.get("muc_tieu") else "Mỗi buổi tập là một bước gần hơn tới mục tiêu.")
             + (f" · buổi tới: <b>{store.THU[sap[0]['ngay'].weekday()]} {sap[0]['ngay']:%d/%m} lúc {store.gio_s(sap[0]['gio'])}</b>"
                if sap and q["lich"] else ""))
+    from views import dong_luc_ui as DL
+    from core import dong_luc as dl
+    DL.lan_dau(k, k["ho_ten"])
+    t = dl.tong_hop(k, hom, q)
+    DL.the_chinh(k, t)
+    if q["can"] and not any(x["id"] == "can" and x["xong"] for x in t["nv"]):
+        C.nhap_can(k, k["ho_ten"], td.can_ngay(ma), "home")
+    DL.check_in(k, k["ho_ten"], t)
+    ui.note(f"💬 <b>HLV Hoàng Anh:</b> {ui.E(t['loi'])}")
+    DL.tuan_va_lich(t)
+    DL.huy_hieu(t)
     can_s, ch_s = "—", ""
     if MOI and MOI.get("can_nang"):
         can_s = f"{MOI['can_nang']:g} kg"
@@ -184,4 +195,7 @@ def tai_khoan():
     if st.button("Đăng xuất"):
         auth.logout()
         st.rerun()
-    st.caption("📲 Dùng như app: mở trang này trên điện thoại → Chia sẻ (iPhone) hoặc ⋮ (Android) → Thêm vào màn hình chính.")
+    from views import dong_luc_ui as DL
+    st.markdown("**📲 Cài app lên điện thoại**")
+    DL.huong_dan_cai()
+    DL.xem_lai(k, k["ho_ten"])

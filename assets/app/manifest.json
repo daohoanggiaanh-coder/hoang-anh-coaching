@@ -1,0 +1,15 @@
+{
+  "name": "Hoàng Anh Coaching",
+  "short_name": "HA Coaching",
+  "description": "Giáo án, thực đơn, cardio và tiến độ — riêng cho khách của HLV Hoàng Anh",
+  "start_url": "https://hoang-anh-coaching.streamlit.app/",
+  "scope": "https://hoang-anh-coaching.streamlit.app/",
+  "display": "standalone",
+  "background_color": "#0B0A08",
+  "theme_color": "#14120F",
+  "icons": [
+    {"src": "https://raw.githubusercontent.com/daohoanggiaanh-coder/hoang-anh-coaching/main/assets/app/icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "https://raw.githubusercontent.com/daohoanggiaanh-coder/hoang-anh-coaching/main/assets/app/icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "https://raw.githubusercontent.com/daohoanggiaanh-coder/hoang-anh-coaching/main/assets/app/icon-512-sq.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

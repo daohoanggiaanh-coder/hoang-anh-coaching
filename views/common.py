@@ -412,7 +412,26 @@ def xem_giao_an(k: dict, g: dict, L: list[dict]):
     tabs = st.tabs([b.get("ten") or f"Buổi {i + 1}" for i, b in enumerate(buoi)])
     for t, b in zip(tabs, buoi):
         with t:
-            st.markdown("".join(_the_bai(x, ga.lan_truoc(k["ma"], x["bai"], L)) for x in b.get("bai", [])), unsafe_allow_html=True)
+            for x in b.get("bai", []):
+                st.markdown(_the_bai(x, ga.lan_truoc(k["ma"], x["bai"], L)), unsafe_allow_html=True)
+                minh_hoa(x)
+
+
+def minh_hoa(x: dict):
+    """Ảnh tư thế đầu / cuối + mẹo chính + lỗi hay sai (thu gọn, bấm mới mở để trang nhẹ)."""
+    from core import minh_hoa as MH
+    m = MH.tim(x.get("id"), x.get("bai"))
+    if not m:
+        return
+    with st.expander("🖼 Cách tập đúng · lỗi hay sai"):
+        if m["anh"]:
+            cs = st.columns(2)
+            for c, a, nhan in zip(cs, m["anh"], ("Tư thế bắt đầu", "Tư thế kết thúc")):
+                c.image(a, caption=nhan, use_container_width=True)
+            if m["gan_dung"]:
+                st.caption("Ảnh minh hoạ động tác tương tự (dụng cụ / biến thể có thể khác máy ở phòng tập).")
+        st.markdown(f"**✅ Mẹo:** {E(m['meo'])}")
+        st.markdown("**⚠️ Hay sai:**  \n" + "  \n".join(f"• {E(z)}" for z in m["loi"]))
 
 
 def sua_giao_an(k: dict, vai: str, nguoi: str, g0: dict | None):

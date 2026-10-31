@@ -339,6 +339,17 @@ def an():
         C.dinh_duong(k, "hlv", u["name"])
 
 
+def cam_ket():
+    ui.hero("CAM KẾT KHÁCH", "Ai đang chăm, ai đang chững?", "Chuỗi lửa, điểm chăm chỉ tuần, việc hôm nay còn thiếu — xếp khách cần nhắc lên đầu.")
+    from views import dong_luc_ui as DL
+    DS = store.clients(ca_ngung=False)
+    if not DS:
+        st.info("Chưa có khách đang tập.")
+        return
+    DL.bang_hlv(DS)
+    st.caption("Điểm tuần = trung bình % nhiệm vụ đã làm mỗi ngày. Có sẵn tin nhắc cho khách dưới 80 điểm — bấm biểu tượng sao chép để dán Zalo.")
+
+
 def cardio():
     u = _user()
     ui.hero("CARDIO", "Target & kết quả cardio", "Đặt target ngày tập / ngày nghỉ, nhập kết quả từ ảnh khách gửi, theo dõi hoàn thành tuần.")

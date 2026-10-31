@@ -290,3 +290,25 @@ def test_core_moi_buoi_lung_yeu():
             ids = [x["id"] for x in b["bai"]]
             assert any(x["nhom"] == "core" for x in b["bai"])
             assert "cable_crunch" not in ids and "lying_leg_raise" not in ids
+
+
+def test_chuoi_lua_va_khien():
+    from datetime import date, timedelta
+    from core import dong_luc as dl
+    hom = date(2026, 10, 31)
+    D = {"can": set(), "tap_log": set(), "cardio": {}, "checkin": {}, "ngay_tap": set(), "q": {"can": True},
+         "goc": {t: {"phut": 0} for t in range(7)}}
+    for i in range(1, 9):                                   # 8 ngày trước: đủ cân + check-in
+        d = hom - timedelta(days=i)
+        D["can"].add(d)
+        D["checkin"][d] = {}
+    nv = dl.nhiem_vu(D, hom - timedelta(days=1))
+    assert [x["id"] for x in nv] == ["can", "checkin"] and all(x["xong"] for x in nv)
+    assert not any(x["xong"] for x in dl.nhiem_vu(D, hom))
+
+
+def test_minh_hoa_bai():
+    from core import minh_hoa as MH
+    m = MH.tim("dead_bug")
+    assert m and len(m["anh"]) == 2 and m["loi"]
+    assert MH.tim(None, "Leg Press (máy)")["id"] == "leg_press"

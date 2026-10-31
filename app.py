@@ -83,18 +83,21 @@ if user["role"] == "coach":
                        st.Page(V.tap, title="Giáo án khách", icon="🏋️", url_path="tap"),
                        st.Page(V.an, title="Dinh dưỡng", icon="🍽", url_path="dinh_duong"),
                        st.Page(V.tien_do, title="Tiến độ & báo cáo", icon="📈", url_path="tien_do"),
-                       st.Page(V.lo_trinh, title="Lộ trình & mục tiêu 🔒", icon="🎯", url_path="lo_trinh")],
+                       st.Page(V.lo_trinh, title="Lộ trình & mục tiêu 🔒", icon="🎯", url_path="lo_trinh"),
+                       st.Page(V.khach_thay, title="Khách thấy gì", icon="👁", url_path="khach_thay")],
         "Công cụ": [st.Page(V.soan_tin, title="Soạn tin Zalo", icon="✉️", url_path="soan_tin"),
                     st.Page(V.thuc_pham, title="Bảng thực phẩm", icon="🥗", url_path="thuc_pham"),
                     st.Page(V.nhap_atlas, title="Chuyển dữ liệu từ Atlas", icon="📥", url_path="nhap_atlas")],
     }
 else:
     from views import client as V
-    pages = [st.Page(V.trang_chu, title="Tổng quan", icon="🏠", url_path="tong_quan", default=True),
-             st.Page(V.tap, title="Tập luyện", icon="🏋️", url_path="tap_luyen"),
-             st.Page(V.an, title="Thực đơn", icon="🍽", url_path="thuc_don"),
-             st.Page(V.tien_do, title="Cân & số đo", icon="📈", url_path="can_so_do"),
-             st.Page(V.tai_khoan, title="Tài khoản", icon="🔐", url_path="tai_khoan")]
+    from core import store as _st
+    _tr = _st.trang_khach(_st.quyen(_st.client(user.get("ma_kh", ""))))
+    pages = [st.Page(V.trang_chu, title="Tổng quan", icon="🏠", url_path="tong_quan", default=True)]
+    pages += [p for p, on in ((st.Page(V.tap, title="Tập luyện", icon="🏋️", url_path="tap_luyen"), _tr["tap"]),
+                              (st.Page(V.an, title="Thực đơn", icon="🍽", url_path="thuc_don"), _tr["an"]),
+                              (st.Page(V.tien_do, title="Cân & số đo", icon="📈", url_path="can_so_do"), _tr["tien_do"])) if on]
+    pages.append(st.Page(V.tai_khoan, title="Tài khoản", icon="🔐", url_path="tai_khoan"))
 
 with st.sidebar:
     st.markdown(f"<div style='font-weight:800;letter-spacing:.16em;color:#E8C76A;font-size:.7rem'>{config.BRAND}</div>"

@@ -12,6 +12,10 @@ from views import common as C
 
 def _k() -> dict:
     u = auth.current_user()
+    if u and u.get("role") == "coach" and st.session_state.get("_xem_nhu"):     # HLV đang "xem như khách"
+        k = store.client(st.session_state["_xem_nhu"])
+        if k:
+            return k
     k = store.client(u["ma_kh"]) if u and u.get("role") == "client" else None
     if not k:
         st.error("Phiên đăng nhập hết hạn — đăng nhập lại.")
@@ -28,6 +32,7 @@ def _ten(k: dict) -> str:
 
 def trang_chu():
     k = _k()
+    q = store.quyen(k)
     ma = k["ma"]
     hom = db.now_vn().date()
     H = store.hens(ma)
@@ -40,7 +45,7 @@ def trang_chu():
     ui.hero("HÀNH TRÌNH CỦA BẠN", f"Chào {_ten(k)} 👋",
             (f"Mục tiêu: {ui.E(k['muc_tieu'])}" if k.get("muc_tieu") else "Mỗi buổi tập là một bước gần hơn tới mục tiêu.")
             + (f" · buổi tới: <b>{store.THU[sap[0]['ngay'].weekday()]} {sap[0]['ngay']:%d/%m} lúc {store.gio_s(sap[0]['gio'])}</b>"
-               if sap else ""))
+               if sap and q["lich"] else ""))
     can_s, ch_s = "—", ""
     if MOI and MOI.get("can_nang"):
         can_s = f"{MOI['can_nang']:g} kg"
@@ -49,31 +54,38 @@ def trang_chu():
             ch_s = f"{ch:+g} kg từ đầu khoá" if ch else ""
     pt = td.tien_do_can(DAU.get("can_nang") if DAU else None, MOI.get("can_nang") if MOI else None, k.get("can_muc_tieu"))
     cn = store.con_ngay(k, hom)
-    ui.tiles([(str(da), "buổi đã tập", f"còn {con} buổi trong gói" if con is not None else
-               (f"gói còn {cn} ngày" if cn is not None else "")),
-              (can_s, "cân hiện tại", ch_s),
-              (f"{pt}%" if pt is not None else "—", "tới mục tiêu cân", f"mục tiêu {k['can_muc_tieu']} kg" if k.get("can_muc_tieu") else ""),
-              (str(ga.chuoi_tuan(L, hom)), "tuần liên tiếp", "có ghi buổi tập")])
-    a, b = st.columns([1, 1])
-    with a:
-        ui.sec("Lịch 2 tuần tới")
-        if not sap:
-            st.caption("Chưa có buổi hẹn — nhắn HLV để xếp lịch.")
-        for x in sap[:8]:
-            st.markdown(f'<div class="hac-b"><span class="t">{store.gio_s(x["gio"])}</span><span class="n">'
-                        f'{store.THU[x["ngay"].weekday()]} · {x["ngay"]:%d/%m}</span><span class="m">{ui.E(x.get("dia_diem") or "")}'
-                        f'{" · hôm nay" if x["ngay"] == hom else ""}</span></div>', unsafe_allow_html=True)
-    with b:
-        ui.sec("Kỷ lục gần đây")
-        ls = ga.lich_su_bai(ma, L)
-        if ls.empty:
-            st.caption("Ghi buổi tập ở mục 🏋️ Tập luyện để thấy kỷ lục.")
-        else:
-            kl = ga.ky_luc(ls).sort_values("ngay", ascending=False).head(5)
-            for _, r in kl.iterrows():
-                st.markdown(f'<div class="hac-ex"><div class="n">{ui.E(r["bai"])}</div><div class="m">{r["top_kg"]:g} kg × '
-                            f'{int(r["top_lan"])} · 1RM ước tính {r["e1rm"]:g} kg · {r["ngay"]:%d/%m}</div></div>', unsafe_allow_html=True)
-    if len(CAN) >= 2:
+    tl = []
+    if q["lich"]:
+        tl.append((str(da), "buổi đã tập", f"còn {con} buổi trong gói" if con is not None else (f"gói còn {cn} ngày" if cn is not None else "")))
+    if q["can"] or q["so_do"]:
+        tl += [(can_s, "cân hiện tại", ch_s),
+               (f"{pt}%" if pt is not None else "—", "tới mục tiêu cân", f"mục tiêu {k['can_muc_tieu']} kg" if k.get("can_muc_tieu") else "")]
+    if q["ghi_buoi"]:
+        tl.append((str(ga.chuoi_tuan(L, hom)), "tuần liên tiếp", "có ghi buổi tập"))
+    if tl:
+        ui.tiles(tl)
+    a, b = st.columns([1, 1]) if q["lich"] and q["so_ta"] else (st.container(), st.container())
+    if q["lich"]:
+        with a:
+            ui.sec("Lịch 2 tuần tới")
+            if not sap:
+                st.caption("Chưa có buổi hẹn — nhắn HLV để xếp lịch.")
+            for x in sap[:8]:
+                st.markdown(f'<div class="hac-b"><span class="t">{store.gio_s(x["gio"])}</span><span class="n">'
+                            f'{store.THU[x["ngay"].weekday()]} · {x["ngay"]:%d/%m}</span><span class="m">{ui.E(x.get("dia_diem") or "")}'
+                            f'{" · hôm nay" if x["ngay"] == hom else ""}</span></div>', unsafe_allow_html=True)
+    if q["so_ta"]:
+        with b:
+            ui.sec("Kỷ lục gần đây")
+            ls = ga.lich_su_bai(ma, L)
+            if ls.empty:
+                st.caption("Ghi buổi tập ở mục 🏋️ Tập luyện để thấy kỷ lục.")
+            else:
+                kl = ga.ky_luc(ls).sort_values("ngay", ascending=False).head(5)
+                for _, r in kl.iterrows():
+                    st.markdown(f'<div class="hac-ex"><div class="n">{ui.E(r["bai"])}</div><div class="m">{r["top_kg"]:g} kg × '
+                                f'{int(r["top_lan"])} · 1RM ước tính {r["e1rm"]:g} kg · {r["ngay"]:%d/%m}</div></div>', unsafe_allow_html=True)
+    if len(CAN) >= 2 and q["can"]:
         ui.sec("Cân nặng")
         C.bieu_do_can(k, CAN, 260)
 
@@ -81,22 +93,30 @@ def trang_chu():
 def tap():
     k = _k()
     ui.hero("TẬP LUYỆN", "Giáo án & số tạ", "Xem bài HLV soạn, ghi kg × lần từng hiệp, hoặc tự tạo plan khi tập một mình.")
-    C.tap_luyen(k, "khach", k["ho_ten"])
+    C.tap_luyen(k, "khach", k["ho_ten"], store.quyen(k))
 
 
 def an():
     k = _k()
     ui.hero("DINH DƯỠNG", "Thực đơn của bạn", "Tính riêng theo cơ thể, lịch tập và mục tiêu — ngày tập ăn nhiều hơn ngày nghỉ.")
-    C.dinh_duong(k, "khach", k["ho_ten"])
+    q = store.quyen(k)
+    if not q["thuc_don"]:
+        st.info("Mục thực đơn HLV chưa mở cho bạn.")
+        return
+    C.dinh_duong(k, "khach", k["ho_ten"], q)
 
 
 def tien_do():
     k = _k()
     ma = k["ma"]
+    q = store.quyen(k)
     ui.hero("TIẾN ĐỘ", "Cân & số đo", "Cân mỗi sáng, xem đường trung bình 7 ngày — đừng lo dao động từng ngày.")
     CAN, SD = td.can_ngay(ma), td.so_do(ma)
-    C.nhap_can(k, k["ho_ten"], CAN, "kh")
-    C.bieu_do_can(k, CAN)
+    if q["can"]:
+        C.nhap_can(k, k["ho_ten"], CAN, "kh")
+        C.bieu_do_can(k, CAN)
+    if not q["so_do"]:
+        return
     DAU, MOI = td.dau_khoa(SD), td.moi_nhat(SD, CAN)
     if DAU and MOI:
         ui.sec("Số đo: đầu khoá → hiện tại")

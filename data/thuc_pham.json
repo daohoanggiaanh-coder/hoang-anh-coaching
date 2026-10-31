@@ -35,6 +35,10 @@
     "tao":            {"ten": "Táo",                           "nhom": "trai_cay", "kcal": 52,  "p": 0.3, "c": 13.8, "f": 0.2, "xo": 2.4, "tag": []},
     "cam":            {"ten": "Cam",                           "nhom": "trai_cay", "kcal": 47,  "p": 0.9, "c": 11.8, "f": 0.1, "xo": 2.4, "tag": []},
     "du_du":          {"ten": "Đu đủ chín",                    "nhom": "trai_cay", "kcal": 43,  "p": 0.5, "c": 10.8, "f": 0.3, "xo": 1.7, "tag": []},
+    "oi":             {"ten": "Ổi",                            "nhom": "trai_cay", "kcal": 68,  "p": 2.6, "c": 14.3, "f": 1.0, "xo": 5.4, "tag": []},
+    "buoi":           {"ten": "Bưởi (múi)",                    "nhom": "trai_cay", "kcal": 38,  "p": 0.8, "c": 9.6,  "f": 0.0, "xo": 1.0, "tag": []},
+    "xoai":           {"ten": "Xoài chín",                     "nhom": "trai_cay", "kcal": 60,  "p": 0.8, "c": 15.0, "f": 0.4, "xo": 1.6, "tag": []},
+    "kiwi":           {"ten": "Kiwi",                          "nhom": "trai_cay", "kcal": 61,  "p": 1.1, "c": 14.7, "f": 0.5, "xo": 3.0, "tag": [], "don_vi": {"ten": "quả", "g": 75}},
     "dua_hau":        {"ten": "Dưa hấu",                       "nhom": "trai_cay", "kcal": 30,  "p": 0.6, "c": 7.6,  "f": 0.2, "xo": 0.4, "tag": []},
 
     "dau_an":         {"ten": "Dầu ô liu / dầu ăn",            "nhom": "beo", "kcal": 884, "p": 0.0, "c": 0.0,  "f": 100.0, "xo": 0.0, "tag": [], "don_vi": {"ten": "thìa cà phê", "g": 5}},

@@ -15,8 +15,41 @@ FIELDS = ["ma", "ho_ten", "sdt", "ten_zalo", "goi_khach", "xung_toi", "dia_diem"
           "ngay_bat_dau", "lich", "trang_thai", "ghi_chu", "xoa", "ngay_sinh",
           "gioi_tinh", "chieu_cao", "muc_tieu", "can_muc_tieu", "hinh_thuc", "chan_thuong",
           "muc_tieu_loai", "muc_tieu_mo", "muc_tieu_co", "muc_tieu_eo", "muc_tieu_ngay",     # v1.1: lộ trình (chỉ HLV xem)
-          "goi_ten", "goi_loai", "goi_so"]                                                      # v1.2: gói theo buổi / tuần / tháng
+          "goi_ten", "goi_loai", "goi_so",                                                      # v1.2: gói theo buổi / tuần / tháng
+          "quyen"]                                                                              # v1.3: mục khách được thấy / dùng
 LOAI_GOI = {"buoi": "buổi", "tuan": "tuần", "thang": "tháng"}
+# v1.3 — quyền cổng khách: id → (nhóm, nhãn, mô tả). Mặc định bật hết; HLV tắt từng mục cho từng khách.
+QUYEN = {
+    "giao_an": ("🏋️ Tập luyện", "Xem giáo án", "Giáo án HLV soạn (bài, hiệp, lần, RPE, nghỉ)"),
+    "ghi_buoi": ("🏋️ Tập luyện", "Tự ghi buổi tập", "Khách tự nhập kg × lần từng hiệp + xem lịch sử, lời nhắn HLV"),
+    "tu_tao_plan": ("🏋️ Tập luyện", "Tự tạo plan", "Khách tự tạo / sửa plan riêng khi tập một mình"),
+    "so_ta": ("🏋️ Tập luyện", "Số tạ & kỷ lục", "Biểu đồ số tạ, 1RM ước tính, kỷ lục"),
+    "thuc_don": ("🍽 Dinh dưỡng", "Xem thực đơn", "Thực đơn hôm nay + 7 ngày (gram từng món)"),
+    "chi_so_dd": ("🍽 Dinh dưỡng", "Chỉ số kcal & macro", "Số kcal, đạm, tinh bột, béo, dự kiến tốc độ, cách tính"),
+    "doi_mon": ("🍽 Dinh dưỡng", "Đổi món", "Tự đổi món trong bữa + bảng món tương đương"),
+    "so_thich_an": ("🍽 Dinh dưỡng", "Sửa sở thích ăn", "Số bữa, giờ tập, chế độ ăn, món không ăn"),
+    "bo_sung": ("🍽 Dinh dưỡng", "Thực phẩm bổ sung", "Gợi ý bổ sung HLV chọn (không bắt buộc)"),
+    "di_cho": ("🍽 Dinh dưỡng", "Danh sách đi chợ", "Tổng thực phẩm cả tuần"),
+    "can": ("📈 Tiến độ", "Cân hằng ngày", "Tự nhập cân + biểu đồ trung bình 7 ngày"),
+    "so_do": ("📈 Tiến độ", "Số đo & ảnh", "So sánh số đo đầu khoá → hiện tại, ảnh trước / sau"),
+    "lich": ("🏠 Tổng quan", "Lịch hẹn & gói", "Buổi hẹn 2 tuần tới, số buổi / ngày còn trong gói"),
+}
+
+
+def quyen(k: dict | None) -> dict[str, bool]:
+    q = (k or {}).get("quyen")
+    if isinstance(q, str):
+        try:
+            q = json.loads(q) if q.strip() else {}
+        except ValueError:
+            q = {}
+    q = q if isinstance(q, dict) else {}
+    return {x: bool(q.get(x, True)) for x in QUYEN}
+
+
+def trang_khach(q: dict[str, bool]) -> dict[str, bool]:
+    """Trang nào của cổng khách được hiện (tắt hết mục con → ẩn luôn trang)."""
+    return {"tap": q["giao_an"] or q["ghi_buoi"] or q["so_ta"] or q["tu_tao_plan"], "an": q["thuc_don"], "tien_do": q["can"] or q["so_do"]}
 
 
 # ------------------------------------------------------------------ khách

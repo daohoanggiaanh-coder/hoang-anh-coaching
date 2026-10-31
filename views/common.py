@@ -76,14 +76,22 @@ def form_dd(k: dict, hs: dict, vai: str, nguoi: str):
             cardio = a.number_input("Cardio thêm (phút / tuần)", 0, 900, int(hs.get("cardio_phut_tuan") or 0), step=15)
             ngay_tap = b.multiselect("Thứ có tập (để tính ngày tập / ngày nghỉ)", list(range(7)), default=[int(x) for x in hs.get("ngay_tap") or []],
                                      format_func=lambda i: store.THU[i])
-            ui.sec("Mục tiêu")
-            a, b, c, d = st.columns(4)
+            ui.sec("Mục tiêu & đạm")
+            a, b, c = st.columns(3)
             mt = a.selectbox("Mục tiêu", list(dd.MUC_TIEU), format_func=dd.MUC_TIEU.get,
                              index=list(dd.MUC_TIEU).index(hs.get("muc_tieu", "giam_mo")) if hs.get("muc_tieu") in dd.MUC_TIEU else 0)
             tdo = b.selectbox("Tốc độ", list(dd.TOC_DO), format_func=dd.TOC_DO.get,
                               index=list(dd.TOC_DO).index(hs.get("toc_do", "vua")) if hs.get("toc_do") in dd.TOC_DO else 1)
-            kct = c.number_input("Ghi đè kcal TB / ngày", 0, 6000, int(hs.get("kcal_tay") or 0), step=50, help="0 = để web tự tính")
-            dgk = d.number_input("Ghi đè đạm (g/kg)", 0.0, 3.5, float(hs.get("dam_g_kg") or 0), step=0.1, help="0 = để web tự tính")
+            mdam = c.selectbox("Mức đạm", list(dd.MUC_DAM), index=list(dd.MUC_DAM).index(hs.get("muc_dam", "cao"))
+                               if hs.get("muc_dam", "cao") in dd.MUC_DAM else 1, format_func=lambda x: dd.MUC_DAM[x]["ten"]
+                               + (" (mặc định — khách tập tạ)" if x == "cao" else ""))
+            a, b = st.columns(2)
+            kct = a.number_input("Ghi đè kcal TB / ngày", 0, 6000, int(hs.get("kcal_tay") or 0), step=50, help="0 = để web tự tính")
+            dgk = b.number_input("Ghi đè đạm (g/kg cân)", 0.0, 3.5, float(hs.get("dam_g_kg") or 0), step=0.1, help="0 = theo mức đạm ở trên")
+            ui.sec("Thực phẩm bổ sung khuyến nghị (khách thấy — không bắt buộc)")
+            bs = st.multiselect("Chọn món gợi ý cho khách", list(dd.BO_SUNG), format_func=lambda x: f"{dd.BO_SUNG[x]['icon']} {dd.BO_SUNG[x]['ten']}",
+                                default=[x for x in (hs.get("bo_sung") or dd.GOI_Y_BO_SUNG.get(hs.get("muc_tieu", "giam_mo"), [])) if x in dd.BO_SUNG],
+                                help="Để trống = gợi ý mặc định theo mục tiêu")
         ui.sec("Thói quen ăn")
         a, b, c = st.columns([1, 1, 2])
         sb = a.selectbox("Số bữa / ngày", [3, 4, 5, 6], index=[3, 4, 5, 6].index(int(hs.get("so_bua") or 4)))
@@ -99,7 +107,8 @@ def form_dd(k: dict, hs: dict, vai: str, nguoi: str):
             if hlv:
                 moi.update({"gioi_tinh": gt, "tuoi": tuoi, "cao": cao, "kg": kg, "pbf": pbf or None, "bo_pbf": not pbf,
                             "van_dong": vd, "buoi_tuan": bt, "phut_buoi": pb, "cuong_do": cd, "cardio_phut_tuan": cardio,
-                            "ngay_tap": ngay_tap, "muc_tieu": mt, "toc_do": tdo, "kcal_tay": kct or None, "dam_g_kg": dgk or None})
+                            "ngay_tap": ngay_tap, "muc_tieu": mt, "toc_do": tdo, "kcal_tay": kct or None, "dam_g_kg": dgk or None,
+                            "muc_dam": mdam, "bo_sung": bs})
             if luu_hs_dd(k["ma"], moi, nguoi):
                 S.pop(f"dd_doi_{k['ma']}", None)
                 st.toast("Đã lưu — thực đơn đã tính lại")
@@ -107,25 +116,103 @@ def form_dd(k: dict, hs: dict, vai: str, nguoi: str):
             st.error("Chưa lưu được — thử lại.")
 
 
+ICON_NHOM = {"dam": "🍗", "sua": "🥛", "tinh_bot": "🍚", "trai_cay": "🍎", "beo": "🥑", "rau": "🥦"}
+TEN_NHOM = {"dam": "Đạm", "sua": "Sữa", "tinh_bot": "Tinh bột", "trai_cay": "Trái cây", "beo": "Chất béo", "rau": "Rau"}
+DD_CSS = """<style>
+.dd-day{background:radial-gradient(circle at 15% 0%,#3d3427,#14120F 70%);border-radius:22px;padding:20px 22px;color:#F3ECDC;
+  border:1px solid rgba(200,162,74,.3);margin:6px 0 14px}
+.dd-day .k{color:#E8C76A;letter-spacing:.18em;font-weight:800;font-size:.64rem}
+.dd-day .big{font-size:2.3rem;font-weight:800;color:#fff;line-height:1.05;margin:6px 0 2px}
+.dd-day .big small{font-size:.9rem;color:#D8D1C1;font-weight:600;margin-left:6px}
+.dd-mac{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+@media(max-width:640px){.dd-mac{grid-template-columns:repeat(2,1fr)}.dd-day .big{font-size:1.8rem}}
+.dd-m small{display:block;font-size:.62rem;letter-spacing:.12em;color:#BDB6A8;font-weight:800;text-transform:uppercase}
+.dd-m b{font-size:1.15rem;color:#fff}.dd-m i{font-style:normal;color:#9c958a;font-size:.75rem}
+.dd-m .bar{height:5px;border-radius:9px;background:rgba(255,255,255,.12);margin-top:5px;overflow:hidden}
+.dd-m .bar span{display:block;height:100%;border-radius:9px}
+.dd-tl{margin:4px 0}
+.dd-bua{position:relative;background:#fff;border:1px solid #E6DCC6;border-radius:18px;margin:0 0 14px;
+  box-shadow:0 6px 18px rgba(28,27,25,.05)}
+.dd-gio{display:inline-block;font-weight:800;font-size:.74rem;color:#1C1B19;background:#E8C76A;border-radius:999px;padding:3px 10px;margin-right:10px}
+.dd-bh{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 16px;
+  background:linear-gradient(90deg,#1C1B19,#2c2720);color:#F3ECDC;border-radius:17px 17px 0 0}
+.dd-bh b{font-size:1.02rem;color:#fff}.dd-bh .kc{font-weight:800;color:#E8C76A}
+.dd-tag{font-size:.6rem;font-weight:900;letter-spacing:.1em;border-radius:999px;padding:3px 9px;margin-left:6px}
+.dd-it{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;padding:9px 16px;border-top:1px solid #F3ECDC}
+.dd-ic{width:34px;height:34px;border-radius:12px;background:#F7F1E3;display:grid;place-items:center;font-size:1.05rem}
+.dd-it .n{font-weight:700;color:#1C1B19;font-size:.93rem}.dd-it .n small{display:block;color:#8b8577;font-weight:500;font-size:.72rem}
+.dd-it .g{text-align:right;font-weight:900;font-size:1.05rem;color:#1C1B19;white-space:nowrap}
+.dd-it .g small{display:block;font-weight:600;font-size:.7rem;color:#A3803C}
+.dd-bf{display:flex;gap:14px;flex-wrap:wrap;padding:9px 16px;background:#FBF8F1;font-size:.76rem;color:#6C6860;border-top:1px solid #F0E9D8;
+  border-radius:0 0 17px 17px}
+.dd-bf b{color:#1C1B19}
+.dd-bs{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:8px 0}
+@media(max-width:640px){.dd-bs{grid-template-columns:1fr}}
+.dd-bsc{background:#fff;border:1px solid #E6DCC6;border-radius:16px;padding:14px 16px}
+.dd-bsc h4{margin:0 0 4px;font-size:1rem}.dd-bsc .l{font-weight:700;color:#7A5B14;font-size:.84rem;margin:4px 0}
+.dd-bsc p{margin:2px 0;font-size:.82rem;color:#4a463f}.dd-bsc .w{color:#B4442F}.dd-bsc .e{color:#8b8577;font-size:.72rem;margin-top:6px}
+.dd-week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:6px 0 12px}
+@media(max-width:760px){.dd-week{grid-template-columns:repeat(4,1fr)}}
+.dd-wd{background:#fff;border:1px solid #E6DCC6;border-radius:14px;padding:10px;text-align:center}
+.dd-wd.t{background:#1C1B19;border-color:#1C1B19;color:#F3ECDC}.dd-wd.t b{color:#E8C76A}
+.dd-wd small{display:block;font-size:.66rem;letter-spacing:.1em;font-weight:800;opacity:.75}.dd-wd b{display:block;font-size:1.1rem}
+.dd-wd i{font-style:normal;font-size:.7rem;opacity:.75}
+</style>"""
+
+
+def _thanh(v: float, m: float, mau: str) -> str:
+    pct = max(0, min(100, v / m * 100 if m else 0))
+    return f'<div class="bar"><span style="width:{pct:.0f}%;background:{mau}"></span></div>'
+
+
+def _the_ngay(ten: str, la_tap: bool, tt: dict, m: dict, rq: float) -> str:
+    def o(nhan, v, mt, dv, mau):
+        return (f'<div class="dd-m"><small>{nhan}</small><b>{v:.0f}</b><i> / {mt:.0f} {dv}</i>{_thanh(v, mt, mau)}</div>')
+    return (f'<div class="dd-day"><div class="k">{E(ten.upper())} · {"NGÀY TẬP 🏋️" if la_tap else "NGÀY NGHỈ 😌"}</div>'
+            f'<div class="big">{tt["kcal"]:,.0f}<small>/ {m["kcal"]:,} kcal</small></div>'.replace(",", ".")
+            + '<div class="dd-mac">' + o("Đạm", tt["p"], m["p"], "g", ui.MACRO_MAU["p"]) + o("Tinh bột", tt["c"], m["c"], "g", ui.MACRO_MAU["c"])
+            + o("Béo", tt["f"], m["f"], "g", "#7FA6CC") + o("Rau + trái cây", rq, 400, "g", "#5BA36B") + "</div></div>")
+
+
 def _bang_bua(b: dict, F: dict) -> str:
-    vai = {"truoc": '<span class="hac-chip g">TRƯỚC TẬP</span>', "sau": '<span class="hac-chip x">SAU TẬP</span>'}.get(b["vai"], "")
+    tag = {"truoc": '<span class="dd-tag" style="background:#E8C76A;color:#1C1B19">TRƯỚC TẬP</span>',
+           "sau": '<span class="dd-tag" style="background:#2E7D4F;color:#fff">SAU TẬP</span>'}.get(b["vai"], "")
     t = b["thuc"]
-    dong = "".join(
-        f'<tr><td>{E(F[m]["ten"])}</td><td class="g">{g:g} g</td><td class="u">{E(dd.mo_ta_luong(m, g, F))}</td></tr>'
-        for m, g in b["mon"].items())
-    return (f'<div class="hac-meal"><div class="h"><b>{E(b["ten"])} {vai}</b><span>~{E(b["gio"])} · {t["kcal"]:.0f} kcal · '
-            f'Đ {t["p"]:.0f} g · TB {t["c"]:.0f} g · B {t["f"]:.0f} g</span></div><table>{dong}</table></div>')
+    dong = ""
+    for m, g in sorted(b["mon"].items(), key=lambda x: ["dam", "sua", "tinh_bot", "beo", "rau", "trai_cay"].index(F[x[0]]["nhom"])):
+        f = F[m]
+        uoc = dd.mo_ta_luong(m, g, F)
+        dong += (f'<div class="dd-it"><div class="dd-ic">{ICON_NHOM.get(f["nhom"], "🍽")}</div>'
+                 f'<div class="n">{E(f["ten"])}<small>{TEN_NHOM.get(f["nhom"], "")} · {f["p"] * g / 100:.0f} g đạm</small></div>'
+                 f'<div class="g">{g:g} g' + (f"<small>{E(uoc)}</small>" if uoc else "") + "</div></div>")
+    return (f'<div class="dd-bua"><div class="dd-bh"><b><span class="dd-gio">🕒 {E(b["gio"])}</span>{E(b["ten"])}{tag}</b>'
+            f'<span class="kc">{t["kcal"]:.0f} kcal</span></div>{dong}'
+            f'<div class="dd-bf"><span>Đạm <b>{t["p"]:.0f} g</b></span><span>Tinh bột <b>{t["c"]:.0f} g</b></span>'
+            f'<span>Béo <b>{t["f"]:.0f} g</b></span><span>Xơ <b>{t["xo"]:.0f} g</b></span></div></div>')
 
 
-def dinh_duong(k: dict, vai: str, nguoi: str):
+def _the_bo_sung(ds: list[dict], h) -> str:
+    out = ""
+    for x in ds:
+        lieu = x["lieu"]
+        if x["id"] == "caffeine":
+            lieu += f" — với {h.kg:g} kg: khoảng {3 * h.kg:.0f}–{6 * h.kg:.0f} mg"
+        out += (f'<div class="dd-bsc"><h4>{x["icon"]} {E(x["ten"])}</h4><div class="l">{E(lieu)}</div>'
+                f'<p>{E(x["vi_sao"])}</p><p class="w">⚠️ {E(x["luu_y"])}</p><div class="e">Mức bằng chứng: {E(x["bang_chung"])}</div></div>')
+    return f'<div class="dd-bs">{out}</div>'
+
+
+def dinh_duong(k: dict, vai: str, nguoi: str, q: dict | None = None):
+    q = q or store.quyen(k)
     hs = ho_so_dd(k)
     hlv = vai == "hlv"
+    st.markdown(DD_CSS, unsafe_allow_html=True)
     if not hs.get("cao") or not hs.get("kg"):
         st.info("Cần chiều cao và cân nặng để tính." + (" Nhập ở hồ sơ khách hoặc ngay dưới đây." if hlv else " HLV sẽ cập nhật giúp bạn."))
-    if hlv or not hs.get("_khoa"):
-        with st.expander("⚙️ Thông số tính thực đơn" if hlv else "⚙️ Sở thích ăn uống", expanded=hlv and not hs.get("_khoa")):
+    if hlv:
+        with st.expander("⚙️ Thông số tính thực đơn", expanded=not hs.get("_khoa")):
             form_dd(k, hs, vai, nguoi)
-    else:
+    elif q.get("so_thich_an"):
         with st.expander("⚙️ Sở thích ăn uống (số bữa, giờ tập, món không ăn)"):
             form_dd(k, hs, vai, nguoi)
     if not hs.get("cao") or not hs.get("kg"):
@@ -134,25 +221,35 @@ def dinh_duong(k: dict, vai: str, nguoi: str):
     kq = dd.tinh(h)
     F = dd.foods()
     bo = set(hs.get("bo_mon") or [])
-
-    ui.tiles([(f"{kq['tap']['kcal']:,}".replace(",", "."), "kcal ngày tập", f"Đ {kq['tap']['p']} · TB {kq['tap']['c']} · B {kq['tap']['f']} g"),
-              (f"{kq['nghi']['kcal']:,}".replace(",", "."), "kcal ngày nghỉ", f"Đ {kq['nghi']['p']} · TB {kq['nghi']['c']} · B {kq['nghi']['f']} g"),
-              (f"{kq['dam']} g", "đạm mỗi ngày", f"{kq['dam_g_kg']:g} g / kg cân"),
-              (f"{kq['nuoc_nghi']:g}–{kq['nuoc_tap']:g} L", "nước / ngày", "ngày nghỉ – ngày tập")])
-    if kq["kg_tuan"]:
-        dich = k.get("can_muc_tieu")
-        tt = dd.tuan_toi_dich(h, kq, float(dich)) if dich else None
-        ui.note(f"<b>Dự kiến:</b> {'giảm' if kq['kg_tuan'] < 0 else 'tăng'} khoảng <b>{abs(kq['kg_tuan']):g} kg / tuần</b>"
-                + (f" → tới mục tiêu {float(dich):g} kg sau khoảng <b>{tt:g} tuần</b>" if tt else "")
-                + ". Đây là ước tính; số thật theo dõi bằng cân trung bình 7 ngày.")
+    hom = db.now_vn().date()
+    tap_set = set(dd.ngay_tap_tuan(h))
+    so = hlv or q.get("chi_so_dd")
+    if so:
+        ui.tiles([(f"{kq['tap']['kcal']:,}".replace(",", "."), "kcal ngày tập", f"Đ {kq['tap']['p']} · TB {kq['tap']['c']} · B {kq['tap']['f']} g"),
+                  (f"{kq['nghi']['kcal']:,}".replace(",", "."), "kcal ngày nghỉ", f"Đ {kq['nghi']['p']} · TB {kq['nghi']['c']} · B {kq['nghi']['f']} g"),
+                  (f"{kq['dam']} g", "đạm mỗi ngày", f"{kq['dam_g_kg']:g} g / kg cân · mức {dd.MUC_DAM.get(h.muc_dam, dd.MUC_DAM['cao'])['ten'].lower()}"),
+                  (f"{kq['nuoc_nghi']:g}–{kq['nuoc_tap']:g} L", "nước / ngày", "ngày nghỉ – ngày tập")])
+        if kq["kg_tuan"]:
+            dich = k.get("can_muc_tieu")
+            tt_ = dd.tuan_toi_dich(h, kq, float(dich)) if dich else None
+            ui.note(f"<b>Dự kiến:</b> {'giảm' if kq['kg_tuan'] < 0 else 'tăng'} khoảng <b>{abs(kq['kg_tuan']):g} kg / tuần</b>"
+                    + (f" → tới mục tiêu {float(dich):g} kg sau khoảng <b>{tt_:g} tuần</b>" if tt_ else "")
+                    + ". Đây là ước tính; số thật theo dõi bằng cân trung bình 7 ngày.")
     if hlv:
         for g in kq["ghi"]:
             st.caption(f"⚠️ {g}")
 
-    t1, t2, t3, t4, t5 = st.tabs(["🍽 Thực đơn hôm nay", "📅 Thực đơn 7 ngày", "🔁 Đổi món tương đương", "🛒 Đi chợ tuần", "🧮 Cách tính"])
-    hom = db.now_vn().date()
-    tap_set = set(dd.ngay_tap_tuan(h))
-    with t1:
+    tabs = [("hom", "🍽 Thực đơn hôm nay"), ("tuan", "📅 7 ngày")]
+    if hlv or q.get("bo_sung"):
+        tabs.append(("bs", "💊 Bổ sung"))
+    if hlv or q.get("doi_mon"):
+        tabs.append(("qd", "🔁 Món tương đương"))
+    if hlv or q.get("di_cho"):
+        tabs.append(("cho", "🛒 Đi chợ"))
+    if so:
+        tabs.append(("ct", "🧮 Cách tính"))
+    T = dict(zip([x for x, _ in tabs], st.tabs([y for _, y in tabs])))
+    with T["hom"]:
         a, b = st.columns([2, 1])
         thu = a.segmented_control("Ngày", list(range(7)), default=hom.weekday(), format_func=lambda i: store.THU[i].replace("Thứ ", "T"),
                                   key=f"dd_thu_{k['ma']}_{vai}")
@@ -162,91 +259,88 @@ def dinh_duong(k: dict, vai: str, nguoi: str):
         ngay = dd.thuc_don_ngay(h, kq, la_tap, thu, k["ma"], doi.get(thu), bo)
         m = kq["tap"] if la_tap else kq["nghi"]
         tt = {x: sum(bb["thuc"][x] for bb in ngay) for x in ("kcal", "p", "c", "f", "xo")}
-        c1, c2 = st.columns([1.1, 1])
-        with c1:
-            fig = go.Figure(go.Pie(labels=["Đạm", "Tinh bột", "Béo"], values=[tt["p"] * 4, tt["c"] * 4, tt["f"] * 9], hole=.62,
-                                   marker=dict(colors=[ui.MACRO_MAU["p"], ui.MACRO_MAU["c"], ui.MACRO_MAU["f"]]), sort=False,
-                                   textinfo="percent", hovertemplate="%{label}: %{value:.0f} kcal<extra></extra>"))
-            fig.add_annotation(text=f"<b>{tt['kcal']:.0f}</b><br>kcal", showarrow=False, font=dict(size=18))
-            st.plotly_chart(ui.layout(fig, 250), use_container_width=True, config={"displayModeBar": False})
-        with c2:
-            st.dataframe(pd.DataFrame([
-                {"": "Năng lượng", "Mục tiêu": f"{m['kcal']} kcal", "Thực đơn": f"{tt['kcal']:.0f} kcal"},
-                {"": "Đạm", "Mục tiêu": f"{m['p']} g", "Thực đơn": f"{tt['p']:.0f} g"},
-                {"": "Tinh bột", "Mục tiêu": f"{m['c']} g", "Thực đơn": f"{tt['c']:.0f} g"},
-                {"": "Béo", "Mục tiêu": f"{m['f']} g", "Thực đơn": f"{tt['f']:.0f} g"},
-                {"": "Chất xơ", "Mục tiêu": f"≥ {m['xo']} g", "Thực đơn": f"{tt['xo']:.0f} g"}]), hide_index=True, use_container_width=True)
-            if tt["xo"] < m["xo"] * 0.8:
-                st.caption("Chất xơ còn thiếu — thêm rau, trái cây, đổi cơm trắng sang gạo lứt / khoai lang.")
-        st.markdown("".join(_bang_bua(bb, F) for bb in ngay), unsafe_allow_html=True)
-        with st.expander("🔁 Đổi món trong bữa (web tự tính lại số gram)"):
-            for bb in ngay:
-                cols = st.columns(4)
-                cols[0].markdown(f"**{bb['ten']}**")
-                cho = dict(doi.get(thu, {}).get(bb["bua"], {}))
-                for i, vt in enumerate(("dam", "tinh_bot", "beo")):
-                    ds = dd.lua_chon(bb["mau"], vt, F, h.che_do, bo)
-                    hien = bb["vai_tro"].get(vt)
-                    if not ds or hien not in ds:
-                        continue
-                    x = cols[i + 1].selectbox({"dam": "Đạm", "tinh_bot": "Tinh bột", "beo": "Béo"}[vt], ds, index=ds.index(hien),
-                                              format_func=lambda z: F[z]["ten"], key=f"dd_s_{k['ma']}_{vai}_{thu}_{bb['bua']}_{vt}")
-                    if x != hien:
-                        cho[vt] = x
-                        doi.setdefault(thu, {})[bb["bua"]] = cho
-                        st.rerun()
-            if doi.get(thu) and st.button("↩ Về thực đơn gợi ý", key=f"dd_reset_{k['ma']}_{vai}_{thu}"):
-                doi.pop(thu, None)
-                st.rerun()
-        ui.note("Gram là <b>khối lượng đã nấu chín</b> (cơm, thịt, cá) — riêng yến mạch, whey là khô. Nấu bằng ít dầu: "
-                "dầu trong thực đơn đã tính sẵn. Rau ăn thoải mái thêm nếu còn đói.")
+        st.markdown(_the_ngay(store.THU[thu] + (" · hôm nay" if thu == hom.weekday() else ""), la_tap, tt, m, dd.rau_qua(ngay)),
+                    unsafe_allow_html=True)
+        st.markdown('<div class="dd-tl">' + "".join(_bang_bua(bb, F) for bb in ngay) + "</div>", unsafe_allow_html=True)
+        if hlv or q.get("doi_mon"):
+            with st.expander("🔁 Đổi món trong bữa (web tự tính lại số gram)"):
+                for bb in ngay:
+                    cols = st.columns(4)
+                    cols[0].markdown(f"**{bb['ten']}**")
+                    cho = dict(doi.get(thu, {}).get(bb["bua"], {}))
+                    for i, vt in enumerate(("dam", "tinh_bot", "beo")):
+                        ds = dd.lua_chon(bb["mau"], vt, F, h.che_do, bo)
+                        hien = bb["vai_tro"].get(vt)
+                        if not ds or hien not in ds:
+                            continue
+                        x = cols[i + 1].selectbox({"dam": "Đạm", "tinh_bot": "Tinh bột", "beo": "Béo"}[vt], ds, index=ds.index(hien),
+                                                  format_func=lambda z: F[z]["ten"], key=f"dd_s_{k['ma']}_{vai}_{thu}_{bb['bua']}_{vt}")
+                        if x != hien:
+                            cho[vt] = x
+                            doi.setdefault(thu, {})[bb["bua"]] = cho
+                            st.rerun()
+                if doi.get(thu) and st.button("↩ Về thực đơn gợi ý", key=f"dd_reset_{k['ma']}_{vai}_{thu}"):
+                    doi.pop(thu, None)
+                    st.rerun()
+        ui.note("Gram là <b>khối lượng đã nấu chín</b> (cơm, thịt, cá) — riêng yến mạch, whey là khô. Dầu trong thực đơn đã tính sẵn — "
+                "nấu luộc, hấp, áp chảo ít dầu. Rau ăn thoải mái thêm nếu còn đói. Uống đủ nước "
+                f"<b>{kq['nuoc_nghi']:g}–{kq['nuoc_tap']:g} lít</b> mỗi ngày.")
 
-    with t2:
+    with T["tuan"]:
         tuan = dd.thuc_don_tuan(h, kq, k["ma"], bo)
-        st.dataframe(pd.DataFrame([{"Ngày": store.THU[d["thu"]], "Loại": "🏋️ Tập" if d["tap"] else "😌 Nghỉ",
-                                    "kcal": round(sum(b["thuc"]["kcal"] for b in d["bua"])),
-                                    "Đạm (g)": round(sum(b["thuc"]["p"] for b in d["bua"])),
-                                    "Tinh bột (g)": round(sum(b["thuc"]["c"] for b in d["bua"])),
-                                    "Béo (g)": round(sum(b["thuc"]["f"] for b in d["bua"]))} for d in tuan]),
-                     hide_index=True, use_container_width=True)
+        st.markdown('<div class="dd-week">' + "".join(
+            f'<div class="dd-wd{" t" if d["tap"] else ""}"><small>{store.THU[d["thu"]].replace("Thứ ", "T").upper()}</small>'
+            f'<b>{sum(b_["thuc"]["kcal"] for b_ in d["bua"]):,.0f}</b><i>kcal · {"tập" if d["tap"] else "nghỉ"}</i>'
+            f'<i><br>Đ {sum(b_["thuc"]["p"] for b_ in d["bua"]):.0f} g</i></div>'.replace(",", ".") for d in tuan) + "</div>",
+            unsafe_allow_html=True)
         for d in tuan:
             with st.expander(f"{store.THU[d['thu']]} · {'ngày tập' if d['tap'] else 'ngày nghỉ'}"):
-                st.markdown("".join(_bang_bua(bb, F) for bb in d["bua"]), unsafe_allow_html=True)
+                st.markdown('<div class="dd-tl">' + "".join(_bang_bua(bb, F) for bb in d["bua"]) + "</div>", unsafe_allow_html=True)
 
-    with t3:
-        st.caption("Ăn ngoài, hết món? Đổi sang món khác cùng nhóm với lượng tương đương dưới đây.")
-        a, b = st.columns(2)
-        with a:
-            st.markdown("**25 g đạm tương đương**")
-            st.dataframe(pd.DataFrame(dd.quy_doi({"dam"}, 25, "p", h.che_do), columns=["Món", "Gram", "Ước lượng"]),
+    if "bs" in T:
+        with T["bs"]:
+            ds = dd.bo_sung(h, hs.get("bo_sung"))
+            ui.note("<b>Không bắt buộc</b> — ăn đủ theo thực đơn là nền tảng. Đây là những món có bằng chứng tốt, phù hợp mục tiêu "
+                    f"<b>{E(dd.MUC_TIEU.get(h.muc_tieu, ''))}</b>. Đang dùng thuốc, có bệnh nền, mang thai → hỏi bác sĩ trước.")
+            st.markdown(_the_bo_sung(ds, h), unsafe_allow_html=True)
+            st.caption("Nguồn: các tuyên bố quan điểm của Hiệp hội Dinh dưỡng Thể thao Quốc tế (ISSN): đạm (Jäger et al., 2017), "
+                       "creatine (Kreider et al., 2017), caffeine (Guest et al., 2021). Chọn sản phẩm có kiểm định bên thứ ba.")
+
+    if "qd" in T:
+        with T["qd"]:
+            st.caption("Ăn ngoài, hết món? Đổi sang món khác cùng nhóm với lượng tương đương dưới đây.")
+            a, b = st.columns(2)
+            with a:
+                st.markdown("**25 g đạm tương đương**")
+                st.dataframe(pd.DataFrame(dd.quy_doi({"dam"}, 25, "p", h.che_do), columns=["Món", "Gram", "Ước lượng"]),
+                             hide_index=True, use_container_width=True)
+            with b:
+                st.markdown("**40 g tinh bột tương đương**")
+                st.dataframe(pd.DataFrame(dd.quy_doi({"tinh_bot", "trai_cay"}, 40, "c", h.che_do), columns=["Món", "Gram", "Ước lượng"]),
+                             hide_index=True, use_container_width=True)
+            st.markdown("**10 g béo tương đương**")
+            st.dataframe(pd.DataFrame(dd.quy_doi({"beo"}, 10, "f", h.che_do), columns=["Món", "Gram", "Ước lượng"]),
                          hide_index=True, use_container_width=True)
-        with b:
-            st.markdown("**40 g tinh bột tương đương**")
-            st.dataframe(pd.DataFrame(dd.quy_doi({"tinh_bot", "trai_cay"}, 40, "c", h.che_do), columns=["Món", "Gram", "Ước lượng"]),
+
+    if "cho" in T:
+        with T["cho"]:
+            ds = dd.di_cho(dd.thuc_don_tuan(h, kq, k["ma"], bo))
+            st.dataframe(pd.DataFrame([{"Món": t, "Cả tuần": f"{g / 1000:.2f} kg" if g >= 1000 else f"{g:.0f} g"} for t, g in ds]),
                          hide_index=True, use_container_width=True)
-        st.markdown("**10 g béo tương đương**")
-        st.dataframe(pd.DataFrame(dd.quy_doi({"beo"}, 10, "f", h.che_do), columns=["Món", "Gram", "Ước lượng"]),
-                     hide_index=True, use_container_width=True)
-        st.caption("Món đạm động vật kèm ít béo; đậu, hạt kèm thêm tinh bột / béo — nên đổi sang món gần nhóm nhất.")
+            st.caption("Khối lượng đã nấu chín (trừ đồ khô) — thịt cá sống thường nặng hơn khoảng 25–35 % (ước lượng, tuỳ món và cách nấu).")
 
-    with t4:
-        tuan = dd.thuc_don_tuan(h, kq, k["ma"], bo)
-        ds = dd.di_cho(tuan)
-        st.dataframe(pd.DataFrame([{"Món": t, "Cả tuần": f"{g / 1000:.2f} kg" if g >= 1000 else f"{g:.0f} g"} for t, g in ds]),
-                     hide_index=True, use_container_width=True)
-        st.caption("Khối lượng đã nấu chín (trừ đồ khô) — thịt cá sống thường nặng hơn khoảng 25–35 % (ước lượng, tuỳ món và cách nấu).")
-
-    with t5:
-        fig = go.Figure(go.Waterfall(
-            orientation="v", measure=["absolute", "relative", "relative", "relative", "total"],
-            x=["BMR (nền)", "Vận động ngoài giờ", "Buổi tập (ngày tập)", "Điều chỉnh mục tiêu", "Ngày tập"],
-            y=[kq["bmr"], kq["neat"] + kq["e_cardio"], kq["e_buoi"], kq["tap"]["kcal"] - kq["tdee_tap"], 0],
-            text=[f"{kq['bmr']}", f"+{kq['neat'] + kq['e_cardio']}", f"+{kq['e_buoi']}", f"{kq['tap']['kcal'] - kq['tdee_tap']:+}",
-                  f"{kq['tap']['kcal']}"], textposition="outside",
-            connector=dict(line=dict(color="#DDD4C0")), increasing=dict(marker=dict(color="#C8A24A")),
-            decreasing=dict(marker=dict(color="#B4442F")), totals=dict(marker=dict(color="#1C1B19"))))
-        st.plotly_chart(ui.layout(fig, 320, "kcal"), use_container_width=True, config={"displayModeBar": False})
-        st.markdown(f"""
+    if "ct" in T:
+        with T["ct"]:
+            fig = go.Figure(go.Waterfall(
+                orientation="v", measure=["absolute", "relative", "relative", "relative", "total"],
+                x=["BMR (nền)", "Vận động ngoài giờ", "Buổi tập (ngày tập)", "Điều chỉnh mục tiêu", "Ngày tập"],
+                y=[kq["bmr"], kq["neat"] + kq["e_cardio"], kq["e_buoi"], kq["tap"]["kcal"] - kq["tdee_tap"], 0],
+                text=[f"{kq['bmr']}", f"+{kq['neat'] + kq['e_cardio']}", f"+{kq['e_buoi']}", f"{kq['tap']['kcal'] - kq['tdee_tap']:+}",
+                      f"{kq['tap']['kcal']}"], textposition="outside",
+                connector=dict(line=dict(color="#DDD4C0")), increasing=dict(marker=dict(color="#C8A24A")),
+                decreasing=dict(marker=dict(color="#B4442F")), totals=dict(marker=dict(color="#1C1B19"))))
+            st.plotly_chart(ui.layout(fig, 320, "kcal"), use_container_width=True, config={"displayModeBar": False})
+            st.markdown(f"""
 | Bước | Cách tính | Kết quả |
 |---|---|---|
 | Năng lượng nền (BMR) | Mifflin-St Jeor (1990){' · Katch-McArdle theo khối nạc ' + str(kq['lbm']) + ' kg (dùng số này)' if kq['bmr_k'] else ''} | {kq['bmr_m']} kcal{f" · {kq['bmr_k']} kcal" if kq['bmr_k'] else ''} |
@@ -259,12 +353,13 @@ def dinh_duong(k: dict, vai: str, nguoi: str):
 | Béo | 25–28 % năng lượng, ≥ 0,6 g/kg (AMDR 20–35 %, IOM 2005) | ngày tập {kq['tap']['f']} g |
 | Tinh bột | phần năng lượng còn lại | {kq['tap']['c']} g tập · {kq['nghi']['c']} g nghỉ |
 | Chất xơ | 14 g / 1.000 kcal (IOM 2005) | ≥ {kq['tap']['xo']} g |
+| Rau + trái cây | ≥ 400 g / ngày (WHO) — mỗi ngày đổi loại trái cây | ≥ 400 g |
 | Nước | 35 ml / kg + 0,5 L mỗi giờ tập (ước lượng) | {kq['nuoc_nghi']:g}–{kq['nuoc_tap']:g} L |
 """)
-        ui.note("Mọi công thức trên cho ra <b>ước tính ban đầu</b>, sai số thường vài trăm kcal mỗi ngày. Cách chỉnh: theo dõi "
-                "<b>cân trung bình 7 ngày</b> trong 2–3 tuần — nếu không đổi theo hướng mong muốn thì HLV chỉnh ±100–200 kcal. "
-                "Bảng thực phẩm lấy theo USDA FoodData Central (món Việt dùng loại gần nhất), sai số ±10–15 %. "
-                "Người có bệnh nền (tiểu đường, thận, tim mạch…) hoặc đang mang thai cần bác sĩ / chuyên gia dinh dưỡng duyệt.")
+            ui.note("Mọi công thức trên cho ra <b>ước tính ban đầu</b>, sai số thường vài trăm kcal mỗi ngày. Cách chỉnh: theo dõi "
+                    "<b>cân trung bình 7 ngày</b> trong 2–3 tuần — nếu không đổi theo hướng mong muốn thì HLV chỉnh ±100–200 kcal. "
+                    "Bảng thực phẩm lấy theo USDA FoodData Central (món Việt dùng loại gần nhất), sai số ±10–15 %. "
+                    "Người có bệnh nền (tiểu đường, thận, tim mạch…) hoặc đang mang thai cần bác sĩ / chuyên gia dinh dưỡng duyệt.")
 
 
 # =================================================================== GIÁO ÁN
@@ -520,46 +615,62 @@ def so_ta(k: dict, L: list[dict]):
     st.caption("1RM ước tính theo công thức Epley (kg × (1 + lần / 30)) — để so tiến bộ của chính bạn, không phải để thử tạ tối đa.")
 
 
-def tap_luyen(k: dict, vai: str, nguoi: str):
+def tap_luyen(k: dict, vai: str, nguoi: str, q: dict | None = None):
     ma = k["ma"]
+    q = {x: True for x in store.QUYEN} if vai == "hlv" else (q or store.quyen(k))
     from core import ga_atlas
     G = [({**ga_atlas.to_simple(g, db.now_vn().date()), "_khoa": g["_khoa"]} if g.get("loai_ga") == "atlas" else g)
          for g in ga.plans(ma)]
+    if not q["tu_tao_plan"]:
+        G = [g for g in G if g.get("tac_gia") != "khach"]
+    if not q["giao_an"]:
+        G = [g for g in G if g.get("tac_gia") == "khach"]
     L = ga.logs(ma)
-    t1, t2, t3, t4 = st.tabs(["📋 Giáo án", "✍️ Ghi buổi tập", "🏋️ Số tạ & kỷ lục", "🗓 Lịch sử"])
-    with t1:
-        sua = S.get(f"ga_sua_{ma}", False)
-        lua = [g["_khoa"] for g in G]
-        a, b, c = st.columns([3, 1, 1], vertical_alignment="bottom")
-        if G:
-            mac = S.get(f"ga_chon_{ma}") if S.get(f"ga_chon_{ma}") in lua else lua[0]
-            gid = a.selectbox("Giáo án", lua, index=lua.index(mac), key=f"ga_sel_{ma}_{vai}",
-                              format_func=lambda x: next((f"{'⭐ ' if g.get('dang_dung') else ''}{g.get('ten')} · "
-                                                          f"{'HLV soạn' if g.get('tac_gia') == 'hlv' else 'tự tạo'}" for g in G if g['_khoa'] == x), x))
-            S[f"ga_chon_{ma}"] = gid
-            g = next(x for x in G if x["_khoa"] == gid)
-        else:
-            g = None
-            a.caption("Chưa có giáo án." + ("" if vai == "hlv" else " Chờ HLV soạn, hoặc tự tạo plan của bạn."))
-        duoc_sua = g is not None and g.get("loai_ga") != "atlas" and (vai == "hlv" or g.get("tac_gia") == "khach")
-        if duoc_sua and b.button("✏️ Sửa" if not sua else "👁 Xem", key=f"ga_bsua_{ma}_{vai}", use_container_width=True):
-            S[f"ga_sua_{ma}"] = not sua
-            st.rerun()
-        if c.button("➕ Tạo mới" if vai == "hlv" else "➕ Tự tạo plan", key=f"ga_moi_{ma}_{vai}", use_container_width=True):
-            S[f"ga_sua_{ma}"] = "moi"
-            st.rerun()
-        if sua == "moi":
-            sua_giao_an(k, vai, nguoi, None)
-        elif sua and duoc_sua:
-            sua_giao_an(k, vai, nguoi, g)
-        elif g:
-            xem_giao_an(k, g, L)
-    with t2:
-        ghi_buoi(k, vai, nguoi, G, L)
-    with t3:
-        so_ta(k, L)
-    with t4:
-        lich_su(k, vai, nguoi, L)
+    tab = [x for x, on in (("ga", q["giao_an"] or q["tu_tao_plan"]), ("ghi", q["ghi_buoi"]), ("ta", q["so_ta"]), ("ls", q["ghi_buoi"])) if on]
+    if not tab:
+        st.info("Mục này HLV chưa mở cho bạn.")
+        return
+    ten = {"ga": "📋 Giáo án", "ghi": "✍️ Ghi buổi tập", "ta": "🏋️ Số tạ & kỷ lục", "ls": "🗓 Lịch sử"}
+    T = dict(zip(tab, st.tabs([ten[x] for x in tab])))
+    t1, t2, t3, t4 = (T.get(x) for x in ("ga", "ghi", "ta", "ls"))
+    if t1 is not None:
+        with t1:
+            sua = S.get(f"ga_sua_{ma}", False)
+            lua = [g["_khoa"] for g in G]
+            a, b, c = st.columns([3, 1, 1], vertical_alignment="bottom")
+            if G:
+                mac = S.get(f"ga_chon_{ma}") if S.get(f"ga_chon_{ma}") in lua else lua[0]
+                gid = a.selectbox("Giáo án", lua, index=lua.index(mac), key=f"ga_sel_{ma}_{vai}",
+                                  format_func=lambda x: next((f"{'⭐ ' if g.get('dang_dung') else ''}{g.get('ten')} · "
+                                                              f"{'HLV soạn' if g.get('tac_gia') == 'hlv' else 'tự tạo'}" for g in G if g['_khoa'] == x), x))
+                S[f"ga_chon_{ma}"] = gid
+                g = next(x for x in G if x["_khoa"] == gid)
+            else:
+                g = None
+                a.caption("Chưa có giáo án." + ("" if vai == "hlv" else " Chờ HLV soạn, hoặc tự tạo plan của bạn."))
+            duoc_sua = g is not None and g.get("loai_ga") != "atlas" and (vai == "hlv" or g.get("tac_gia") == "khach")
+            if duoc_sua and b.button("✏️ Sửa" if not sua else "👁 Xem", key=f"ga_bsua_{ma}_{vai}", use_container_width=True):
+                S[f"ga_sua_{ma}"] = not sua
+                st.rerun()
+            if (vai == "hlv" or q["tu_tao_plan"]) and c.button("➕ Tạo mới" if vai == "hlv" else "➕ Tự tạo plan", key=f"ga_moi_{ma}_{vai}",
+                                                           use_container_width=True):
+                S[f"ga_sua_{ma}"] = "moi"
+                st.rerun()
+            if sua == "moi":
+                sua_giao_an(k, vai, nguoi, None)
+            elif sua and duoc_sua:
+                sua_giao_an(k, vai, nguoi, g)
+            elif g:
+                xem_giao_an(k, g, L)
+    if t2 is not None:
+        with t2:
+            ghi_buoi(k, vai, nguoi, G, L)
+    if t3 is not None:
+        with t3:
+            so_ta(k, L)
+    if t4 is not None:
+        with t4:
+            lich_su(k, vai, nguoi, L)
 
 
 # =================================================================== CÂN HẰNG NGÀY

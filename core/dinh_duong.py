@@ -58,6 +58,16 @@ CHE_DO = {"thuong": "Ăn bình thường", "khong_bo": "Không ăn bò", "khong_
 CHAN_TAG = {"khong_bo": {"bo"}, "khong_hai_san": {"hai_san"}, "khong_sua": {"sua"}, "khong_hat": {"hat"},
             "chay_trung_sua": {"thit", "bo", "ca", "hai_san"}, "thuan_chay": {"thit", "bo", "ca", "hai_san", "trung", "sua"}}
 KCAL_KG = 7700
+# v1.2: khách tập tạ → mặc định "Cao". Morton 2018: lợi ích tăng cơ chững lại quanh 1,6 g/kg (cận trên ~2,2 g/kg);
+# đang thâm hụt cần cao hơn — Helms 2014: 2,3–3,1 g/kg khối nạc. "Rất cao" dùng khi giảm mỡ sâu / người tập lâu năm.
+MUC_DAM = {
+    "vua":     {"ten": "Vừa",     "kg": {"giam_mo": 1.8, "recomp": 1.8, "tang_co": 1.7, "giu": 1.6},
+                "lbm": {"giam_mo": 2.4, "recomp": 2.4, "tang_co": 2.2, "giu": 2.2}},
+    "cao":     {"ten": "Cao",     "kg": {"giam_mo": 2.2, "recomp": 2.2, "tang_co": 2.0, "giu": 1.9},
+                "lbm": {"giam_mo": 2.8, "recomp": 2.7, "tang_co": 2.5, "giu": 2.4}},
+    "rat_cao": {"ten": "Rất cao", "kg": {"giam_mo": 2.5, "recomp": 2.4, "tang_co": 2.2, "giu": 2.1},
+                "lbm": {"giam_mo": 3.1, "recomp": 3.0, "tang_co": 2.8, "giu": 2.6}},
+}
 
 
 def foods() -> dict[str, dict]:
@@ -92,6 +102,7 @@ class HoSo:
     che_do: list[str] = field(default_factory=lambda: ["thuong"])
     kcal_tay: int | None = None          # HLV ghi đè tổng kcal trung bình
     dam_g_kg: float | None = None        # HLV ghi đè đạm g/kg tham chiếu
+    muc_dam: str = "cao"                 # v1.2: vua · cao (mặc định — khách tập tạ) · rat_cao
     ngay_tap: list[int] | None = None    # thứ có tập (0 = Thứ 2) — lấy từ lịch cố định nếu có
 
     @staticmethod
@@ -167,13 +178,13 @@ def tinh(h: HoSo) -> dict:
         dam = h.dam_g_kg * can_tc
         cach_dam = f"{h.dam_g_kg:g} g/kg cân tham chiếu (HLV đặt)"
     elif lbm:
-        k_lbm = {"giam_mo": 2.6, "recomp": 2.5, "tang_co": 2.3, "giu": 2.2}.get(h.muc_tieu, 2.3)
+        k_lbm = MUC_DAM.get(h.muc_dam, MUC_DAM["cao"])["lbm"].get(h.muc_tieu, 2.7)
         dam = k_lbm * lbm
-        cach_dam = f"{k_lbm:g} g / kg khối nạc ({lbm:.1f} kg)"
+        cach_dam = f"{k_lbm:g} g / kg khối nạc ({lbm:.1f} kg) · mức đạm {MUC_DAM.get(h.muc_dam, MUC_DAM['cao'])['ten'].lower()}"
     else:
-        k = {"giam_mo": 2.0, "recomp": 2.0, "tang_co": 1.8, "giu": 1.6}.get(h.muc_tieu, 1.8)
+        k = MUC_DAM.get(h.muc_dam, MUC_DAM["cao"])["kg"].get(h.muc_tieu, 2.0)
         dam = k * can_tc
-        cach_dam = f"{k:g} g / kg cân tham chiếu ({can_tc:.1f} kg)"
+        cach_dam = f"{k:g} g / kg cân tham chiếu ({can_tc:.1f} kg) · mức đạm {MUC_DAM.get(h.muc_dam, MUC_DAM['cao'])['ten'].lower()}"
 
     def _macro(kcal: float) -> dict:
         pct_beo = 0.25 if h.muc_tieu == "giam_mo" else 0.28
@@ -255,17 +266,17 @@ MAU_BUA = {
               "kem": [("trai_cay", 100)]},
     "trua":  {"dam": ["uc_ga", "than_heo", "bo_nac", "ca_ro_phi", "tom", "dui_ga", "ca_hoi", "dau_phu", "trung", "dau_lang"],
               "tinh_bot": ["com", "com_gao_lut", "bun", "khoai_lang", "mi_y", "khoai_tay"], "beo": ["dau_an", "qua_bo"],
-              "kem": [("rau", 150)]},
+              "kem": [("rau", 150), ("trai_cay", 120)]},
     "toi":   {"dam": ["ca_ro_phi", "uc_ga", "bo_nac", "tom", "than_heo", "ca_hoi", "dui_ga", "dau_phu", "trung", "edamame"],
               "tinh_bot": ["com", "khoai_lang", "com_gao_lut", "bun", "khoai_tay", "bap"], "beo": ["dau_an", "qua_bo"],
               "kem": [("rau", 200)]},
     "phu":   {"dam": ["sua_chua_hy_lap", "whey", "trung", "ca_ngu_hop", "edamame", "sua_dau_nanh"],
               "tinh_bot": ["chuoi", "tao", "khoai_lang", "cam", "du_du", "yen_mach"], "beo": ["hanh_nhan", "hat_dieu", "dau_phong", "qua_bo"],
-              "kem": []},
+              "kem": [("trai_cay", 120)]},
     "truoc": {"dam": ["sua_chua_hy_lap", "whey", "long_trang", "sua_dau_nanh", "edamame"],
-              "tinh_bot": ["chuoi", "banh_mi", "khoai_lang", "yen_mach", "com"], "beo": [], "kem": []},
+              "tinh_bot": ["chuoi", "banh_mi", "khoai_lang", "yen_mach", "com"], "beo": [], "kem": []},   # trước tập: nhẹ bụng
     "sau":   {"dam": ["whey", "sua_chua_hy_lap", "sua_dau_nanh", "edamame"],
-              "tinh_bot": ["chuoi", "banh_mi", "khoai_lang", "yen_mach"], "beo": [], "kem": []},
+              "tinh_bot": ["chuoi", "banh_mi", "khoai_lang", "yen_mach"], "beo": [], "kem": [("trai_cay", 100)]},
 }
 GIOI_HAN = {"whey": 45, "trung": 200, "long_trang": 264, "dau_an": 15, "bo_dau_phong": 32, "dau_phong": 40, "hanh_nhan": 40,
             "hat_dieu": 40, "qua_bo": 120, "sua_dau_nanh": 500, "sua_tuoi": 400, "sua_tach_beo": 400, "edamame": 250, "dau_lang": 300, "yen_mach": 100, "banh_mi": 150, "com": 400, "com_gao_lut": 400, "bun": 400,
@@ -341,7 +352,8 @@ def tong(mon: dict[str, float], F: dict) -> dict:
     return t
 
 
-def bua_an(b: dict, F: dict, che_do: list[str], seed: int, chon: dict | None = None, bo: set[str] | None = None) -> dict:
+def bua_an(b: dict, F: dict, che_do: list[str], seed: int, chon: dict | None = None, bo: set[str] | None = None,
+           tranh_kem: set[str] | None = None) -> dict:
     """1 bữa: chọn món theo mẫu (xoay vòng theo seed, hoặc theo `chon` người dùng đổi) rồi tính gram."""
     bo = bo or set()
     mau = _mau(b)
@@ -355,10 +367,13 @@ def bua_an(b: dict, F: dict, che_do: list[str], seed: int, chon: dict | None = N
         if x not in mon:
             mon.append(x)
     for nhom, g in MAU_BUA[mau]["kem"]:
-        ds = [k for k, v in F.items() if v.get("nhom") == nhom and duoc_an(v, che_do) and k not in bo]
+        ds = [k for k, v in F.items() if v.get("nhom") == nhom and duoc_an(v, che_do) and k not in bo and k not in mon
+              and k not in (tranh_kem or set())] or \
+             [k for k, v in F.items() if v.get("nhom") == nhom and duoc_an(v, che_do) and k not in bo and k not in mon]
         if ds:
             x = chon.get(nhom) if chon.get(nhom) in ds else ds[(seed >> 17) % len(ds)]
-            kem[x] = float(g)
+            dv = F[x].get("don_vi")
+            kem[x] = float(dv["g"]) if dv and nhom == "trai_cay" and abs(dv["g"] - g) <= 40 else float(g)
     t_kem = tong(kem, F)
     muc = {k: b[k] - t_kem[k] for k in ("p", "c", "f")}
     du_phong = {vt: [x for x in lua_chon(mau, vt, F, che_do, bo) if x not in mon] for vt in ("dam", "tinh_bot", "beo")}
@@ -393,8 +408,11 @@ def thuc_don_ngay(h: HoSo, kq: dict, ngay_tap: bool, thu: int, ma: str = "", cho
     F = foods()
     m = kq["tap"] if ngay_tap else kq["nghi"]
     out = []
+    da_an: set[str] = set()                               # trái cây / rau không lặp trong ngày
     for b in phan_bua(h, m, ngay_tap):
-        out.append(bua_an(b, F, h.che_do, _seed(ma, thu, b["bua"]), (chon or {}).get(b["bua"]), bo))
+        x = bua_an(b, F, h.che_do, _seed(ma, thu, b["bua"]), (chon or {}).get(b["bua"]), bo, da_an)
+        da_an |= set(x["kem"])
+        out.append(x)
     _can_ngay(out, m, F)
     return out
 
@@ -461,3 +479,48 @@ def quy_doi(nhom: str, gram_macro: float, macro: str, che_do: list[str]) -> list
             g = gram_macro / v[macro] * 100
             out.append((v["ten"], round(g / 5) * 5, mo_ta_luong(k, g, F)))
     return sorted(out, key=lambda x: x[1])
+
+
+# ------------------------------------------------------------------ v1.2: thực phẩm bổ sung (KHÔNG bắt buộc — khuyến nghị)
+BO_SUNG = {
+    "whey": {"ten": "Whey protein", "icon": "🥛", "lieu": "1 muỗng (~25 g đạm) khi khó ăn đủ đạm — thường sau tập hoặc bữa phụ",
+             "vi_sao": "Tiện để đạt đủ đạm mục tiêu; không hơn thịt cá về tác dụng, chỉ là tiện.",
+             "luu_y": "Không dung nạp lactose → chọn whey isolate hoặc đạm thực vật.", "muc_tieu": {"giam_mo", "recomp", "tang_co", "giu"},
+             "bang_chung": "Mạnh (ISSN 2017 về đạm — Jäger et al.)"},
+    "creatine": {"ten": "Creatine monohydrate", "icon": "⚡", "lieu": "3–5 g mỗi ngày, uống lúc nào cũng được, không cần nạp liều",
+                 "vi_sao": "Tăng sức mạnh, khối lượng tập và khối cơ khi tập tạ; giữ cơ khi giảm mỡ.",
+                 "luu_y": "Cân có thể tăng 0,5–1,5 kg nước trong 2–4 tuần đầu (không phải mỡ). Bệnh thận → hỏi bác sĩ.",
+                 "muc_tieu": {"tang_co", "recomp", "giam_mo", "giu"}, "bang_chung": "Mạnh (ISSN 2017 về creatine — Kreider et al.)"},
+    "caffeine": {"ten": "Caffeine (cà phê đen / viên)", "icon": "☕", "lieu": "3–6 mg/kg, 30–60 phút trước tập (≈ 1–2 ly cà phê đen)",
+                 "vi_sao": "Tăng sức tập, giảm cảm giác mệt.",
+                 "luu_y": "Không dùng sau 15h nếu khó ngủ; huyết áp cao, tim mạch, mang thai → hỏi bác sĩ.",
+                 "muc_tieu": {"giam_mo", "recomp", "tang_co"}, "bang_chung": "Mạnh (ISSN 2021 về caffeine — Guest et al.)"},
+    "omega3": {"ten": "Omega-3 (dầu cá EPA + DHA)", "icon": "🐟", "lieu": "≈ 1–2 g EPA + DHA mỗi ngày khi ăn ít cá béo (< 2 bữa/tuần)",
+               "vi_sao": "Sức khoẻ tim mạch chung; ăn đủ cá béo thì không cần.",
+               "luu_y": "Đang dùng thuốc chống đông → hỏi bác sĩ.", "muc_tieu": {"giam_mo", "recomp", "tang_co", "giu"},
+               "bang_chung": "Vừa — lợi ích chủ yếu cho sức khoẻ chung, không trực tiếp cho tăng cơ / giảm mỡ"},
+    "vitamin_d": {"ten": "Vitamin D3", "icon": "☀️", "lieu": "Theo xét nghiệm / bác sĩ — thường 1.000–2.000 IU/ngày khi thiếu",
+                  "vi_sao": "Người ít ra nắng, làm văn phòng dễ thiếu.", "luu_y": "Nên xét nghiệm trước; không tự uống liều cao kéo dài.",
+                  "muc_tieu": {"giam_mo", "recomp", "tang_co", "giu"}, "bang_chung": "Chỉ có lợi khi đang thiếu"},
+    "xo": {"ten": "Chất xơ hoà tan (psyllium)", "icon": "🌾", "lieu": "5 g pha nước trước bữa chính, uống thêm nước",
+           "vi_sao": "No lâu hơn, hỗ trợ tiêu hoá khi ăn ít rau.", "luu_y": "Tăng dần liều để tránh đầy hơi.",
+           "muc_tieu": {"giam_mo"}, "bang_chung": "Vừa"},
+    "dien_giai": {"ten": "Điện giải (muối, kali)", "icon": "💧", "lieu": "Trong ngày tập ra nhiều mồ hôi / tập > 60 phút ngoài trời nóng",
+                  "vi_sao": "Bù muối khoáng mất qua mồ hôi, đỡ chuột rút, mệt.", "luu_y": "Huyết áp cao → hỏi bác sĩ, chọn loại ít natri.",
+                  "muc_tieu": {"giam_mo", "recomp", "tang_co", "giu"}, "bang_chung": "Tuỳ tình huống"},
+}
+GOI_Y_BO_SUNG = {"giam_mo": ["whey", "creatine", "caffeine", "xo"], "recomp": ["whey", "creatine", "caffeine"],
+                 "tang_co": ["creatine", "whey"], "giu": ["whey", "omega3"]}
+
+
+def bo_sung(h: HoSo, chon: list[str] | None = None) -> list[dict]:
+    """Danh sách bổ sung HLV đã chọn cho khách (để trống → gợi ý mặc định theo mục tiêu); bỏ món xung đột chế độ ăn."""
+    ids = chon if chon else GOI_Y_BO_SUNG.get(h.muc_tieu, ["whey", "creatine"])
+    if "khong_sua" in (h.che_do or []) or "thuan_chay" in (h.che_do or []):
+        ids = [i for i in ids if i != "whey"]
+    return [{"id": i, **BO_SUNG[i]} for i in ids if i in BO_SUNG]
+
+
+def rau_qua(ngay: list[dict]) -> float:
+    F = foods()
+    return sum(g for b in ngay for m, g in b["mon"].items() if F[m]["nhom"] in ("rau", "trai_cay"))

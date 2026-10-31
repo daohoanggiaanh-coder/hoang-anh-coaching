@@ -234,3 +234,23 @@ def test_goi_theo_thoi_gian():
     assert store.han_goi(t) == date(2026, 2, 28)
     assert store.save_goi_list([{"ten": "Online 1 tháng", "loai": "thang", "so": 1, "gia": 2500000}], "HLV")
     assert store.goi_list()[0]["gia"] == 2500000
+
+
+def test_quyen_mac_dinh_va_tat():
+    from core import store
+    q = store.quyen({})
+    assert all(q.values()) and set(q) == set(store.QUYEN)
+    q2 = store.quyen({"quyen": '{"thuc_don": false, "can": false, "so_do": false}'})
+    tr = store.trang_khach(q2)
+    assert not q2["thuc_don"] and tr == {"tap": True, "an": False, "tien_do": False}
+
+
+def test_dam_cao_va_trai_cay():
+    from core import dinh_duong as dd
+    h = dd.HoSo.tu_dict({"gioi_tinh": "Nữ", "tuoi": 35, "cao": 158, "kg": 58, "pbf": 34, "muc_tieu": "giam_mo", "so_bua": 4})
+    kq = dd.tinh(h)
+    assert kq["dam_g_kg"] >= 1.6
+    ngay = dd.thuc_don_ngay(h, kq, True, 0, "R9", None, set())
+    F = dd.foods()
+    assert any(F[m]["nhom"] == "trai_cay" for b in ngay for m in b["mon"])
+    assert dd.bo_sung(h) and all("bang_chung" in x for x in dd.bo_sung(h))

@@ -798,3 +798,61 @@ def nhap_atlas():
         st.success("Đã chuyển: " + " · ".join(f"{k} {v}" for k, v in dem.items()))
     ui.note("Chuyển xong, kiểm tra lại từng khách ở trang Khách & tài khoản. Khi mọi thứ đúng, anh báo Claude gỡ mục Khách riêng "
             "khỏi web Atlas và xoá các dòng rieng_* trong sheet TuongTac của Atlas.")
+
+
+# =================================================================== v1.3 KHÁCH THẤY GÌ — bật / tắt mục + xem như khách
+def khach_thay():
+    u = _user()
+    DS = store.clients(ca_ngung=False)
+    ui.hero("CỔNG KHÁCH", "Khách thấy gì?", "Bật / tắt từng mục cho từng khách, rồi xem đúng màn hình khách đang thấy.")
+    k = _chon_khach(DS, "kt")
+    if not k:
+        return
+    acc = auth.account_of(k["ma"])
+    if not acc:
+        ui.note("⚠️ <b>Khách này chưa có tài khoản</b> nên chưa đăng nhập được. Cấp ở trang <b>👤 Khách & tài khoản › 🔐 Tài khoản "
+                "cổng khách</b> — web tạo mật khẩu và soạn sẵn tin Zalo gửi khách.")
+    else:
+        st.caption(f"Tài khoản: **{acc['_khoa']}** · " + ("🔒 đang khoá" if acc.get("khoa") else "✅ đang hoạt động"))
+    q = store.quyen(k)
+    a, b = st.columns([1, 1.6], gap="large")
+    with a:
+        ui.sec("Mục khách được thấy / dùng")
+        with st.form(f"q_{k['ma']}"):
+            moi, nhom = {}, None
+            for x, (n, ten, mo) in store.QUYEN.items():
+                if n != nhom:
+                    st.markdown(f"**{n}**")
+                    nhom = n
+                moi[x] = st.toggle(ten, value=q[x], help=mo, key=f"q_{k['ma']}_{x}")
+            c1, c2 = st.columns(2)
+            luu = c1.form_submit_button("💾 Lưu", type="primary", use_container_width=True)
+            if c2.form_submit_button("Bật hết", use_container_width=True):
+                moi, luu = {x: True for x in store.QUYEN}, True
+            if luu:
+                if store.save_client({**k, "quyen": moi}, u["name"]):
+                    st.toast("Đã lưu — khách thấy ngay lần mở / tải lại trang tới")
+                    st.rerun()
+                st.error("Chưa lưu được — thử lại.")
+        tr = store.trang_khach(q)
+        st.caption("Menu khách hiện: 🏠 Tổng quan" + (" · 🏋️ Tập luyện" if tr["tap"] else "") + (" · 🍽 Thực đơn" if tr["an"] else "")
+                   + (" · 📈 Cân & số đo" if tr["tien_do"] else "") + " · 🔐 Tài khoản. Khách **không bao giờ** thấy: ghi chú nội bộ, "
+                   "lộ trình & tốc độ 🔒, giá gói, khách khác, trang HLV.")
+    with b:
+        ui.sec("Xem như khách")
+        from views import client as KV
+        tr = store.trang_khach(q)
+        ds = [("tong", "🏠 Tổng quan", KV.trang_chu)] + [x for x, on in (
+            (("tap", "🏋️ Tập luyện", KV.tap), tr["tap"]), (("an", "🍽 Thực đơn", KV.an), tr["an"]),
+            (("td", "📈 Cân & số đo", KV.tien_do), tr["tien_do"])) if on]
+        chon = st.segmented_control("Trang", [x[0] for x in ds], default="tong", key=f"kt_tr_{k['ma']}",
+                                    format_func=lambda i: next(t for x, t, _ in ds if x == i)) or "tong"
+        st.markdown('<div style="background:#FFF6DD;border:1px dashed #C8A24A;border-radius:12px;padding:6px 12px;font-size:.8rem;'
+                    'margin:4px 0 8px">👁 Bản xem trước — <b>đúng như khách thấy</b>. Bấm lưu / ghi ở đây là ghi dữ liệu thật của khách.</div>',
+                    unsafe_allow_html=True)
+        S["_xem_nhu"] = k["ma"]
+        try:
+            with st.container(border=True):
+                next(f for x, _, f in ds if x == chon)()
+        finally:
+            S.pop("_xem_nhu", None)

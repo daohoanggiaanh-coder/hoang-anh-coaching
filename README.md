@@ -20,10 +20,13 @@ Streamlit Community Cloud + Google Sheets / Drive đứng tên Gmail cá nhân.
 - 🏋️ **Giáo án & số tạ**: soạn giáo án nhiều buổi (hiệp, lần, kg, RPE, nghỉ, tempo, superset), tạo nhanh từ mẫu, ghi buổi, xem khách tự ghi.
 - 🍽 **Dinh dưỡng**: năng lượng ngày tập / ngày nghỉ, macro, nước, thực đơn hôm nay + 7 ngày theo lịch tập thật, đổi món tự tính lại gram,
   bảng đổi tương đương, danh sách đi chợ, mục **Cách tính** ghi rõ công thức và nguồn.
+  v1.3: thẻ bữa ăn cao cấp, **trái cây mỗi ngày** (rau + quả ≥ 400 g, đổi loại theo ngày), **mức đạm** (vừa / cao / rất cao — mặc định cao
+  cho khách tập tạ), mục **💊 Bổ sung** khuyến nghị theo mục tiêu (HLV chọn cho từng khách, có liều, lưu ý, mức bằng chứng).
+- 👁 **Khách thấy gì** (v1.3): bật / tắt 13 mục cổng khách cho từng khách + **xem trước đúng màn hình khách**.
 - 📈 **Tiến độ & báo cáo**: cân hằng ngày (TB 7 ngày), số đo theo đợt, ảnh 3 góc, báo cáo đầu khoá / tiến độ (tin Zalo + PDF).
 - ✉️ Soạn tin Zalo · 🥗 Bảng thực phẩm (sửa số theo nhãn) · 📥 Chuyển dữ liệu từ Atlas.
 
-**Cổng khách** (tài khoản do HLV cấp, mỗi khách chỉ thấy dữ liệu của mình)
+**Cổng khách** (tài khoản + mật khẩu do HLV cấp, mỗi khách chỉ thấy dữ liệu của mình và những mục HLV mở)
 - 🏠 Tổng quan: buổi đã tập / còn lại, lịch 2 tuần, cân, % tới mục tiêu, kỷ lục gần đây.
 - 🏋️ Tập luyện: xem giáo án, **ghi kg × lần từng hiệp** (điền sẵn gợi ý tăng tạ), **tự tạo plan** khi tập một mình, số tạ & kỷ lục, lịch sử.
 - 🍽 Thực đơn: như trang HLV nhưng khách chỉ chỉnh sở thích (số bữa, giờ tập, chế độ ăn, món không ăn).

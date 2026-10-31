@@ -1,55 +1,726 @@
 {
-  "_ghi_chu": "Giá trị / 100 g phần ăn được (thịt cá: đã nấu chín, bỏ da / xương; ngũ cốc: ghi rõ khô hay chín). Số liệu ƯỚC TÍNH theo USDA FoodData Central (bản SR Legacy / Foundation) — món Việt dùng loại gần nhất của USDA. Sai số thực tế ±10–15% tuỳ giống, cách nấu, nhãn hàng. HLV sửa được ở trang Dinh dưỡng › Bảng thực phẩm.",
-  "mon": {
-    "uc_ga":          {"ten": "Ức gà (chín, bỏ da)",          "nhom": "dam", "kcal": 165, "p": 31.0, "c": 0.0,  "f": 3.6,  "xo": 0.0, "tag": ["thit"]},
-    "dui_ga":         {"ten": "Đùi gà (chín, bỏ da)",          "nhom": "dam", "kcal": 209, "p": 26.0, "c": 0.0,  "f": 10.9, "xo": 0.0, "tag": ["thit"]},
-    "than_heo":       {"ten": "Thăn heo (chín)",               "nhom": "dam", "kcal": 143, "p": 26.2, "c": 0.0,  "f": 3.5,  "xo": 0.0, "tag": ["thit"]},
-    "bo_nac":         {"ten": "Thịt bò nạc (chín)",            "nhom": "dam", "kcal": 180, "p": 29.0, "c": 0.0,  "f": 7.0,  "xo": 0.0, "tag": ["thit", "bo"]},
-    "ca_ro_phi":      {"ten": "Cá rô phi / cá basa phi lê (chín)", "nhom": "dam", "kcal": 128, "p": 26.2, "c": 0.0, "f": 2.7, "xo": 0.0, "tag": ["ca"]},
-    "ca_hoi":         {"ten": "Cá hồi (chín)",                 "nhom": "dam", "kcal": 206, "p": 22.1, "c": 0.0,  "f": 12.4, "xo": 0.0, "tag": ["ca"]},
-    "ca_ngu_hop":     {"ten": "Cá ngừ hộp ngâm nước (ráo)",    "nhom": "dam", "kcal": 116, "p": 25.5, "c": 0.0,  "f": 0.8,  "xo": 0.0, "tag": ["ca"]},
-    "tom":            {"ten": "Tôm (luộc / hấp, bóc vỏ)",      "nhom": "dam", "kcal": 99,  "p": 24.0, "c": 0.2,  "f": 0.3,  "xo": 0.0, "tag": ["hai_san"]},
-    "trung":          {"ten": "Trứng gà (cả quả)",             "nhom": "dam", "kcal": 143, "p": 12.6, "c": 0.7,  "f": 9.5,  "xo": 0.0, "tag": ["trung"], "don_vi": {"ten": "quả", "g": 50}},
-    "long_trang":     {"ten": "Lòng trắng trứng",              "nhom": "dam", "kcal": 52,  "p": 10.9, "c": 0.7,  "f": 0.2,  "xo": 0.0, "tag": ["trung"], "don_vi": {"ten": "lòng trắng", "g": 33}},
-    "dau_phu":        {"ten": "Đậu phụ",                       "nhom": "dam", "kcal": 76,  "p": 8.1,  "c": 1.9,  "f": 4.8,  "xo": 0.3, "tag": []},
-    "sua_chua_hy_lap":{"ten": "Sữa chua Hy Lạp không đường (ít béo)", "nhom": "dam", "kcal": 59, "p": 10.2, "c": 3.6, "f": 0.4, "xo": 0.0, "tag": ["sua"]},
-    "whey":           {"ten": "Whey protein (bột)",            "nhom": "dam", "kcal": 400, "p": 80.0, "c": 10.0, "f": 5.0,  "xo": 0.0, "tag": ["sua"], "don_vi": {"ten": "muỗng", "g": 30}, "luu_y": "Mỗi hãng khác nhau — xem nhãn"},
-    "dau_lang":       {"ten": "Đậu lăng (luộc)",               "nhom": "dam", "kcal": 116, "p": 9.0,  "c": 20.1, "f": 0.4,  "xo": 7.9, "tag": []},
-    "edamame":        {"ten": "Đậu nành Nhật / edamame (luộc)", "nhom": "dam", "kcal": 121, "p": 11.9, "c": 8.9, "f": 5.2,  "xo": 5.2, "tag": []},
-    "sua_dau_nanh":   {"ten": "Sữa đậu nành không đường",      "nhom": "sua", "kcal": 33,  "p": 2.9,  "c": 1.7,  "f": 1.6,  "xo": 0.4, "tag": [], "don_vi": {"ten": "hộp 250 ml", "g": 250}},
-    "sua_tuoi":       {"ten": "Sữa tươi không đường",          "nhom": "sua", "kcal": 61,  "p": 3.2,  "c": 4.8,  "f": 3.3,  "xo": 0.0, "tag": ["sua"], "don_vi": {"ten": "hộp 180 ml", "g": 180}},
-    "sua_tach_beo":   {"ten": "Sữa tươi tách béo",             "nhom": "sua", "kcal": 34,  "p": 3.4,  "c": 5.0,  "f": 0.1,  "xo": 0.0, "tag": ["sua"], "don_vi": {"ten": "hộp 180 ml", "g": 180}},
-    "sua_chua_thuong":{"ten": "Sữa chua không đường",          "nhom": "sua", "kcal": 61,  "p": 3.5,  "c": 4.7,  "f": 3.3,  "xo": 0.0, "tag": ["sua"], "don_vi": {"ten": "hũ", "g": 100}},
-
-    "com":            {"ten": "Cơm trắng (chín)",              "nhom": "tinh_bot", "kcal": 130, "p": 2.7, "c": 28.2, "f": 0.3, "xo": 0.4, "tag": [], "don_vi": {"ten": "chén", "g": 150}},
-    "com_gao_lut":    {"ten": "Cơm gạo lứt (chín)",            "nhom": "tinh_bot", "kcal": 123, "p": 2.7, "c": 25.6, "f": 1.0, "xo": 1.6, "tag": [], "don_vi": {"ten": "chén", "g": 150}},
-    "bun":            {"ten": "Bún tươi",                      "nhom": "tinh_bot", "kcal": 108, "p": 1.8, "c": 24.0, "f": 0.2, "xo": 1.0, "tag": []},
-    "mi_y":           {"ten": "Mì Ý / nui (chín)",             "nhom": "tinh_bot", "kcal": 158, "p": 5.8, "c": 30.9, "f": 0.9, "xo": 1.8, "tag": []},
-    "khoai_lang":     {"ten": "Khoai lang (luộc)",             "nhom": "tinh_bot", "kcal": 76,  "p": 1.4, "c": 17.7, "f": 0.1, "xo": 2.5, "tag": []},
-    "khoai_tay":      {"ten": "Khoai tây (luộc)",              "nhom": "tinh_bot", "kcal": 87,  "p": 1.9, "c": 20.1, "f": 0.1, "xo": 1.8, "tag": []},
-    "yen_mach":       {"ten": "Yến mạch (khô)",                "nhom": "tinh_bot", "kcal": 389, "p": 16.9, "c": 66.3, "f": 6.9, "xo": 10.6, "tag": []},
-    "banh_mi":        {"ten": "Bánh mì trắng",                 "nhom": "tinh_bot", "kcal": 265, "p": 9.0, "c": 49.0, "f": 3.2, "xo": 2.7, "tag": []},
-    "bap":            {"ten": "Bắp ngọt (luộc)",               "nhom": "tinh_bot", "kcal": 96,  "p": 3.4, "c": 21.0, "f": 1.5, "xo": 2.4, "tag": []},
-
-    "chuoi":          {"ten": "Chuối",                         "nhom": "trai_cay", "kcal": 89,  "p": 1.1, "c": 22.8, "f": 0.3, "xo": 2.6, "tag": [], "don_vi": {"ten": "quả vừa", "g": 120}},
-    "tao":            {"ten": "Táo",                           "nhom": "trai_cay", "kcal": 52,  "p": 0.3, "c": 13.8, "f": 0.2, "xo": 2.4, "tag": []},
-    "cam":            {"ten": "Cam",                           "nhom": "trai_cay", "kcal": 47,  "p": 0.9, "c": 11.8, "f": 0.1, "xo": 2.4, "tag": []},
-    "du_du":          {"ten": "Đu đủ chín",                    "nhom": "trai_cay", "kcal": 43,  "p": 0.5, "c": 10.8, "f": 0.3, "xo": 1.7, "tag": []},
-    "oi":             {"ten": "Ổi",                            "nhom": "trai_cay", "kcal": 68,  "p": 2.6, "c": 14.3, "f": 1.0, "xo": 5.4, "tag": []},
-    "buoi":           {"ten": "Bưởi (múi)",                    "nhom": "trai_cay", "kcal": 38,  "p": 0.8, "c": 9.6,  "f": 0.0, "xo": 1.0, "tag": []},
-    "xoai":           {"ten": "Xoài chín",                     "nhom": "trai_cay", "kcal": 60,  "p": 0.8, "c": 15.0, "f": 0.4, "xo": 1.6, "tag": []},
-    "kiwi":           {"ten": "Kiwi",                          "nhom": "trai_cay", "kcal": 61,  "p": 1.1, "c": 14.7, "f": 0.5, "xo": 3.0, "tag": [], "don_vi": {"ten": "quả", "g": 75}},
-    "dua_hau":        {"ten": "Dưa hấu",                       "nhom": "trai_cay", "kcal": 30,  "p": 0.6, "c": 7.6,  "f": 0.2, "xo": 0.4, "tag": []},
-
-    "dau_an":         {"ten": "Dầu ô liu / dầu ăn",            "nhom": "beo", "kcal": 884, "p": 0.0, "c": 0.0,  "f": 100.0, "xo": 0.0, "tag": [], "don_vi": {"ten": "thìa cà phê", "g": 5}},
-    "bo_dau_phong":   {"ten": "Bơ đậu phộng",                  "nhom": "beo", "kcal": 588, "p": 25.0, "c": 20.0, "f": 50.0, "xo": 6.0, "tag": ["hat"], "don_vi": {"ten": "thìa canh", "g": 16}},
-    "dau_phong":      {"ten": "Đậu phộng rang (không muối)",   "nhom": "beo", "kcal": 585, "p": 23.7, "c": 21.5, "f": 49.7, "xo": 8.5, "tag": ["hat"]},
-    "hanh_nhan":      {"ten": "Hạnh nhân",                     "nhom": "beo", "kcal": 579, "p": 21.2, "c": 21.6, "f": 49.9, "xo": 12.5, "tag": ["hat"]},
-    "hat_dieu":       {"ten": "Hạt điều",                      "nhom": "beo", "kcal": 553, "p": 18.2, "c": 30.2, "f": 43.9, "xo": 3.3, "tag": ["hat"]},
-    "qua_bo":         {"ten": "Quả bơ",                        "nhom": "beo", "kcal": 160, "p": 2.0, "c": 8.5,  "f": 14.7, "xo": 6.7, "tag": []},
-
-    "bong_cai":       {"ten": "Bông cải xanh (luộc)",          "nhom": "rau", "kcal": 35,  "p": 2.4, "c": 7.2,  "f": 0.4, "xo": 3.3, "tag": []},
-    "cai_bo_xoi":     {"ten": "Cải bó xôi / rau cải xanh",     "nhom": "rau", "kcal": 23,  "p": 2.9, "c": 3.6,  "f": 0.4, "xo": 2.2, "tag": []},
-    "dua_leo_ca_chua":{"ten": "Dưa leo + cà chua (salad)",     "nhom": "rau", "kcal": 17,  "p": 0.8, "c": 3.7,  "f": 0.2, "xo": 0.9, "tag": []}
+ "_ghi_chu": "Giá trị / 100 g phần ăn được (thịt cá: đã nấu chín, bỏ da / xương; ngũ cốc: ghi rõ khô hay chín). Số liệu ƯỚC TÍNH theo USDA FoodData Central (bản SR Legacy / Foundation) — món Việt dùng loại gần nhất của USDA. Sai số thực tế ±10–15% tuỳ giống, cách nấu, nhãn hàng. HLV sửa được ở trang Dinh dưỡng › Bảng thực phẩm.",
+ "mon": {
+  "uc_ga": {
+   "ten": "Ức gà (chín, bỏ da)",
+   "nhom": "dam",
+   "kcal": 165,
+   "p": 31.0,
+   "c": 0.0,
+   "f": 3.6,
+   "xo": 0.0,
+   "tag": [
+    "thit"
+   ]
+  },
+  "dui_ga": {
+   "ten": "Đùi gà (chín, bỏ da)",
+   "nhom": "dam",
+   "kcal": 209,
+   "p": 26.0,
+   "c": 0.0,
+   "f": 10.9,
+   "xo": 0.0,
+   "tag": [
+    "thit"
+   ]
+  },
+  "than_heo": {
+   "ten": "Thăn heo (chín)",
+   "nhom": "dam",
+   "kcal": 143,
+   "p": 26.2,
+   "c": 0.0,
+   "f": 3.5,
+   "xo": 0.0,
+   "tag": [
+    "thit"
+   ]
+  },
+  "bo_nac": {
+   "ten": "Thịt bò nạc (chín)",
+   "nhom": "dam",
+   "kcal": 180,
+   "p": 29.0,
+   "c": 0.0,
+   "f": 7.0,
+   "xo": 0.0,
+   "tag": [
+    "thit",
+    "bo"
+   ]
+  },
+  "ca_ro_phi": {
+   "ten": "Cá rô phi / cá basa phi lê (chín)",
+   "nhom": "dam",
+   "kcal": 128,
+   "p": 26.2,
+   "c": 0.0,
+   "f": 2.7,
+   "xo": 0.0,
+   "tag": [
+    "ca"
+   ]
+  },
+  "ca_hoi": {
+   "ten": "Cá hồi (chín)",
+   "nhom": "dam",
+   "kcal": 206,
+   "p": 22.1,
+   "c": 0.0,
+   "f": 12.4,
+   "xo": 0.0,
+   "tag": [
+    "ca"
+   ]
+  },
+  "ca_ngu_hop": {
+   "ten": "Cá ngừ hộp ngâm nước (ráo)",
+   "nhom": "dam",
+   "kcal": 116,
+   "p": 25.5,
+   "c": 0.0,
+   "f": 0.8,
+   "xo": 0.0,
+   "tag": [
+    "ca"
+   ]
+  },
+  "tom": {
+   "ten": "Tôm (luộc / hấp, bóc vỏ)",
+   "nhom": "dam",
+   "kcal": 99,
+   "p": 24.0,
+   "c": 0.2,
+   "f": 0.3,
+   "xo": 0.0,
+   "tag": [
+    "hai_san"
+   ]
+  },
+  "trung": {
+   "ten": "Trứng gà (cả quả)",
+   "nhom": "dam",
+   "kcal": 143,
+   "p": 12.6,
+   "c": 0.7,
+   "f": 9.5,
+   "xo": 0.0,
+   "tag": [
+    "trung"
+   ],
+   "don_vi": {
+    "ten": "quả",
+    "g": 50
+   }
+  },
+  "long_trang": {
+   "ten": "Lòng trắng trứng",
+   "nhom": "dam",
+   "kcal": 52,
+   "p": 10.9,
+   "c": 0.7,
+   "f": 0.2,
+   "xo": 0.0,
+   "tag": [
+    "trung"
+   ],
+   "don_vi": {
+    "ten": "lòng trắng",
+    "g": 33
+   }
+  },
+  "dau_phu": {
+   "ten": "Đậu phụ",
+   "nhom": "dam",
+   "kcal": 76,
+   "p": 8.1,
+   "c": 1.9,
+   "f": 4.8,
+   "xo": 0.3,
+   "tag": []
+  },
+  "sua_chua_hy_lap": {
+   "ten": "Sữa chua Hy Lạp không đường (ít béo)",
+   "nhom": "dam",
+   "kcal": 59,
+   "p": 10.2,
+   "c": 3.6,
+   "f": 0.4,
+   "xo": 0.0,
+   "tag": [
+    "sua"
+   ]
+  },
+  "whey": {
+   "ten": "Whey protein (bột)",
+   "nhom": "dam",
+   "kcal": 400,
+   "p": 80.0,
+   "c": 10.0,
+   "f": 5.0,
+   "xo": 0.0,
+   "tag": [
+    "sua"
+   ],
+   "don_vi": {
+    "ten": "muỗng",
+    "g": 30
+   },
+   "luu_y": "Mỗi hãng khác nhau — xem nhãn"
+  },
+  "dau_lang": {
+   "ten": "Đậu lăng (luộc)",
+   "nhom": "dam",
+   "kcal": 116,
+   "p": 9.0,
+   "c": 20.1,
+   "f": 0.4,
+   "xo": 7.9,
+   "tag": []
+  },
+  "edamame": {
+   "ten": "Đậu nành Nhật / edamame (luộc)",
+   "nhom": "dam",
+   "kcal": 121,
+   "p": 11.9,
+   "c": 8.9,
+   "f": 5.2,
+   "xo": 5.2,
+   "tag": []
+  },
+  "sua_dau_nanh": {
+   "ten": "Sữa đậu nành không đường",
+   "nhom": "sua",
+   "kcal": 33,
+   "p": 2.9,
+   "c": 1.7,
+   "f": 1.6,
+   "xo": 0.4,
+   "tag": [],
+   "don_vi": {
+    "ten": "hộp 250 ml",
+    "g": 250
+   }
+  },
+  "sua_tuoi": {
+   "ten": "Sữa tươi không đường",
+   "nhom": "sua",
+   "kcal": 61,
+   "p": 3.2,
+   "c": 4.8,
+   "f": 3.3,
+   "xo": 0.0,
+   "tag": [
+    "sua"
+   ],
+   "don_vi": {
+    "ten": "hộp 180 ml",
+    "g": 180
+   }
+  },
+  "sua_tach_beo": {
+   "ten": "Sữa tươi tách béo",
+   "nhom": "sua",
+   "kcal": 34,
+   "p": 3.4,
+   "c": 5.0,
+   "f": 0.1,
+   "xo": 0.0,
+   "tag": [
+    "sua"
+   ],
+   "don_vi": {
+    "ten": "hộp 180 ml",
+    "g": 180
+   }
+  },
+  "sua_chua_thuong": {
+   "ten": "Sữa chua không đường",
+   "nhom": "sua",
+   "kcal": 61,
+   "p": 3.5,
+   "c": 4.7,
+   "f": 3.3,
+   "xo": 0.0,
+   "tag": [
+    "sua"
+   ],
+   "don_vi": {
+    "ten": "hũ",
+    "g": 100
+   }
+  },
+  "com": {
+   "ten": "Cơm trắng (chín)",
+   "nhom": "tinh_bot",
+   "kcal": 130,
+   "p": 2.7,
+   "c": 28.2,
+   "f": 0.3,
+   "xo": 0.4,
+   "tag": [],
+   "don_vi": {
+    "ten": "chén",
+    "g": 150
+   }
+  },
+  "com_gao_lut": {
+   "ten": "Cơm gạo lứt (chín)",
+   "nhom": "tinh_bot",
+   "kcal": 123,
+   "p": 2.7,
+   "c": 25.6,
+   "f": 1.0,
+   "xo": 1.6,
+   "tag": [],
+   "don_vi": {
+    "ten": "chén",
+    "g": 150
+   }
+  },
+  "bun": {
+   "ten": "Bún tươi",
+   "nhom": "tinh_bot",
+   "kcal": 108,
+   "p": 1.8,
+   "c": 24.0,
+   "f": 0.2,
+   "xo": 1.0,
+   "tag": []
+  },
+  "mi_y": {
+   "ten": "Mì Ý / nui (chín)",
+   "nhom": "tinh_bot",
+   "kcal": 158,
+   "p": 5.8,
+   "c": 30.9,
+   "f": 0.9,
+   "xo": 1.8,
+   "tag": []
+  },
+  "khoai_lang": {
+   "ten": "Khoai lang (luộc)",
+   "nhom": "tinh_bot",
+   "kcal": 76,
+   "p": 1.4,
+   "c": 17.7,
+   "f": 0.1,
+   "xo": 2.5,
+   "tag": []
+  },
+  "khoai_tay": {
+   "ten": "Khoai tây (luộc)",
+   "nhom": "tinh_bot",
+   "kcal": 87,
+   "p": 1.9,
+   "c": 20.1,
+   "f": 0.1,
+   "xo": 1.8,
+   "tag": []
+  },
+  "yen_mach": {
+   "ten": "Yến mạch (khô)",
+   "nhom": "tinh_bot",
+   "kcal": 389,
+   "p": 16.9,
+   "c": 66.3,
+   "f": 6.9,
+   "xo": 10.6,
+   "tag": []
+  },
+  "banh_mi": {
+   "ten": "Bánh mì trắng",
+   "nhom": "tinh_bot",
+   "kcal": 265,
+   "p": 9.0,
+   "c": 49.0,
+   "f": 3.2,
+   "xo": 2.7,
+   "tag": []
+  },
+  "bap": {
+   "ten": "Bắp ngọt (luộc)",
+   "nhom": "tinh_bot",
+   "kcal": 96,
+   "p": 3.4,
+   "c": 21.0,
+   "f": 1.5,
+   "xo": 2.4,
+   "tag": []
+  },
+  "chuoi": {
+   "ten": "Chuối",
+   "nhom": "trai_cay",
+   "kcal": 89,
+   "p": 1.1,
+   "c": 22.8,
+   "f": 0.3,
+   "xo": 2.6,
+   "tag": [],
+   "don_vi": {
+    "ten": "quả vừa",
+    "g": 120
+   }
+  },
+  "tao": {
+   "ten": "Táo",
+   "nhom": "trai_cay",
+   "kcal": 52,
+   "p": 0.3,
+   "c": 13.8,
+   "f": 0.2,
+   "xo": 2.4,
+   "tag": []
+  },
+  "cam": {
+   "ten": "Cam",
+   "nhom": "trai_cay",
+   "kcal": 47,
+   "p": 0.9,
+   "c": 11.8,
+   "f": 0.1,
+   "xo": 2.4,
+   "tag": []
+  },
+  "du_du": {
+   "ten": "Đu đủ chín",
+   "nhom": "trai_cay",
+   "kcal": 43,
+   "p": 0.5,
+   "c": 10.8,
+   "f": 0.3,
+   "xo": 1.7,
+   "tag": []
+  },
+  "oi": {
+   "ten": "Ổi",
+   "nhom": "trai_cay",
+   "kcal": 68,
+   "p": 2.6,
+   "c": 14.3,
+   "f": 1.0,
+   "xo": 5.4,
+   "tag": []
+  },
+  "buoi": {
+   "ten": "Bưởi (múi)",
+   "nhom": "trai_cay",
+   "kcal": 38,
+   "p": 0.8,
+   "c": 9.6,
+   "f": 0.0,
+   "xo": 1.0,
+   "tag": []
+  },
+  "xoai": {
+   "ten": "Xoài chín",
+   "nhom": "trai_cay",
+   "kcal": 60,
+   "p": 0.8,
+   "c": 15.0,
+   "f": 0.4,
+   "xo": 1.6,
+   "tag": []
+  },
+  "kiwi": {
+   "ten": "Kiwi",
+   "nhom": "trai_cay",
+   "kcal": 61,
+   "p": 1.1,
+   "c": 14.7,
+   "f": 0.5,
+   "xo": 3.0,
+   "tag": [],
+   "don_vi": {
+    "ten": "quả",
+    "g": 75
+   }
+  },
+  "dua_hau": {
+   "ten": "Dưa hấu",
+   "nhom": "trai_cay",
+   "kcal": 30,
+   "p": 0.6,
+   "c": 7.6,
+   "f": 0.2,
+   "xo": 0.4,
+   "tag": []
+  },
+  "dau_an": {
+   "ten": "Dầu ô liu / dầu ăn",
+   "nhom": "beo",
+   "kcal": 884,
+   "p": 0.0,
+   "c": 0.0,
+   "f": 100.0,
+   "xo": 0.0,
+   "tag": [],
+   "don_vi": {
+    "ten": "thìa cà phê",
+    "g": 5
+   }
+  },
+  "bo_dau_phong": {
+   "ten": "Bơ đậu phộng",
+   "nhom": "beo",
+   "kcal": 588,
+   "p": 25.0,
+   "c": 20.0,
+   "f": 50.0,
+   "xo": 6.0,
+   "tag": [
+    "hat"
+   ],
+   "don_vi": {
+    "ten": "thìa canh",
+    "g": 16
+   }
+  },
+  "dau_phong": {
+   "ten": "Đậu phộng rang (không muối)",
+   "nhom": "beo",
+   "kcal": 585,
+   "p": 23.7,
+   "c": 21.5,
+   "f": 49.7,
+   "xo": 8.5,
+   "tag": [
+    "hat"
+   ]
+  },
+  "hanh_nhan": {
+   "ten": "Hạnh nhân",
+   "nhom": "beo",
+   "kcal": 579,
+   "p": 21.2,
+   "c": 21.6,
+   "f": 49.9,
+   "xo": 12.5,
+   "tag": [
+    "hat"
+   ]
+  },
+  "hat_dieu": {
+   "ten": "Hạt điều",
+   "nhom": "beo",
+   "kcal": 553,
+   "p": 18.2,
+   "c": 30.2,
+   "f": 43.9,
+   "xo": 3.3,
+   "tag": [
+    "hat"
+   ]
+  },
+  "qua_bo": {
+   "ten": "Quả bơ",
+   "nhom": "beo",
+   "kcal": 160,
+   "p": 2.0,
+   "c": 8.5,
+   "f": 14.7,
+   "xo": 6.7,
+   "tag": []
+  },
+  "bong_cai": {
+   "ten": "Bông cải xanh (luộc)",
+   "nhom": "rau",
+   "kcal": 35,
+   "p": 2.4,
+   "c": 7.2,
+   "f": 0.4,
+   "xo": 3.3,
+   "tag": []
+  },
+  "cai_bo_xoi": {
+   "ten": "Cải bó xôi / rau cải xanh",
+   "nhom": "rau",
+   "kcal": 23,
+   "p": 2.9,
+   "c": 3.6,
+   "f": 0.4,
+   "xo": 2.2,
+   "tag": []
+  },
+  "dua_leo_ca_chua": {
+   "ten": "Dưa leo + cà chua (salad)",
+   "nhom": "rau",
+   "kcal": 17,
+   "p": 0.8,
+   "c": 3.7,
+   "f": 0.2,
+   "xo": 0.9,
+   "tag": []
+  },
+  "banh_pho": {
+   "ten": "Bánh phở tươi",
+   "nhom": "tinh_bot",
+   "kcal": 112,
+   "p": 1.8,
+   "c": 25.0,
+   "f": 0.3,
+   "xo": 0.9,
+   "tag": []
+  },
+  "hu_tieu": {
+   "ten": "Hủ tiếu / bánh canh (sợi chín)",
+   "nhom": "tinh_bot",
+   "kcal": 109,
+   "p": 1.8,
+   "c": 24.5,
+   "f": 0.2,
+   "xo": 1.0,
+   "tag": []
+  },
+  "xoi": {
+   "ten": "Xôi nếp (chín)",
+   "nhom": "tinh_bot",
+   "kcal": 97,
+   "p": 2.0,
+   "c": 21.1,
+   "f": 0.2,
+   "xo": 1.0,
+   "tag": [],
+   "don_vi": {
+    "ten": "gói nhỏ",
+    "g": 150
+   }
+  },
+  "chao": {
+   "ten": "Cháo trắng (gạo, đặc vừa)",
+   "nhom": "tinh_bot",
+   "kcal": 46,
+   "p": 0.9,
+   "c": 10.0,
+   "f": 0.1,
+   "xo": 0.2,
+   "tag": [],
+   "don_vi": {
+    "ten": "tô",
+    "g": 350
+   }
+  },
+  "muc": {
+   "ten": "Mực (hấp / xào ít dầu)",
+   "nhom": "dam",
+   "kcal": 92,
+   "p": 18.0,
+   "c": 3.1,
+   "f": 1.4,
+   "xo": 0,
+   "tag": [
+    "hai_san"
+   ]
+  },
+  "ca_thu": {
+   "ten": "Cá thu (kho / áp chảo)",
+   "nhom": "dam",
+   "kcal": 205,
+   "p": 23.9,
+   "c": 0,
+   "f": 12.0,
+   "xo": 0,
+   "tag": [
+    "ca"
+   ]
+  },
+  "ca_loc": {
+   "ten": "Cá lóc / cá diêu hồng (chín)",
+   "nhom": "dam",
+   "kcal": 118,
+   "p": 24.0,
+   "c": 0,
+   "f": 2.2,
+   "xo": 0,
+   "tag": [
+    "ca"
+   ]
+  },
+  "thit_bo_vien": {
+   "ten": "Bò viên",
+   "nhom": "dam",
+   "kcal": 220,
+   "p": 14.0,
+   "c": 8.0,
+   "f": 14.5,
+   "xo": 0,
+   "tag": [
+    "thit",
+    "bo"
+   ]
+  },
+  "cha_lua": {
+   "ten": "Chả lụa (giò lụa)",
+   "nhom": "dam",
+   "kcal": 180,
+   "p": 14.0,
+   "c": 5.0,
+   "f": 11.5,
+   "xo": 0,
+   "tag": [
+    "thit"
+   ]
+  },
+  "rau_muong": {
+   "ten": "Rau muống (luộc / xào ít dầu)",
+   "nhom": "rau",
+   "kcal": 20,
+   "p": 2.1,
+   "c": 3.7,
+   "f": 0.2,
+   "xo": 1.9,
+   "tag": []
+  },
+  "gia_do": {
+   "ten": "Giá đỗ + rau thơm",
+   "nhom": "rau",
+   "kcal": 30,
+   "p": 3.0,
+   "c": 5.9,
+   "f": 0.2,
+   "xo": 1.8,
+   "tag": []
+  },
+  "rau_song": {
+   "ten": "Rau sống (xà lách, rau thơm, dưa leo)",
+   "nhom": "rau",
+   "kcal": 15,
+   "p": 1.2,
+   "c": 2.9,
+   "f": 0.2,
+   "xo": 1.3,
+   "tag": []
+  },
+  "canh_bi": {
+   "ten": "Canh bí / bầu (phần rau)",
+   "nhom": "rau",
+   "kcal": 14,
+   "p": 0.6,
+   "c": 3.7,
+   "f": 0.0,
+   "xo": 0.5,
+   "tag": []
+  },
+  "ca_chua_dua_chua": {
+   "ten": "Rau canh chua (cà chua, thơm, đậu bắp, bạc hà)",
+   "nhom": "rau",
+   "kcal": 25,
+   "p": 1.0,
+   "c": 5.5,
+   "f": 0.2,
+   "xo": 1.6,
+   "tag": []
+  },
+  "cai_xao": {
+   "ten": "Cải ngọt / cải thìa (luộc / xào)",
+   "nhom": "rau",
+   "kcal": 17,
+   "p": 1.6,
+   "c": 2.6,
+   "f": 0.2,
+   "xo": 1.2,
+   "tag": []
   }
+ }
 }

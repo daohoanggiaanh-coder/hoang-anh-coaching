@@ -22,6 +22,11 @@ Streamlit Community Cloud + Google Sheets / Drive đứng tên Gmail cá nhân.
   bảng đổi tương đương, danh sách đi chợ, mục **Cách tính** ghi rõ công thức và nguồn.
   v1.3: thẻ bữa ăn cao cấp, **trái cây mỗi ngày** (rau + quả ≥ 400 g, đổi loại theo ngày), **mức đạm** (vừa / cao / rất cao — mặc định cao
   cho khách tập tạ), mục **💊 Bổ sung** khuyến nghị theo mục tiêu (HLV chọn cho từng khách, có liều, lưu ý, mức bằng chứng).
+- 🏃 **Cardio** (v1.4): HLV đặt target ngày tập (20–30 phút) / ngày nghỉ (45–90 phút) gồm máy, độ dốc, tốc độ, thời gian;
+  khách tự nhập kết quả hoặc HLV nhập từ ảnh màn hình máy (có khoá AI thì web tự đọc số). Cộng thành target tuần, ngày thiếu
+  được **bù chia đều** cho các ngày còn lại (có mức tối đa / ngày, khách rảnh mới cho vượt), biểu đồ hoàn thành tuần + 8 tuần.
+- 🍽 v1.4: thực đơn **món Việt** (phở, bún, hủ tiếu, xôi, cháo, cơm phần…) — web vẫn tính gram từng thành phần; đạm mặc định
+  **2 g / kg cân nặng**. Giáo án: buổi nào cũng có ≥ 1 bài core; lưng dưới yếu → chỉ core giữ thẳng cột sống.
 - 👁 **Khách thấy gì** (v1.3): bật / tắt 13 mục cổng khách cho từng khách + **xem trước đúng màn hình khách**.
 - 📈 **Tiến độ & báo cáo**: cân hằng ngày (TB 7 ngày), số đo theo đợt, ảnh 3 góc, báo cáo đầu khoá / tiến độ (tin Zalo + PDF).
 - ✉️ Soạn tin Zalo · 🥗 Bảng thực phẩm (sửa số theo nhãn) · 📥 Chuyển dữ liệu từ Atlas.

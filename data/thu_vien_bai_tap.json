@@ -413,6 +413,24 @@
      "ten": "Side Plank",
      "loai": "Core",
      "dung_cu": "Thảm"
+    },
+    {
+     "id": "pallof_press",
+     "ten": "Pallof Press (chống xoay)",
+     "loai": "Core",
+     "dung_cu": "Cáp"
+    },
+    {
+     "id": "mcgill_curl_up",
+     "ten": "McGill Curl-up",
+     "loai": "Core",
+     "dung_cu": "Thảm"
+    },
+    {
+     "id": "bird_dog_core",
+     "ten": "Bird Dog (giữ 8–10 giây)",
+     "loai": "Core",
+     "dung_cu": "Thảm"
     }
    ]
   },

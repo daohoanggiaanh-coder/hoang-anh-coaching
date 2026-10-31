@@ -24,6 +24,8 @@ QUYEN = {
     "ghi_buoi": ("🏋️ Tập luyện", "Tự ghi buổi tập", "Khách tự nhập kg × lần từng hiệp + xem lịch sử, lời nhắn HLV"),
     "tu_tao_plan": ("🏋️ Tập luyện", "Tự tạo plan", "Khách tự tạo / sửa plan riêng khi tập một mình"),
     "so_ta": ("🏋️ Tập luyện", "Số tạ & kỷ lục", "Biểu đồ số tạ, 1RM ước tính, kỷ lục"),
+    "cardio": ("🏃 Cardio", "Xem target & tiến độ cardio", "Target từng ngày, phần bù, biểu đồ hoàn thành tuần"),
+    "ghi_cardio": ("🏃 Cardio", "Tự nhập kết quả cardio", "Khách nhập phút, độ dốc, tốc độ, ảnh màn hình máy"),
     "thuc_don": ("🍽 Dinh dưỡng", "Xem thực đơn", "Thực đơn hôm nay + 7 ngày (gram từng món)"),
     "chi_so_dd": ("🍽 Dinh dưỡng", "Chỉ số kcal & macro", "Số kcal, đạm, tinh bột, béo, dự kiến tốc độ, cách tính"),
     "doi_mon": ("🍽 Dinh dưỡng", "Đổi món", "Tự đổi món trong bữa + bảng món tương đương"),
@@ -49,7 +51,8 @@ def quyen(k: dict | None) -> dict[str, bool]:
 
 def trang_khach(q: dict[str, bool]) -> dict[str, bool]:
     """Trang nào của cổng khách được hiện (tắt hết mục con → ẩn luôn trang)."""
-    return {"tap": q["giao_an"] or q["ghi_buoi"] or q["so_ta"] or q["tu_tao_plan"], "an": q["thuc_don"], "tien_do": q["can"] or q["so_do"]}
+    return {"tap": q["giao_an"] or q["ghi_buoi"] or q["so_ta"] or q["tu_tao_plan"], "an": q["thuc_don"], "tien_do": q["can"] or q["so_do"],
+            "cardio": q["cardio"] or q["ghi_cardio"]}
 
 
 # ------------------------------------------------------------------ khách

@@ -339,6 +339,15 @@ def an():
         C.dinh_duong(k, "hlv", u["name"])
 
 
+def cardio():
+    u = _user()
+    ui.hero("CARDIO", "Target & kết quả cardio", "Đặt target ngày tập / ngày nghỉ, nhập kết quả từ ảnh khách gửi, theo dõi hoàn thành tuần.")
+    k = _chon_khach(store.clients(ca_ngung=False), "cd")
+    if k:
+        from views import cardio_ui
+        cardio_ui.trang(k, "hlv", u["name"])
+
+
 def thuc_pham():
     u = _user()
     ui.hero("BẢNG THỰC PHẨM", "Giá trị dinh dưỡng / 100 g", "Sửa số theo nhãn sản phẩm khách thật sự dùng (VD whey, sữa chua).")
@@ -836,7 +845,7 @@ def khach_thay():
                 st.error("Chưa lưu được — thử lại.")
         tr = store.trang_khach(q)
         st.caption("Menu khách hiện: 🏠 Tổng quan" + (" · 🏋️ Tập luyện" if tr["tap"] else "") + (" · 🍽 Thực đơn" if tr["an"] else "")
-                   + (" · 📈 Cân & số đo" if tr["tien_do"] else "") + " · 🔐 Tài khoản. Khách **không bao giờ** thấy: ghi chú nội bộ, "
+                   + (" · 🏃 Cardio" if tr["cardio"] else "") + (" · 📈 Cân & số đo" if tr["tien_do"] else "") + " · 🔐 Tài khoản. Khách **không bao giờ** thấy: ghi chú nội bộ, "
                    "lộ trình & tốc độ 🔒, giá gói, khách khác, trang HLV.")
     with b:
         ui.sec("Xem như khách")
@@ -844,7 +853,7 @@ def khach_thay():
         tr = store.trang_khach(q)
         ds = [("tong", "🏠 Tổng quan", KV.trang_chu)] + [x for x, on in (
             (("tap", "🏋️ Tập luyện", KV.tap), tr["tap"]), (("an", "🍽 Thực đơn", KV.an), tr["an"]),
-            (("td", "📈 Cân & số đo", KV.tien_do), tr["tien_do"])) if on]
+            (("cd", "🏃 Cardio", KV.cardio), tr["cardio"]), (("td", "📈 Cân & số đo", KV.tien_do), tr["tien_do"])) if on]
         chon = st.segmented_control("Trang", [x[0] for x in ds], default="tong", key=f"kt_tr_{k['ma']}",
                                     format_func=lambda i: next(t for x, t, _ in ds if x == i)) or "tong"
         st.markdown('<div style="background:#FFF6DD;border:1px dashed #C8A24A;border-radius:12px;padding:6px 12px;font-size:.8rem;'

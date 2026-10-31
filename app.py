@@ -81,6 +81,7 @@ if user["role"] == "coach":
         "Huấn luyện": [st.Page(V.lich, title="Lịch & nhắc tập", icon="📅", url_path="lich", default=True),
                        st.Page(V.khach, title="Khách & tài khoản", icon="👤", url_path="khach"),
                        st.Page(V.tap, title="Giáo án khách", icon="🏋️", url_path="tap"),
+                       st.Page(V.cardio, title="Cardio", icon="🏃", url_path="cardio"),
                        st.Page(V.an, title="Dinh dưỡng", icon="🍽", url_path="dinh_duong"),
                        st.Page(V.tien_do, title="Tiến độ & báo cáo", icon="📈", url_path="tien_do"),
                        st.Page(V.lo_trinh, title="Lộ trình & mục tiêu 🔒", icon="🎯", url_path="lo_trinh"),
@@ -95,6 +96,7 @@ else:
     _tr = _st.trang_khach(_st.quyen(_st.client(user.get("ma_kh", ""))))
     pages = [st.Page(V.trang_chu, title="Tổng quan", icon="🏠", url_path="tong_quan", default=True)]
     pages += [p for p, on in ((st.Page(V.tap, title="Tập luyện", icon="🏋️", url_path="tap_luyen"), _tr["tap"]),
+                              (st.Page(V.cardio, title="Cardio", icon="🏃", url_path="cardio"), _tr["cardio"]),
                               (st.Page(V.an, title="Thực đơn", icon="🍽", url_path="thuc_don"), _tr["an"]),
                               (st.Page(V.tien_do, title="Cân & số đo", icon="📈", url_path="can_so_do"), _tr["tien_do"])) if on]
     pages.append(st.Page(V.tai_khoan, title="Tài khoản", icon="🔐", url_path="tai_khoan"))

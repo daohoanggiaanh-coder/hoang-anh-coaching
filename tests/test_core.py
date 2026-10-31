@@ -242,7 +242,7 @@ def test_quyen_mac_dinh_va_tat():
     assert all(q.values()) and set(q) == set(store.QUYEN)
     q2 = store.quyen({"quyen": '{"thuc_don": false, "can": false, "so_do": false}'})
     tr = store.trang_khach(q2)
-    assert not q2["thuc_don"] and tr == {"tap": True, "an": False, "tien_do": False}
+    assert not q2["thuc_don"] and tr == {"tap": True, "an": False, "tien_do": False, "cardio": True}
 
 
 def test_dam_cao_va_trai_cay():
@@ -254,3 +254,39 @@ def test_dam_cao_va_trai_cay():
     F = dd.foods()
     assert any(F[m]["nhom"] == "trai_cay" for b in ngay for m in b["mon"])
     assert dd.bo_sung(h) and all("bang_chung" in x for x in dd.bo_sung(h))
+
+
+def test_dam_2g_kg_va_mon_viet():
+    from core import dinh_duong as dd
+    h = dd.HoSo.tu_dict({"gioi_tinh": "Nữ", "tuoi": 38, "cao": 158, "kg": 62, "pbf": 35, "muc_tieu": "giam_mo", "so_bua": 4})
+    kq = dd.tinh(h)
+    assert kq["dam"] == 124
+    ngay = dd.thuc_don_ngay(h, kq, True, 0, "R9")
+    assert sum(b["thuc"]["p"] for b in ngay) >= 0.97 * kq["tap"]["p"]
+    mv = [b["mon_id"] for b in ngay if b.get("mon_id")]
+    assert len(mv) >= 3 and len(set(mv)) == len(mv)
+    h2 = dd.HoSo.tu_dict({**h.__dict__, "che_do": ["thuan_chay"]})
+    for b in dd.thuc_don_ngay(h2, dd.tinh(h2), False, 1, "R9"):
+        F = dd.foods()
+        assert all(dd.duoc_an(F[m], ["thuan_chay"]) for m in b["mon"])
+
+
+def test_cardio_bu_chia_deu():
+    from datetime import date
+    from core import cardio as cd
+    c = cd.cai_dat("X")
+    w = cd.tuan(c, [0, 1, 3, 4], [{"ngay": "2026-10-26", "phut": 0}], date(2026, 10, 28))
+    them = [d["bu"] for d in w["ngay"] if not d["qua"]]
+    assert w["thieu"] == 50 and sum(them) >= 45
+    c["ranh"] = False
+    w = cd.tuan(c, [0, 1, 3, 4], [], date(2026, 11, 1))                 # CN, cả tuần chưa làm: không dồn quá trần
+    assert w["ngay"][6]["target"] <= c["nghi"]["toi_da"] and w["khong_bu"] > 0
+
+
+def test_core_moi_buoi_lung_yeu():
+    from core import ga_atlas as g
+    for lv in (0, 1, 2):
+        for b in g.generate("giam_mo", lv, 4, "Nữ", ["Lưng dưới"], "truoc_sau"):
+            ids = [x["id"] for x in b["bai"]]
+            assert any(x["nhom"] == "core" for x in b["bai"])
+            assert "cable_crunch" not in ids and "lying_leg_raise" not in ids

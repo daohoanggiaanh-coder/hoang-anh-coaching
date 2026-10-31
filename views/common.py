@@ -82,17 +82,20 @@ def form_dd(k: dict, hs: dict, vai: str, nguoi: str):
                              index=list(dd.MUC_TIEU).index(hs.get("muc_tieu", "giam_mo")) if hs.get("muc_tieu") in dd.MUC_TIEU else 0)
             tdo = b.selectbox("Tốc độ", list(dd.TOC_DO), format_func=dd.TOC_DO.get,
                               index=list(dd.TOC_DO).index(hs.get("toc_do", "vua")) if hs.get("toc_do") in dd.TOC_DO else 1)
-            mdam = c.selectbox("Mức đạm", list(dd.MUC_DAM), index=list(dd.MUC_DAM).index(hs.get("muc_dam", "cao"))
+            mdam = c.selectbox("Mức đạm (g / kg cân nặng)", list(dd.MUC_DAM), index=list(dd.MUC_DAM).index(hs.get("muc_dam", "cao"))
                                if hs.get("muc_dam", "cao") in dd.MUC_DAM else 1, format_func=lambda x: dd.MUC_DAM[x]["ten"]
-                               + (" (mặc định — khách tập tạ)" if x == "cao" else ""))
+                               + (" (mặc định)" if x == "cao" else ""))
             a, b = st.columns(2)
             kct = a.number_input("Ghi đè kcal TB / ngày", 0, 6000, int(hs.get("kcal_tay") or 0), step=50, help="0 = để web tự tính")
-            dgk = b.number_input("Ghi đè đạm (g/kg cân)", 0.0, 3.5, float(hs.get("dam_g_kg") or 0), step=0.1, help="0 = theo mức đạm ở trên")
+            dgk = b.number_input("Ghi đè đạm (g/kg cân nặng)", 0.0, 3.5, float(hs.get("dam_g_kg") or 0), step=0.1,
+                                 help="0 = theo mức đạm ở trên. Người BMI ≥ 30 có thể đặt thấp hơn (VD 1,6) để quy về cân mục tiêu")
             ui.sec("Thực phẩm bổ sung khuyến nghị (khách thấy — không bắt buộc)")
             bs = st.multiselect("Chọn món gợi ý cho khách", list(dd.BO_SUNG), format_func=lambda x: f"{dd.BO_SUNG[x]['icon']} {dd.BO_SUNG[x]['ten']}",
                                 default=[x for x in (hs.get("bo_sung") or dd.GOI_Y_BO_SUNG.get(hs.get("muc_tieu", "giam_mo"), [])) if x in dd.BO_SUNG],
                                 help="Để trống = gợi ý mặc định theo mục tiêu")
         ui.sec("Thói quen ăn")
+        kt = st.radio("Kiểu thực đơn", ["viet", "tach"], index=0 if hs.get("kieu_td", "viet") != "tach" else 1, horizontal=True,
+                      format_func={"viet": "🇻🇳 Món Việt (phở, bún, cơm phần…)", "tach": "🥡 Món tách (meal-prep: đạm · tinh bột · rau)"}.get)
         a, b, c = st.columns([1, 1, 2])
         sb = a.selectbox("Số bữa / ngày", [3, 4, 5, 6], index=[3, 4, 5, 6].index(int(hs.get("so_bua") or 4)))
         gt_ = b.selectbox("Giờ tập", list(dd.GIO_TAP), format_func=dd.GIO_TAP.get,
@@ -103,7 +106,7 @@ def form_dd(k: dict, hs: dict, vai: str, nguoi: str):
         bo = st.multiselect("Món không ăn / không thích", sorted(F, key=lambda x: F[x]["ten"]),
                             default=[x for x in hs.get("bo_mon") or [] if x in F], format_func=lambda x: F[x]["ten"])
         if st.form_submit_button("💾 Lưu & tính lại", type="primary", use_container_width=True):
-            moi = {**hs, "so_bua": sb, "gio_tap": gt_, "che_do": [x for x in cdo if x != "thuong"] or ["thuong"], "bo_mon": bo}
+            moi = {**hs, "kieu_td": kt, "so_bua": sb, "gio_tap": gt_, "che_do": [x for x in cdo if x != "thuong"] or ["thuong"], "bo_mon": bo}
             if hlv:
                 moi.update({"gioi_tinh": gt, "tuoi": tuoi, "cao": cao, "kg": kg, "pbf": pbf or None, "bo_pbf": not pbf,
                             "van_dong": vd, "buoi_tuan": bt, "phut_buoi": pb, "cuong_do": cd, "cardio_phut_tuan": cardio,
@@ -185,7 +188,9 @@ def _bang_bua(b: dict, F: dict) -> str:
         dong += (f'<div class="dd-it"><div class="dd-ic">{ICON_NHOM.get(f["nhom"], "🍽")}</div>'
                  f'<div class="n">{E(f["ten"])}<small>{TEN_NHOM.get(f["nhom"], "")} · {f["p"] * g / 100:.0f} g đạm</small></div>'
                  f'<div class="g">{g:g} g' + (f"<small>{E(uoc)}</small>" if uoc else "") + "</div></div>")
-    return (f'<div class="dd-bua"><div class="dd-bh"><b><span class="dd-gio">🕒 {E(b["gio"])}</span>{E(b["ten"])}{tag}</b>'
+    ten_mon = f'<span style="display:block;font-size:.78rem;color:#E8C76A;font-weight:700;margin-top:2px">🍲 {E(b["mon_viet"])}</span>' \
+        if b.get("mon_viet") else ""
+    return (f'<div class="dd-bua"><div class="dd-bh"><b><span class="dd-gio">🕒 {E(b["gio"])}</span>{E(b["ten"])}{tag}{ten_mon}</b>'
             f'<span class="kc">{t["kcal"]:.0f} kcal</span></div>{dong}'
             f'<div class="dd-bf"><span>Đạm <b>{t["p"]:.0f} g</b></span><span>Tinh bột <b>{t["c"]:.0f} g</b></span>'
             f'<span>Béo <b>{t["f"]:.0f} g</b></span><span>Xơ <b>{t["xo"]:.0f} g</b></span></div></div>')
@@ -268,6 +273,16 @@ def dinh_duong(k: dict, vai: str, nguoi: str, q: dict | None = None):
                     cols = st.columns(4)
                     cols[0].markdown(f"**{bb['ten']}**")
                     cho = dict(doi.get(thu, {}).get(bb["bua"], {}))
+                    if bb.get("mon_id"):
+                        DSM = dd.mon_viet_duoc(bb["mau"], F, h.che_do, bo)
+                        ids = list(DSM)
+                        x = cols[1].selectbox("Món", ids, index=ids.index(bb["mon_id"]) if bb["mon_id"] in ids else 0,
+                                              format_func=lambda z: DSM[z]["ten"], key=f"dd_mv_{k['ma']}_{vai}_{thu}_{bb['bua']}",
+                                              label_visibility="collapsed")
+                        if x != bb["mon_id"]:
+                            doi.setdefault(thu, {})[bb["bua"]] = {"mon": x}
+                            st.rerun()
+                        continue
                     for i, vt in enumerate(("dam", "tinh_bot", "beo")):
                         ds = dd.lua_chon(bb["mau"], vt, F, h.che_do, bo)
                         hien = bb["vai_tro"].get(vt)
@@ -349,7 +364,7 @@ def dinh_duong(k: dict, vai: str, nguoi: str, q: dict | None = None):
 | Cardio thêm | (6 − 1) × kg × giờ / 7 ngày | +{kq['e_cardio']} kcal / ngày |
 | TDEE | ngày nghỉ · ngày tập · trung bình tuần | {kq['tdee_nghi']} · {kq['tdee_tap']} · {kq['tdee_tb']} kcal |
 | Điều chỉnh | {dd.MUC_TIEU.get(h.muc_tieu)} · {dd.TOC_DO.get(h.toc_do)} | {kq['delta']:+} kcal / ngày |
-| Đạm | {kq['cach_dam']} — Morton 2018; Helms 2014 | {kq['dam']} g |
+| Đạm | {kq['cach_dam']} — HLV chọn 2 g/kg cho khách tập tạ (Morton 2018: lợi ích tăng cơ chững lại quanh 1,6 g/kg, cận trên ~2,2 g/kg; khi thâm hụt nên cao hơn — Helms 2014) | {kq['dam']} g |
 | Béo | 25–28 % năng lượng, ≥ 0,6 g/kg (AMDR 20–35 %, IOM 2005) | ngày tập {kq['tap']['f']} g |
 | Tinh bột | phần năng lượng còn lại | {kq['tap']['c']} g tập · {kq['nghi']['c']} g nghỉ |
 | Chất xơ | 14 g / 1.000 kcal (IOM 2005) | ≥ {kq['tap']['xo']} g |

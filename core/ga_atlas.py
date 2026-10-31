@@ -22,7 +22,8 @@ from core import db, tu_van as tv
 LEVELS = ["Người mới", "Sơ trung cấp", "Trung cấp", "Nâng cao", "Chuyên nghiệp"]
 GOALS = tv.GOALS
 HAN_CHE = {  # vùng cần tránh → bài loại khỏi giáo án
-    "Lưng dưới": {"bb_deadlift", "bb_row", "bb_rdl", "smith_sumo", "kb_swing", "ball_slam", "db_thruster"},      # v3.64: + bài bật / ném
+    "Lưng dưới": {"bb_deadlift", "bb_row", "bb_rdl", "smith_sumo", "kb_swing", "ball_slam", "db_thruster",      # v3.64: + bài bật / ném
+                  "cable_crunch", "lying_leg_raise"},            # HAC v1.4: lưng yếu → bỏ bài gập bụng có tải / nâng chân nằm
     "Gối": {"db_walking_lunge", "db_bulgarian", "leg_ext", "smith_sumo", "db_stepup", "curtsy_lunge", "box_jump", "jump_squat",
             "tuck_jump", "broad_jump", "skater_jump", "burpee", "jumping_jack", "high_knees", "squat_thrust"},
     "Vai": {"smith_ohp", "db_shoulder", "pull_up", "bb_bench", "bb_incline", "cable_overhead_ext", "overhead_carry", "battle_rope",
@@ -34,7 +35,9 @@ MIN_LV = {"bb_deadlift": 3, "pull_up": 3, "bb_row": 2, "bb_rdl": 2, "bb_bench": 
 HEAVY_HINGE = {"bb_deadlift", "bb_rdl", "db_rdl"}
 QUAD = {"smith_squat", "smith_sumo", "db_goblet", "leg_press", "db_bulgarian", "db_stepup",
         "db_walking_lunge", "db_reverse_lunge", "curtsy_lunge"}     # v3.58: đùi trước nặng (squat + 1 bài 1 chân / buổi; leg ext là cô lập)
-TIME_CORE = {"weighted_plank", "side_plank"}
+TIME_CORE = {"weighted_plank", "side_plank", "bird_dog_core"}
+# HAC v1.4: core giữ thẳng cột sống (chống duỗi / chống xoay / chống nghiêng) — ưu tiên khi lưng dưới yếu / đau
+CORE_LUNG = ["dead_bug", "bird_dog_core", "side_plank", "pallof_press", "mcgill_curl_up", "weighted_plank"]
 
 _T = {  # khuôn buổi: (nhóm, thứ tự ưu tiên bài)
     "FB1": ("Toàn thân 1 · trọng tâm đùi trước", [
@@ -502,6 +505,8 @@ def generate(goal: str, level: int, per_week: int, gioi: str = "Nam", limits: li
             slots = [ket if g == "strongman" else (g, pr) for g, pr in slots]
         if goal == "suc_manh" and key in ("FB1", "FB3", "TR1", "TR2"):
             slots = [s for s in slots if s[0] != "iso_tay"] if level < 2 else slots
+        if "Lưng dưới" in limits:                                           # HAC v1.4: core an toàn cho lưng, xoay vòng theo buổi
+            slots = [(g, CORE_LUNG[i % 3:] + CORE_LUNG[:i % 3]) if g == "core" else (g, pr) for g, pr in slots]
         picked: list[str] = []
         for si, (g, prefs) in enumerate(slots):
             cands = prefs + [b["id"] for b in lib.get(g, {}).get("bai", []) if b["id"] not in prefs]
@@ -539,7 +544,20 @@ def generate(goal: str, level: int, per_week: int, gioi: str = "Nam", limits: li
                     picked.remove(cand[-1])
                     break
             else:
-                picked.pop(-2)
+                bo = next((p for p in reversed(picked[:-1]) if ex(p)["nhom"] != "core"), picked[-2])
+                picked.remove(bo)
+        if not any(ex(p)["nhom"] == "core" for p in picked):            # HAC v1.4: buổi nào cũng có ≥ 1 bài bụng / core
+            pool = (CORE_LUNG if "Lưng dưới" in limits else []) + [b["id"] for b in lib["core"]["bai"]]
+            truoc = {x["id"] for x in out[-1]["bai"]} if out else set()
+            cc = [c for c in dict.fromkeys(pool) if allowed(c, level, limits)]
+            cc = next((c for c in cc if c not in used and c not in truoc), None) or next((c for c in cc if c not in truoc), None) \
+                or (cc[0] if cc else None)
+            if cc:
+                if len(picked) >= max_bai:
+                    bo = next((p for p in reversed(picked) if ex(p)["nhom"].startswith("iso")), None)
+                    picked.remove(bo) if bo else None
+                picked.append(cc)
+                used.add(cc)
         rows = [{k: ex(p)[k] for k in ("id", "ten", "nhom", "loai", "dung_cu")} for p in picked]
         giu = kieu in GIU_THU_TU and key[0] in "GHSC" and key not in ("FB1", "FB2", "FB3", "FB4")
         if not giu and kieu in TAM_BAI:

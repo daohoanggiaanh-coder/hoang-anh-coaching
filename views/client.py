@@ -106,6 +106,17 @@ def an():
     C.dinh_duong(k, "khach", k["ho_ten"], q)
 
 
+def cardio():
+    k = _k()
+    q = store.quyen(k)
+    ui.hero("CARDIO", "Cardio tuần này", "Làm đủ target mỗi ngày. Hôm nào thiếu, web tự chia đều phần thiếu cho các ngày còn lại.")
+    if not (q["cardio"] or q["ghi_cardio"]):
+        st.info("Mục cardio HLV chưa mở cho bạn.")
+        return
+    from views import cardio_ui
+    cardio_ui.trang(k, "khach", k["ho_ten"], q)
+
+
 def tien_do():
     k = _k()
     ma = k["ma"]

@@ -9,7 +9,9 @@ from core import auth, config, db, dinh_duong as dd, giao_an as ga, store, tien_
 
 @pytest.fixture(autouse=True)
 def tam(tmp_path, monkeypatch):
+    import os
     monkeypatch.setattr(config, "LOCAL_DIR", tmp_path)
+    monkeypatch.setattr(config, "get", lambda key, default=None: os.environ.get(key, default))   # không bao giờ đọc Secrets thật
     for k in ("SHEETS_WEBAPP_URL", "COACH_PASSWORD", "COACH_USERNAME"):
         monkeypatch.delenv(k, raising=False)
     db.clear()
@@ -182,3 +184,41 @@ def test_chuyen_atlas():
     k = store.client("R001")
     assert k["ho_ten"] == "Lan" and store.da_tap(k) == 1
     assert chuyen_atlas(rows, "test", False)["KhachHang"] == 0                # chạy lại không nhân đôi
+
+
+# ------------------------------------------------------------------ v1.1: giáo án Atlas, lộ trình
+def test_giao_an_atlas_luu_va_cong_khach():
+    from core import ga_atlas as ga
+    _khach()
+    plan = ga.generate("recomp", 1, 3, "Nữ", ["Lưng dưới"], "truoc_sau")
+    assert all(len(b["bai"]) == 8 for b in plan)
+    assert not any(it["id"] in ga.HAN_CHE["Lưng dưới"] for b in plan for it in b["bai"])
+    assert ga.save("R001", {"muc_tieu": "recomp", "trinh_do": 1, "buoi_tuan": 3, "han_che": ["Lưng dưới"],
+                            "ngay_bat_dau": "2026-10-29", "kieu": "truoc_sau"}, plan, "HLV")
+    cur = ga.current("R001")
+    assert cur and cur["buoi"] == plan
+    s = ga.to_simple(db.latest("GiaoAn", "R001")[ga.KHOA.format("R001")], date(2026, 11, 2))
+    assert s["buoi"][0]["bai"][0]["hiep"] >= 2 and s["buoi"][0]["bai"][0]["lan"]
+
+
+def test_ghi_buoi_hlv_va_goi_y_ta():
+    from core import buoi
+    _khach()
+    buoi.save("R001", {"ngay": date(2026, 10, 30), "buoi_ma": "A", "bai": [
+        {"id": "leg_press", "ten": "Leg Press (máy)", "hiep": [{"kg": 60, "lan": 12}] * 3}], "ghi_chu_hlv": "bí mật"}, "HLV")
+    last = buoi.last_for("R001", "leg_press")
+    assert last and last["hiep"][0]["kg"] == 60
+    assert buoi.target_kg({"ten": "Leg Press (máy)"}, "3×10–12", last) == 62.5
+    assert ga.lich_su_bai("R001").iloc[0]["top_kg"] == 60
+
+
+def test_lo_trinh_tien_do():
+    from core import lo_trinh as lt
+    _khach(can_muc_tieu=56, muc_tieu_loai="giam_mo")
+    u = {"name": "HLV"}
+    td.luu_so_do("R001", date(2026, 10, 1), "dau_khoa", {"can_nang": 62, "pbf": 33, "v_eo": 80}, "", u)
+    for i, kg in enumerate([62, 61.6, 61.2, 60.8, 60.4]):
+        td.luu_can("R001", date(2026, 10, 1 + 7 * i), kg, u)
+    kq = lt.tien_do(store.client("R001"), date(2026, 10, 30))
+    can = next(r for r in kq["rows"] if r["ma"] == "can_nang")
+    assert can["dich"] == 56 and can["pct"] > 0 and can["toc_do_tuan"] < 0 and can["du_kien"]

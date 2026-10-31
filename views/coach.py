@@ -289,12 +289,13 @@ def khach():
 # =================================================================== GIÁO ÁN, DINH DƯỠNG
 def tap():
     u = _user()
-    ui.hero("GIÁO ÁN & SỐ TẠ", "Soạn giáo án · ghi buổi · xem khách tự ghi", "Khách thấy giáo án ngay trên cổng khách khi anh bấm Lưu.")
+    ui.hero("GIÁO ÁN KHÁCH", "Giáo án tuần tự xếp theo mục tiêu — phong cách Atlas",
+            "Mục tiêu · trình độ · số buổi · dạng lịch · vùng chấn thương → 8 bài / buổi, theo lầu, superset, kết buổi. "
+            "Khách thấy giáo án (liều tự tính theo tuần) trên cổng khách khi anh bấm Lưu.")
     k = _chon_khach(store.clients())
     if k:
-        if k.get("chan_thuong"):
-            st.warning(f"🩹 Lưu ý: {k['chan_thuong']}")
-        C.tap_luyen(k, "hlv", u["name"])
+        from views import coach_ga
+        coach_ga.trang(u, k)
 
 
 def an():
@@ -364,21 +365,25 @@ def tien_do():
                     td.xoa_can(ma, xn, u)
                     st.rerun()
     with s2:
-        with st.form(f"sd_{ma}", clear_on_submit=True):
+        _quet_inbody(k, u)
+        IB = S.get(f"ib_{ma}") or {}
+        with st.form(f"sd_{ma}_{S.get(f'ibv_{ma}', 0)}", clear_on_submit=True):
             a, b = st.columns(2)
             nd = a.date_input("Ngày đo", hom, format="DD/MM/YYYY", max_value=hom)
             dot = b.selectbox("Đợt", list(td.DOT), format_func=td.DOT.get, index=0 if SD.empty else 1)
             st.caption("Để trống ô nào không đo. InBody: cân, % mỡ, khối cơ, khối mỡ, mỡ nội tạng · thước dây: các vòng.")
             vals, cs = {}, st.columns(4)
             for i, (ck, ten, dv, _) in enumerate(td.CHI_SO):
-                vals[ck] = cs[i % 4].number_input(f"{ten}{f' ({dv})' if dv else ''}", 0.0, 400.0, 0.0, step=0.1, format="%.1f", key=f"v_{ck}_{ma}")
+                vals[ck] = cs[i % 4].number_input(f"{ten}{f' ({dv})' if dv else ''}", 0.0, 400.0, float(IB.get(ck) or 0.0), step=0.1,
+                                                  format="%.1f", key=f"v_{ck}_{ma}_{S.get(f'ibv_{ma}', 0)}")
             gcs = st.text_input("Ghi chú", placeholder="VD đo buổi sáng, sau kỳ nghỉ lễ…")
             if st.form_submit_button("💾 Lưu số đo", type="primary", use_container_width=True):
                 if not any(v > 0 for v in vals.values()):
                     st.error("Nhập ít nhất 1 chỉ số.")
-                elif td.luu_so_do(ma, nd, dot, vals, gcs, u):
+                elif td.luu_so_do(ma, nd, dot, vals, (gcs + (" · " if gcs and IB else "") + ("đọc từ phiếu InBody" if IB else "")).strip(), u):
                     if vals.get("can_nang"):
                         td.luu_can(ma, nd, vals["can_nang"], u)
+                    S.pop(f"ib_{ma}", None)
                     st.toast("Đã lưu số đo")
                     st.rerun()
                 else:
@@ -476,6 +481,157 @@ def tien_do():
             st.download_button("⬇️ Lưu file PDF", S[f"_pdf_{kieu}_{ma}"],
                                f"{hom:%Y-%m-%d}_{'Ket_qua_dau_khoa' if kieu == 'dau_khoa' else 'Tien_do'}_{k['ho_ten'].replace(' ', '_')}.pdf",
                                "application/pdf", type="primary", key=f"dl_{kieu}_{ma}")
+
+
+# =================================================================== LỘ TRÌNH & MỤC TIÊU (chỉ HLV)
+def lo_trinh():
+    u = _user()
+    from core import lo_trinh as lt, muc_tieu as mt, tu_van as tv
+    ui.hero("LỘ TRÌNH & TỐC ĐỘ", "Khách đang đi nhanh hay chậm so với mục tiêu?",
+            "🔒 Chỉ HLV thấy trang này — khách không xem được.")
+    k = _chon_khach(store.clients())
+    if not k:
+        return
+    ma = k["ma"]
+    hom = db.now_vn().date()
+    lo0 = mt.loai({**k, "muc_tieu_loai": k.get("muc_tieu_loai")})
+    with st.expander("🎯 Đặt mục tiêu đo được (để trống ô nào → web tự đặt mức an toàn 12 tuần)", expanded=not k.get("muc_tieu_loai")):
+        with st.form(f"mt_{ma}"):
+            a, b, c = st.columns([1.4, 1, 1])
+            lo = a.selectbox("Loại mục tiêu", list(mt.THEO_LOAI), index=list(mt.THEO_LOAI).index(lo0), format_func=tv.GOALS.get)
+            try:
+                han0 = date.fromisoformat(str(k.get("muc_tieu_ngay"))[:10])
+            except ValueError:
+                han0 = None
+            han = b.date_input("Hạn đạt mục tiêu", value=han0, format="DD/MM/YYYY")
+            c.caption("Hạn trống = 12 tuần từ lần đo đầu.")
+            a, b, c, d = st.columns(4)
+            f_ = lambda v: float(v) if str(v or "").strip() not in ("", "None") else 0.0   # noqa: E731
+            cmt = a.number_input("Cân đích (kg)", 0.0, 250.0, f_(k.get("can_muc_tieu")), step=0.5)
+            mo = b.number_input("% mỡ đích", 0.0, 60.0, f_(k.get("muc_tieu_mo")), step=0.5)
+            co = c.number_input("Khối cơ SMM đích (kg)", 0.0, 80.0, f_(k.get("muc_tieu_co")), step=0.1)
+            eo = d.number_input("Vòng eo đích (cm)", 0.0, 200.0, f_(k.get("muc_tieu_eo")), step=0.5)
+            if st.form_submit_button("💾 Lưu mục tiêu", type="primary"):
+                k1 = {**k, "muc_tieu_loai": lo, "muc_tieu_ngay": han.isoformat() if han else "", "can_muc_tieu": cmt or "",
+                      "muc_tieu_mo": mo or "", "muc_tieu_co": co or "", "muc_tieu_eo": eo or ""}
+                if store.save_client(k1, u["name"]):
+                    st.toast("Đã lưu mục tiêu")
+                    st.rerun()
+    tdo = lt.tien_do(k, hom)
+    cc = lt.chuyen_can(k, hom)
+    toc = lt.toc_do_can(ma)
+    if not tdo:
+        st.info("Cần ít nhất 1 lần đo (cân / InBody / vòng eo) — nhập ở trang **📈 Tiến độ & báo cáo**.")
+    else:
+        mau = "#1E7B4A" if tdo["tong"] >= tdo["tg_pct"] - 15 else "#D98E04" if tdo["tong"] >= 0 else "#B4442F"
+        ui.tiles([(f"{tdo['tong']} %", "hoàn thành mục tiêu", tdo["ten_loai"]),
+                  (f"{tdo['tg_pct']} %", "thời gian đã qua", f"{tdo['bat_dau']:%d/%m} → {tdo['han']:%d/%m/%Y}"),
+                  (f"{toc:+g} kg" if toc is not None else "—", "tốc độ cân / tuần", "theo TB 7 ngày, 14 ngày gần nhất"),
+                  (f"{cc['tb']:g}/{cc['ke_hoach'] or '—'}", "buổi / tuần (TB 3 tuần)", f"{cc['ty_le']} % kế hoạch" if cc["ty_le"] is not None else "")])
+        st.markdown(f'<div class="hac-card" style="border-left:5px solid {mau}"><b>{E(tdo["nhan_xet"])}</b></div>', unsafe_allow_html=True)
+        st.dataframe(pd.DataFrame([{"Chỉ số": r["ten"], "Ban đầu": f"{r['goc']:g} {r['dv']}", "Hiện tại": f"{r['hien_tai']:g} {r['dv']}",
+                                    "Đích": f"{r['dich']:g} {r['dv']}" + ("" if r["tu_dat"] else " (tự đặt)"), "Hoàn thành": f"{r['pct']} %",
+                                    "Tốc độ / tuần": f"{r['toc_do_tuan']:+g}" if r.get("toc_do_tuan") is not None else "—",
+                                    "Trạng thái": r["trang_thai"], "Dự đoán": r["du_doan"]} for r in tdo["rows"]]),
+                     hide_index=True, use_container_width=True)
+        M = lt.bang_do(ma)
+        ui.sec("Thực tế · kế hoạch · dự đoán")
+        cs = st.columns(2)
+        for i, r in enumerate(tdo["rows"]):
+            s_ = M[["ngay", r["ma"]]].dropna()
+            fig = go.Figure()
+            fig.add_scatter(x=s_["ngay"], y=s_[r["ma"]], mode="lines+markers", name="Thực tế", line=dict(color=ui.VANG, width=3))
+            fig.add_scatter(x=[pd.Timestamp(tdo["bat_dau"]), pd.Timestamp(tdo["han"])], y=[r["goc"], r["dich"]], mode="lines",
+                            name="Kế hoạch", line=dict(color="#8b8577", dash="dash"))
+            if r.get("du_kien"):
+                fig.add_scatter(x=[s_["ngay"].iloc[-1], pd.Timestamp(r["du_kien"])], y=[r["hien_tai"], r["dich"]], mode="lines",
+                                name="Dự đoán theo nhịp hiện tại", line=dict(color="#2E7D4F", dash="dot"))
+            fig.add_hline(y=r["dich"], line_dash="dot", line_color="#2E7D4F", annotation_text=f"Đích {r['dich']:g}")
+            fig.update_layout(title=dict(text=f"{r['ten']} ({r['dv']})", font=dict(size=13)))
+            fig.update_xaxes(tickformat="%d/%m")
+            cs[i % 2].plotly_chart(ui.layout(fig, 260), use_container_width=True, config={"displayModeBar": False})
+    ui.sec("Gợi ý điều chỉnh")
+    for g in lt.goi_y(tdo, cc, toc, lo0):
+        st.markdown(f"- {g}")
+    st.caption("Gợi ý theo luật đơn giản từ số liệu đã nhập — anh quyết định cuối cùng. Dự đoán chỉ đáng tin khi có ≥ 3–4 lần đo cách nhau ≥ 1 tuần.")
+    ui.sec("Chuyên cần 4 tuần")
+    fig = go.Figure(go.Bar(x=[t["tuan"] for t in cc["tuans"]], y=[t["buoi"] for t in cc["tuans"]], marker_color=ui.VANG,
+                           text=[t["buoi"] for t in cc["tuans"]], textposition="outside"))
+    if cc["ke_hoach"]:
+        fig.add_hline(y=cc["ke_hoach"], line_dash="dot", annotation_text=f"Kế hoạch {cc['ke_hoach']} buổi")
+    st.plotly_chart(ui.layout(fig, 220, "buổi"), use_container_width=True, config={"displayModeBar": False})
+    ui.sec("Lộ trình 12 tuần")
+    M = lt.bang_do(ma)
+    can0 = M["can_nang"].dropna().iloc[0] if M["can_nang"].notna().any() else None
+    pbf0 = M["pbf"].dropna().iloc[0] if M["pbf"].notna().any() else None
+    rm = tv.roadmap({"muc_tieu": lo0, "can_nang": can0, "pbf": pbf0, "buoi_tuan": len(store.lich_co_dinh(k)) or 3}, {})
+    try:
+        bd = date.fromisoformat(str(k.get("ngay_bat_dau"))[:10])
+    except ValueError:
+        bd = hom
+    tuan_nay = max(1, (hom - bd).days // 7 + 1)
+    cs = st.columns(3)
+    for i, ph in enumerate(rm["phases"]):
+        dang = (i == 0 and tuan_nay <= 4) or (i == 1 and 5 <= tuan_nay <= 8) or (i == 2 and tuan_nay >= 9)
+        cs[i].markdown(f'<div class="hac-card" style="{"border:2px solid #C8A24A" if dang else ""}"><h4>{E(ph["ten"])}</h4>'
+                       f'<div style="color:#8b8577;font-size:.8rem">{E(ph["tuan"])}{" · ĐANG Ở ĐÂY" if dang else ""}</div>'
+                       f'<p style="font-size:.86rem;margin:6px 0">{E(ph["muc_tieu"])}</p>'
+                       + "".join(f'<div style="font-size:.82rem">• {E(x)}</div>' for x in ph["noi_dung"])
+                       + f'<div style="font-size:.8rem;color:#7A5B14;margin-top:6px">📏 {E(ph["do"])}</div></div>', unsafe_allow_html=True)
+    if can0 is not None:
+        pj = pd.DataFrame(rm["proj"])
+        pj["ngay"] = [pd.Timestamp(bd) + pd.Timedelta(weeks=w) for w in pj["tuan"]]
+        fig = go.Figure()
+        fig.add_scatter(x=pj["ngay"], y=pj["can_nang"], mode="lines", name="Lộ trình an toàn (cân)", line=dict(color="#8b8577", dash="dash"))
+        s_ = M[["ngay", "can_nang"]].dropna()
+        fig.add_scatter(x=s_["ngay"], y=s_["can_nang"], mode="lines+markers", name="Thực tế", line=dict(color=ui.VANG, width=3))
+        fig.update_xaxes(tickformat="%d/%m")
+        st.plotly_chart(ui.layout(fig, 280, "kg"), use_container_width=True, config={"displayModeBar": False})
+        st.caption("Lộ trình an toàn theo khung tư vấn F1 của Atlas: giảm mỡ ~0,6 % cân / tuần, tăng cơ ~0,35 % / tuần, recomp ~0,2 % / tuần "
+                   "(mức thực hành, không phải cam kết kết quả).")
+
+
+def _quet_inbody(k: dict, u: dict):
+    """Chụp / tải ảnh phiếu InBody → AI đọc số → điền sẵn form số đo (HLV xem lại rồi mới lưu). Giống Atlas v2.6."""
+    from core import anh as A, llm, tu_van as tv
+    ma = k["ma"]
+    with st.container(border=True):
+        st.markdown("**📷 Quét phiếu InBody** — chụp phiếu, web đọc số và điền sẵn bên dưới để anh kiểm tra")
+        if not llm.is_online():
+            st.caption("Cần khoá AI: thêm `GEMINI_API_KEY` (miễn phí ở aistudio.google.com — chép y hệt Secrets của web Atlas) vào Secrets.")
+            return
+        a, b = st.columns([3, 1], vertical_alignment="bottom")
+        f = a.file_uploader("Ảnh phiếu InBody", type=["jpg", "jpeg", "png", "webp"], key=f"ibf_{ma}_{S.get(f'ibv_{ma}', 0)}",
+                            label_visibility="collapsed")
+        if b.button("🔍 Đọc phiếu", disabled=f is None, use_container_width=True, key=f"ibb_{ma}"):
+            with st.spinner("AI đang đọc phiếu (10–30 giây)…"):
+                try:
+                    r = tv.read_inbody(A.shrink(f.getvalue(), 1800))
+                except llm.LLMError as e:
+                    st.error(f"Chưa đọc được: {e}")
+                    return
+            if not r:
+                st.error("Không đọc được số nào — chụp lại thẳng, đủ sáng, rõ phần số.")
+                return
+            S[f"ib_{ma}"] = r
+            S[f"ibv_{ma}"] = S.get(f"ibv_{ma}", 0) + 1
+            up = db.upload_images({"inbody": A.shrink(f.getvalue(), 1600)}, f"HAC_{ma}_")
+            if up:
+                td.luu_anh(ma, db.now_vn().date(), "khac", "inbody", up["inbody"], u)
+            st.rerun()
+        IB = S.get(f"ib_{ma}")
+        if IB:
+            st.success("Đã đọc: " + " · ".join(f"{tv.INBODY_FIELDS[x][0]} {v:g}" for x, v in IB.items() if x in tv.INBODY_FIELDS)
+                       + " — kiểm tra lại từng ô rồi bấm Lưu số đo.")
+            moi = {}
+            if IB.get("chieu_cao") and not k.get("chieu_cao"):
+                moi["chieu_cao"] = IB["chieu_cao"]
+            if IB.get("gioi_tinh") and IB["gioi_tinh"] != k.get("gioi_tinh"):
+                moi["gioi_tinh"] = IB["gioi_tinh"]
+            if moi and st.button("Cập nhật hồ sơ khách: " + ", ".join(f"{x} = {v}" for x, v in moi.items()), key=f"ibhs_{ma}"):
+                store.save_client({**k, **moi}, u["name"])
+                st.toast("Đã cập nhật hồ sơ")
+                st.rerun()
 
 
 # =================================================================== SOẠN TIN

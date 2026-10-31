@@ -13,7 +13,8 @@ TRANG_THAI = ["Đang tập", "Tạm dừng", "Ngưng tập"]
 HINH_THUC = ["Trực tiếp", "Online", "Kết hợp"]
 FIELDS = ["ma", "ho_ten", "sdt", "ten_zalo", "goi_khach", "xung_toi", "dia_diem", "goi_buoi", "da_tap_truoc", "gia",
           "ngay_bat_dau", "lich", "trang_thai", "ghi_chu", "xoa", "ngay_sinh",
-          "gioi_tinh", "chieu_cao", "muc_tieu", "can_muc_tieu", "hinh_thuc", "chan_thuong"]
+          "gioi_tinh", "chieu_cao", "muc_tieu", "can_muc_tieu", "hinh_thuc", "chan_thuong",
+          "muc_tieu_loai", "muc_tieu_mo", "muc_tieu_co", "muc_tieu_eo", "muc_tieu_ngay"]     # v1.1: lộ trình (chỉ HLV xem)
 
 
 # ------------------------------------------------------------------ khách

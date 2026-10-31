@@ -40,7 +40,8 @@ def ten_bai() -> list[str]:
 # ------------------------------------------------------------------ giáo án
 def plans(ma: str) -> list[dict]:
     ds = list(db.latest("GiaoAn", ma).values())
-    return sorted(ds, key=lambda g: (not g.get("dang_dung"), g.get("tac_gia") != "hlv", str(g.get("_luc"))), reverse=False)
+    ds = sorted(ds, key=lambda g: str(g.get("_luc")), reverse=True)                  # mới nhất trước
+    return sorted(ds, key=lambda g: (not g.get("dang_dung"), g.get("loai_ga") != "atlas", g.get("tac_gia") != "hlv"))
 
 
 def plan(ma: str, gid: str) -> dict | None:

@@ -58,9 +58,10 @@ if user["role"] == "coach":
     pages = {
         "Huấn luyện": [st.Page(V.lich, title="Lịch & nhắc tập", icon="📅", url_path="lich", default=True),
                        st.Page(V.khach, title="Khách & tài khoản", icon="👤", url_path="khach"),
-                       st.Page(V.tap, title="Giáo án & số tạ", icon="🏋️", url_path="tap"),
+                       st.Page(V.tap, title="Giáo án khách", icon="🏋️", url_path="tap"),
                        st.Page(V.an, title="Dinh dưỡng", icon="🍽", url_path="dinh_duong"),
-                       st.Page(V.tien_do, title="Tiến độ & báo cáo", icon="📈", url_path="tien_do")],
+                       st.Page(V.tien_do, title="Tiến độ & báo cáo", icon="📈", url_path="tien_do"),
+                       st.Page(V.lo_trinh, title="Lộ trình & mục tiêu 🔒", icon="🎯", url_path="lo_trinh")],
         "Công cụ": [st.Page(V.soan_tin, title="Soạn tin Zalo", icon="✉️", url_path="soan_tin"),
                     st.Page(V.thuc_pham, title="Bảng thực phẩm", icon="🥗", url_path="thuc_pham"),
                     st.Page(V.nhap_atlas, title="Chuyển dữ liệu từ Atlas", icon="📥", url_path="nhap_atlas")],

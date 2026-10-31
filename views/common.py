@@ -277,8 +277,12 @@ def _the_bai(b: dict, truoc: dict | None = None) -> str:
         x.append(f"{b['kg']:g} kg")
     if b.get("rpe"):
         x.append(f"RPE {b['rpe']:g}")
+    elif b.get("rpe_txt"):
+        x.append(str(b["rpe_txt"]))
     if b.get("nghi"):
         x.append(f"nghỉ {int(b['nghi'])} giây")
+    elif b.get("nghi_txt"):
+        x.append(f"nghỉ {b['nghi_txt']}")
     if b.get("tempo"):
         x.append(f"tempo {b['tempo']}")
     tr = ""
@@ -403,7 +407,7 @@ def ghi_buoi(k: dict, vai: str, nguoi: str, G: list[dict], L: list[dict]):
                   for x in st.multiselect("Chọn bài", ga.ten_bai(), key=f"gb_td_{ma}_{vai}")]
         gid, ten_buoi = "", "Buổi tự do"
     else:
-        gid, i = chon.split("|")
+        gid, i = chon.rsplit("|", 1)
         g = next(x for x in G if x["_khoa"] == gid)
         bai_ga, ten_buoi = g["buoi"][int(i)].get("bai", []), g["buoi"][int(i)].get("ten", "")
     if not bai_ga:
@@ -430,7 +434,7 @@ def ghi_buoi(k: dict, vai: str, nguoi: str, G: list[dict], L: list[dict]):
                                                "RPE": st.column_config.NumberColumn(min_value=5.0, max_value=10.0, step=0.5)})
             sets = [{"kg": ga._f(r["Kg"]) or 0, "lan": ga._i(r["Lần"]), **({"rpe": float(r["RPE"])} if pd.notna(r["RPE"]) else {})}
                     for r in df.to_dict("records") if ga._i(r.get("Lần"))]
-            ket.append({"bai": x["bai"], "sets": sets})
+            ket.append({"bai": x["bai"], **({"id": x["id"]} if x.get("id") else {}), "sets": sets})
         a, b, c = st.columns(3)
         cn = a.select_slider("Cảm nhận buổi tập", [1, 2, 3, 4, 5], value=4,
                              format_func=lambda v: {1: "😫 Rất mệt", 2: "😕 Mệt", 3: "😐 Bình thường", 4: "🙂 Tốt", 5: "🔥 Rất tốt"}[v])
@@ -472,6 +476,13 @@ def lich_su(k: dict, vai: str, nguoi: str, L: list[dict]):
                     for s in b.get("sets", [])))
             if nk.get("ghi_chu"):
                 st.caption(f"📝 {nk['ghi_chu']}")
+            if nk.get("loi_nhan"):
+                st.info(f"💬 Lời nhắn HLV: {nk['loi_nhan']}")
+            if vai == "hlv" and nk.get("ghi_chu_hlv"):
+                st.caption(f"🔒 Ghi chú nội bộ: {nk['ghi_chu_hlv']}")
+            if vai == "hlv" and nk.get("tinh_trang"):
+                st.caption(f"🩺 Thể trạng: {nk['tinh_trang']}" + (f" · sẵn sàng {nk['san_sang']}/100" if nk.get("san_sang") else "")
+                           + (f" · RPE buổi {nk['rpe']}" if nk.get("rpe") else ""))
             if (vai == "hlv" or nk.get("nguoi_ghi") == "khach") and st.button("🗑 Xoá buổi này", key=f"ls_x_{nk['id']}_{vai}"):
                 ga.xoa_log(k["ma"], nk["id"], nguoi)
                 st.rerun()
@@ -511,7 +522,9 @@ def so_ta(k: dict, L: list[dict]):
 
 def tap_luyen(k: dict, vai: str, nguoi: str):
     ma = k["ma"]
-    G = ga.plans(ma)
+    from core import ga_atlas
+    G = [({**ga_atlas.to_simple(g, db.now_vn().date()), "_khoa": g["_khoa"]} if g.get("loai_ga") == "atlas" else g)
+         for g in ga.plans(ma)]
     L = ga.logs(ma)
     t1, t2, t3, t4 = st.tabs(["📋 Giáo án", "✍️ Ghi buổi tập", "🏋️ Số tạ & kỷ lục", "🗓 Lịch sử"])
     with t1:
@@ -528,7 +541,7 @@ def tap_luyen(k: dict, vai: str, nguoi: str):
         else:
             g = None
             a.caption("Chưa có giáo án." + ("" if vai == "hlv" else " Chờ HLV soạn, hoặc tự tạo plan của bạn."))
-        duoc_sua = g is not None and (vai == "hlv" or g.get("tac_gia") == "khach")
+        duoc_sua = g is not None and g.get("loai_ga") != "atlas" and (vai == "hlv" or g.get("tac_gia") == "khach")
         if duoc_sua and b.button("✏️ Sửa" if not sua else "👁 Xem", key=f"ga_bsua_{ma}_{vai}", use_container_width=True):
             S[f"ga_sua_{ma}"] = not sua
             st.rerun()

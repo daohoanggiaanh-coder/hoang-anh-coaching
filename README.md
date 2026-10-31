@@ -1,4 +1,12 @@
-# Hoàng Anh Coaching · v1.0 · 2026-10-31
+# Hoàng Anh Coaching · v1.1 · 2026-10-31
+
+**Mới ở v1.1:** 🏋️ **Giáo án khách phong cách Atlas** (chuyển nguyên từ Atlas Academy v3.64): giáo án tuần tự xếp theo mục tiêu ·
+trình độ · số buổi · 9 dạng lịch (toàn thân, chuỗi trước/sau, PPL, trên/dưới, tăng mông nữ, circuit, chiều cao, sai lệch tư thế) ·
+vùng chấn thương; 8 bài / buổi theo lầu, bụng superset bài cô lập, kết buổi strongman / HIIT; liều tự đổi theo giai đoạn tuần 1–4 / 5–8 / 9–12;
+bảng sửa từng buổi; đổi bài khi thiếu máy; ghi buổi có thể trạng đầu buổi + điểm sẵn sàng + gợi ý tạ; khách thấy giáo án trên cổng khách.
+📷 **Quét phiếu InBody** (Tiến độ › Số đo — cần `GEMINI_API_KEY`). 🎯 **Lộ trình & mục tiêu** (chỉ HLV): % hoàn thành so với thời gian,
+tốc độ thật / tuần, ngày dự kiến đạt đích, chuyên cần, gợi ý điều chỉnh, lộ trình 12 tuần.
+
 
 Web riêng cho khách cá nhân của HLV Hoàng Anh (tách khỏi Atlas Academy). Chi phí server 0 đồng:
 Streamlit Community Cloud + Google Sheets / Drive đứng tên Gmail cá nhân.

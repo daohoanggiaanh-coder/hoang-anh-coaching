@@ -1,0 +1,1886 @@
+{
+ "_phien_ban": "Atlas Academy v3.22 (2026-10-12) — THANG CHUẨN ĐÁNH GIÁ F1·F2. Sửa mốc ở đây, không cần sửa code. Mỗi thang: danh sách mức từ tốt nhất xuống; 'tu' = giá trị tối thiểu để đạt mức (đơn vị ghi ở 'don_vi').",
+ "nguon": {
+  "bmi": "WHO khu vực châu Á – Thái Bình Dương (2000)",
+  "pbf": "American Council on Exercise (ACE) — bảng % mỡ cơ thể",
+  "mo_noi_tang": "InBody — mức mỡ nội tạng (1–9 bình thường)",
+  "vong_eo": "WHO châu Á – Thái Bình Dương: nam ≥ 90 cm, nữ ≥ 80 cm là béo bụng",
+  "whr": "WHO (2008): nam ≥ 0,90, nữ ≥ 0,85 tăng nguy cơ chuyển hoá",
+  "huyet_ap": "ACC/AHA (2017); ≥ 180/110 hoãn tập theo quy định an toàn Atlas",
+  "hit_dat": "Bảng chuẩn hít đất theo tuổi/giới (Topend Sports, tổng hợp từ ACSM/CSEP): nam hít đất chuẩn, nữ quỳ gối, làm tới khi hỏng kỹ thuật",
+  "plank": "Strand và cộng sự (2014), J. Human Kinetics; thang Topend Sports",
+  "keo_xo": "StrengthLevel — chuẩn Lat Pulldown quy về tỉ lệ 1RM / cân nặng",
+  "deo_dai": "Thang Atlas: mốc 0 = đầu ngón tay chạm mũi chân khi ngồi duỗi thẳng gối",
+  "ohs": "NASM — bảng bù trừ Overhead Squat (cơ căng / cơ yếu)",
+  "keo_ta_don": "StrengthLevel — chuẩn kéo tạ đơn 1 tay (1RM 1 quả tạ ÷ cân nặng), Atlas làm tròn",
+  "xa_thap": "Thang Atlas cho kéo xà thấp 45° (tham khảo bài test inverted row của NSCA/ACE)",
+  "hit_xa": "Thang hít xà (Topend Sports / tiêu chuẩn thể lực quân đội Mỹ), Atlas làm tròn",
+  "tuoi_co_the": "Công thức Atlas: so % mỡ, mỡ nội tạng, tỉ lệ cơ và điểm thể lực với mức chuẩn cùng giới (ước tính, không phải chẩn đoán y khoa)",
+  "plank_nghieng": "McGill (2010) — thời gian giữ side bridge trung bình nam ≈ 95 giây, nữ ≈ 75 giây; Atlas chia 5 mức",
+  "keo_ngang": "StrengthLevel — chuẩn Seated Cable Row (1RM ÷ cân nặng), Atlas làm tròn",
+  "ymca": "YMCA 3-Minute Step Test (Golding 1989; bảng chuẩn Topend Sports) — nhịp tim 1 phút sau test",
+  "squat_1phut": "Squat 60 giây (bảng chuẩn Topend Sports theo tuổi/giới); Goblet Squat quy đổi ×1,25 là ước tính Atlas",
+  "keo_day": "Thang Atlas cho Banded Row 60 giây (dây mức trung bình) — tham khảo nội bộ, chưa có chuẩn quốc tế",
+  "ohs_diem": "NASM Overhead Squat Assessment — số điểm bù trừ",
+  "rockport": "Rockport Walking Test (Kline và cộng sự 1987) → VO₂max; bảng chuẩn VO₂max theo tuổi/giới (Cooper Institute / Heyward)",
+  "buoc_2phut": "2-Minute Step Test — Senior Fitness Test (Rikli & Jones 2001), chuẩn cho người 60–94 tuổi"
+ },
+ "muc_mau": {
+  "5": "#1E7B4A",
+  "4": "#5BA36B",
+  "3": "#C8A24A",
+  "2": "#D98E04",
+  "1": "#C0392B"
+ },
+ "bmi": [
+  {
+   "tu": 30,
+   "nhan": "Béo phì độ II",
+   "diem": 1
+  },
+  {
+   "tu": 25,
+   "nhan": "Béo phì độ I",
+   "diem": 1
+  },
+  {
+   "tu": 23,
+   "nhan": "Thừa cân",
+   "diem": 2
+  },
+  {
+   "tu": 18.5,
+   "nhan": "Bình thường",
+   "diem": 5
+  },
+  {
+   "tu": 0,
+   "nhan": "Thiếu cân",
+   "diem": 2
+  }
+ ],
+ "pbf": {
+  "nam": [
+   {
+    "tu": 25,
+    "nhan": "Béo phì",
+    "diem": 1
+   },
+   {
+    "tu": 18,
+    "nhan": "Trung bình",
+    "diem": 3
+   },
+   {
+    "tu": 14,
+    "nhan": "Săn chắc (Fitness)",
+    "diem": 4
+   },
+   {
+    "tu": 6,
+    "nhan": "Vận động viên",
+    "diem": 5
+   },
+   {
+    "tu": 0,
+    "nhan": "Quá thấp (mỡ thiết yếu)",
+    "diem": 2
+   }
+  ],
+  "nu": [
+   {
+    "tu": 32,
+    "nhan": "Béo phì",
+    "diem": 1
+   },
+   {
+    "tu": 25,
+    "nhan": "Trung bình",
+    "diem": 3
+   },
+   {
+    "tu": 21,
+    "nhan": "Săn chắc (Fitness)",
+    "diem": 4
+   },
+   {
+    "tu": 14,
+    "nhan": "Vận động viên",
+    "diem": 5
+   },
+   {
+    "tu": 0,
+    "nhan": "Quá thấp (mỡ thiết yếu)",
+    "diem": 2
+   }
+  ]
+ },
+ "mo_noi_tang": [
+  {
+   "tu": 15,
+   "nhan": "Rất cao",
+   "diem": 1
+  },
+  {
+   "tu": 10,
+   "nhan": "Cao",
+   "diem": 2
+  },
+  {
+   "tu": 0,
+   "nhan": "Bình thường",
+   "diem": 5
+  }
+ ],
+ "vong_eo_nguong": {
+  "nam": 90,
+  "nu": 80
+ },
+ "whr_nguong": {
+  "nam": 0.9,
+  "nu": 0.85
+ },
+ "hit_dat": {
+  "nhan": [
+   "Xuất sắc",
+   "Tốt",
+   "Khá",
+   "Trung bình",
+   "Dưới trung bình",
+   "Kém",
+   "Rất kém"
+  ],
+  "diem": [
+   5,
+   5,
+   4,
+   3,
+   2,
+   1,
+   1
+  ],
+  "nam": {
+   "tuoi": [
+    [
+     0,
+     19
+    ],
+    [
+     20,
+     29
+    ],
+    [
+     30,
+     39
+    ],
+    [
+     40,
+     49
+    ],
+    [
+     50,
+     59
+    ],
+    [
+     60,
+     120
+    ]
+   ],
+   "tu": [
+    [
+     57,
+     47,
+     35,
+     19,
+     11,
+     4,
+     0
+    ],
+    [
+     48,
+     39,
+     30,
+     17,
+     10,
+     4,
+     0
+    ],
+    [
+     42,
+     34,
+     25,
+     13,
+     8,
+     2,
+     0
+    ],
+    [
+     35,
+     28,
+     21,
+     11,
+     6,
+     1,
+     0
+    ],
+    [
+     32,
+     25,
+     18,
+     9,
+     5,
+     1,
+     0
+    ],
+    [
+     31,
+     24,
+     17,
+     6,
+     3,
+     1,
+     0
+    ]
+   ]
+  },
+  "nu": {
+   "tuoi": [
+    [
+     0,
+     19
+    ],
+    [
+     20,
+     29
+    ],
+    [
+     30,
+     39
+    ],
+    [
+     40,
+     49
+    ],
+    [
+     50,
+     59
+    ],
+    [
+     60,
+     120
+    ]
+   ],
+   "tu": [
+    [
+     36,
+     27,
+     21,
+     11,
+     6,
+     2,
+     0
+    ],
+    [
+     37,
+     30,
+     23,
+     12,
+     7,
+     2,
+     0
+    ],
+    [
+     38,
+     30,
+     22,
+     10,
+     5,
+     1,
+     0
+    ],
+    [
+     32,
+     25,
+     18,
+     8,
+     4,
+     1,
+     0
+    ],
+    [
+     26,
+     21,
+     15,
+     7,
+     3,
+     1,
+     0
+    ],
+    [
+     24,
+     19,
+     13,
+     5,
+     2,
+     1,
+     0
+    ]
+   ]
+  }
+ },
+ "plank": [
+  {
+   "tu": 360,
+   "nhan": "Xuất sắc",
+   "diem": 5
+  },
+  {
+   "tu": 240,
+   "nhan": "Rất tốt",
+   "diem": 5
+  },
+  {
+   "tu": 120,
+   "nhan": "Khá",
+   "diem": 4
+  },
+  {
+   "tu": 60,
+   "nhan": "Trung bình",
+   "diem": 3
+  },
+  {
+   "tu": 30,
+   "nhan": "Dưới trung bình",
+   "diem": 2
+  },
+  {
+   "tu": 15,
+   "nhan": "Kém",
+   "diem": 1
+  },
+  {
+   "tu": 0,
+   "nhan": "Rất kém",
+   "diem": 1
+  }
+ ],
+ "keo_xo_ti_le": {
+  "nam": [
+   {
+    "tu": 1.4,
+    "nhan": "Nâng cao",
+    "diem": 5
+   },
+   {
+    "tu": 1.1,
+    "nhan": "Trung cấp",
+    "diem": 4
+   },
+   {
+    "tu": 0.8,
+    "nhan": "Sơ cấp",
+    "diem": 3
+   },
+   {
+    "tu": 0.6,
+    "nhan": "Người mới",
+    "diem": 2
+   },
+   {
+    "tu": 0,
+    "nhan": "Chưa đạt người mới",
+    "diem": 1
+   }
+  ],
+  "nu": [
+   {
+    "tu": 1.05,
+    "nhan": "Nâng cao",
+    "diem": 5
+   },
+   {
+    "tu": 0.8,
+    "nhan": "Trung cấp",
+    "diem": 4
+   },
+   {
+    "tu": 0.57,
+    "nhan": "Sơ cấp",
+    "diem": 3
+   },
+   {
+    "tu": 0.4,
+    "nhan": "Người mới",
+    "diem": 2
+   },
+   {
+    "tu": 0,
+    "nhan": "Chưa đạt người mới",
+    "diem": 1
+   }
+  ]
+ },
+ "deo_dai": [
+  {
+   "tu": 10,
+   "nhan": "Dẻo tốt",
+   "diem": 5
+  },
+  {
+   "tu": 0,
+   "nhan": "Đạt",
+   "diem": 4
+  },
+  {
+   "tu": -10,
+   "nhan": "Hơi cứng",
+   "diem": 2
+  },
+  {
+   "tu": -999,
+   "nhan": "Cứng",
+   "diem": 1
+  }
+ ],
+ "ohs": {
+  "ban_chan_xoay_ngoai": {
+   "ten": "Bàn chân xoay ra ngoài",
+   "goc": "Trước",
+   "anh": "",
+   "cang": [
+    "Bắp chân (cơ dép, bụng chân ngoài)",
+    "Đùi sau ngoài",
+    "Cơ căng mạc đùi (TFL)"
+   ],
+   "yeu": [
+    "Bắp chân trong",
+    "Đùi sau trong",
+    "Mông nhỡ, mông lớn"
+   ],
+   "sua": [
+    "Lăn cơ bắp chân + giãn bắp chân 2×30 giây",
+    "Glute Bridge 2×15",
+    "Đi ngang với dây mini band 2×12 bước"
+   ]
+  },
+  "gang_ban_chan_sap": {
+   "ten": "Bàn chân sập (vòm bàn chân xẹp)",
+   "goc": "Trước",
+   "anh": "",
+   "cang": [
+    "Cơ mác",
+    "Bắp chân ngoài",
+    "Cơ căng mạc đùi (TFL)"
+   ],
+   "yeu": [
+    "Cơ chày trước, chày sau",
+    "Mông nhỡ"
+   ],
+   "sua": [
+    "Bài “bàn chân ngắn” (short foot) 2×10",
+    "Nhón gót có kiểm soát 2×15",
+    "Đi ngang với dây mini band"
+   ]
+  },
+  "goi_chum": {
+   "ten": "Gối đổ vào trong",
+   "goc": "Trước",
+   "anh": "squat_goi_chum_sai",
+   "cang": [
+    "Nhóm cơ khép đùi",
+    "Cơ căng mạc đùi (TFL)",
+    "Đùi trước ngoài"
+   ],
+   "yeu": [
+    "Mông nhỡ, mông lớn",
+    "Đùi trước trong (VMO)"
+   ],
+   "sua": [
+    "Lăn cơ khép đùi + TFL",
+    "Squat có dây mini band quanh gối 2×12",
+    "Hip Abduction máy 2×15"
+   ]
+  },
+  "goi_ra_ngoai": {
+   "ten": "Gối đẩy ra ngoài",
+   "goc": "Trước",
+   "anh": "",
+   "cang": [
+    "Cơ hình lê",
+    "Đùi sau ngoài",
+    "Cơ căng mạc đùi (TFL)"
+   ],
+   "yeu": [
+    "Nhóm cơ khép đùi",
+    "Đùi sau trong",
+    "Mông lớn"
+   ],
+   "sua": [
+    "Giãn cơ hình lê 2×30 giây",
+    "Ép bóng giữa hai gối khi squat 2×12",
+    "Hip Adduction máy 2×15"
+   ]
+  },
+  "nhac_got": {
+   "ten": "Nhấc gót",
+   "goc": "Bên",
+   "anh": "squat_nhac_got_sai",
+   "cang": [
+    "Cơ dép (bắp chân)"
+   ],
+   "yeu": [
+    "Cơ chày trước"
+   ],
+   "sua": [
+    "Lăn + giãn bắp chân 2×30 giây",
+    "Goblet Squat kê gót tạm thời",
+    "Gập cổ chân (toe raise) 2×15"
+   ]
+  },
+  "do_nguoi": {
+   "ten": "Thân đổ về trước quá mức",
+   "goc": "Bên",
+   "anh": "squat_gu_lung_sai",
+   "cang": [
+    "Bắp chân",
+    "Cơ gập hông",
+    "Cơ bụng thẳng"
+   ],
+   "yeu": [
+    "Cơ chày trước",
+    "Mông lớn",
+    "Cơ dựng sống"
+   ],
+   "sua": [
+    "Giãn cơ gập hông quỳ gối 2×30 giây",
+    "Goblet Squat ngồi chạm ghế 2×10",
+    "Back Extension 45° 2×12"
+   ]
+  },
+  "uon_lung": {
+   "ten": "Lưng dưới võng (ưỡn)",
+   "goc": "Bên",
+   "anh": "",
+   "cang": [
+    "Cơ gập hông",
+    "Cơ dựng sống",
+    "Cơ lưng xô"
+   ],
+   "yeu": [
+    "Mông lớn",
+    "Đùi sau",
+    "Cơ lõi sâu"
+   ],
+   "sua": [
+    "Giãn cơ gập hông + lưng xô",
+    "Dead Bug 2×8",
+    "Glute Bridge 2×15"
+   ]
+  },
+  "gu_lung": {
+   "ten": "Lưng dưới cong tròn",
+   "goc": "Bên",
+   "anh": "deadlift_gu_lung_sai",
+   "cang": [
+    "Đùi sau",
+    "Cơ khép lớn",
+    "Cơ bụng thẳng"
+   ],
+   "yeu": [
+    "Mông lớn",
+    "Cơ dựng sống",
+    "Cơ lõi sâu"
+   ],
+   "sua": [
+    "Giãn đùi sau 2×30 giây",
+    "Bird Dog 2×8",
+    "Bản lề hông với gậy 2×10"
+   ]
+  },
+  "tay_roi": {
+   "ten": "Tay rơi về trước",
+   "goc": "Bên",
+   "anh": "",
+   "cang": [
+    "Cơ lưng xô",
+    "Cơ ngực lớn, ngực bé"
+   ],
+   "yeu": [
+    "Cơ thang giữa, dưới",
+    "Cơ trám",
+    "Chóp xoay vai"
+   ],
+   "sua": [
+    "Lăn + giãn cơ lưng xô, cơ ngực",
+    "Face Pull 2×15",
+    "Trượt tay trên tường (wall slide) 2×10"
+   ]
+  },
+  "lech_trong_tam": {
+   "ten": "Dồn trọng tâm lệch một bên",
+   "goc": "Sau",
+   "anh": "",
+   "cang": [
+    "Cơ khép đùi, TFL, cơ hình lê (bên lệch về)",
+    "Mông nhỡ (bên đối diện)"
+   ],
+   "yeu": [
+    "Mông nhỡ (bên lệch về)",
+    "Cơ khép đùi (bên đối diện)"
+   ],
+   "sua": [
+    "Bài một chân: Split Squat 2×8 mỗi bên",
+    "Đứng một chân giữ thăng bằng 3×20 giây",
+    "Hip Abduction một bên"
+   ]
+  }
+ },
+ "tu_the": {
+  "Trước": {
+   "Bàn chân": [
+    "Thẳng",
+    "Xoay ra ngoài"
+   ],
+   "Đầu gối": [
+    "Thẳng",
+    "Đổ vào trong",
+    "Đẩy ra ngoài"
+   ],
+   "Hông / chậu": [
+    "Cân bằng",
+    "Nghiêng"
+   ],
+   "Vai": [
+    "Cân bằng",
+    "Một bên nhô cao"
+   ]
+  },
+  "Bên": {
+   "Cổ chân": [
+    "Trung tính",
+    "Gập hạn chế"
+   ],
+   "Hông / chậu": [
+    "Trung tính",
+    "Võng lưng (chậu đổ trước)",
+    "Gù lưng dưới (chậu đổ sau)"
+   ],
+   "Vai": [
+    "Bình thường",
+    "Vai cuộn tròn"
+   ],
+   "Đầu": [
+    "Trung tính",
+    "Đưa ra trước"
+   ]
+  },
+  "Sau": {
+   "Bàn chân": [
+    "Thẳng",
+    "Gót nhấc",
+    "Bàn chân bẹt"
+   ],
+   "Hông / chậu": [
+    "Cân bằng",
+    "Lệch hông"
+   ],
+   "Vai": [
+    "Cân bằng",
+    "Xương bả vai nhô"
+   ]
+  }
+ },
+ "bien_the": {
+  "_ghi_chu": "Thiếu máy/dụng cụ → HLV chọn biến thể. 'he_so' quy đổi về bài chuẩn của thang (ước tính theo % trọng lượng cơ thể phải nâng).",
+  "hit_dat": [
+   {
+    "id": "chuan",
+    "ten": "Push Up · hít đất chuẩn",
+    "he_so": 1.0,
+    "anh": "pushup_vong_hong_dung",
+    "cach": "Tay rộng hơn vai, ngực xuống cách sàn một nắm tay, người thẳng từ đầu tới gót."
+   },
+   {
+    "id": "quy_goi",
+    "ten": "Kneeling Push Up · hít đất quỳ gối",
+    "he_so": 0.6,
+    "anh": "pushup_quy_goi_mau",
+    "cach": "Gối chạm sàn, người thẳng từ đầu tới gối; ngực xuống cách sàn một nắm tay."
+   },
+   {
+    "id": "rack",
+    "ten": "Rack Push Up · tay chống thanh đòn ngang hông",
+    "he_so": 0.4,
+    "anh": "pushup_rack_mau",
+    "cach": "Đặt thanh đòn trên rack hoặc máy Smith ngang hông, tay rộng hơn vai, người thẳng; ngực chạm thanh. Dùng cho khách quá cân, đau cổ tay, người mới hoàn toàn."
+   },
+   {
+    "id": "ghe",
+    "ten": "Incline Push Up · tay chống ghế / bục 40–50 cm",
+    "he_so": 0.6,
+    "anh": "",
+    "cach": "Tay chống mép ghế hoặc bục vững, người thẳng; ngực chạm mép ghế."
+   }
+  ],
+  "plank": [
+   {
+    "id": "cang_tay",
+    "ten": "Forearm Plank · plank cẳng tay",
+    "he_so": 1.0,
+    "anh": "plank_chong_mong_dung",
+    "cach": "Khuỷu dưới vai, người thẳng từ đầu tới gót. Dừng khi hông võng hoặc chổng mông lần thứ 2."
+   },
+   {
+    "id": "nghieng",
+    "ten": "Side Plank · plank nghiêng",
+    "bang": "plank_nghieng",
+    "anh": "plank_nghieng_mau",
+    "cach": "Nằm nghiêng, cẳng tay dưới vai, hai chân chồng nhau; nâng hông thành một đường thẳng. Đo cả hai bên, ghi bên YẾU hơn. Dùng khi khách đau lưng khi plank thường hoặc cần kiểm tra cơ liên sườn, mông nhỡ."
+   },
+   {
+    "id": "thang_tay",
+    "ten": "High Plank · plank thẳng tay",
+    "he_so": 1.0,
+    "anh": "",
+    "cach": "Bàn tay dưới vai, khuỷu thẳng, người thẳng. Dùng khi khách đau khuỷu hoặc sàn cứng."
+   },
+   {
+    "id": "quy_goi",
+    "ten": "Kneeling Plank · plank quỳ gối",
+    "he_so": 0.5,
+    "anh": "",
+    "cach": "Cẳng tay và gối chạm sàn, người thẳng từ đầu tới gối. Dùng cho người mới, quá cân, đau lưng nhẹ."
+   }
+  ],
+  "keo": [
+   {
+    "id": "banded_row",
+    "ten": "Banded Row · kéo dây kháng lực 60 giây",
+    "kieu": "so_lan",
+    "bang": "keo_day",
+    "anh": "bandedrow_mau",
+    "cach": "Ngồi duỗi chân hoặc đứng, dây vòng qua cột ngang ngực (dây mức trung bình). Kéo về rốn, ép bả vai, giữ thân thẳng. Đếm số lần đúng kỹ thuật trong 60 giây."
+   },
+   {
+    "id": "cable_row",
+    "ten": "Seated Cable Row · ngồi kéo lưng ngang",
+    "kieu": "ti_le",
+    "bang": "keo_ngang_ti_le",
+    "anh": "cablerow_mau",
+    "cach": "Ngồi thẳng lưng, chân đạp bục, gối hơi chùng; kéo tay cầm về rốn, ép bả vai, không ngả người. Chọn tạ khách kéo được 5–10 lần đúng kỹ thuật, ghi tạ và số lần."
+   },
+   {
+    "id": "lat_pulldown",
+    "ten": "Lat Pulldown · ngồi kéo xô (máy)",
+    "kieu": "ti_le",
+    "bang": "keo_xo_ti_le",
+    "anh": "latpulldown_nga_nguoi_dung",
+    "cach": "Chọn tạ khách kéo được 5–10 lần đúng kỹ thuật (thân gần thẳng, kéo tới ngực trên). Ghi tạ và số lần."
+   },
+   {
+    "id": "ta_don",
+    "ten": "One-arm Dumbbell Row · kéo tạ đơn 1 tay",
+    "kieu": "ti_le",
+    "bang": "keo_ta_don_ti_le",
+    "anh": "row_giat_nguoi_dung",
+    "cach": "Một tay một gối chống ghế, lưng thẳng; kéo tạ về hông. Ghi số kg của 1 quả tạ và số lần (5–10)."
+   },
+   {
+    "id": "xa_thap",
+    "ten": "Inverted Row · kéo xà thấp / TRX (nghiêng 45°)",
+    "kieu": "so_lan",
+    "bang": "xa_thap",
+    "anh": "",
+    "cach": "Nắm xà Smith ngang ngực hoặc dây TRX, người thẳng, gót chạm sàn, thân nghiêng khoảng 45°. Kéo ngực chạm xà, đếm tới khi hỏng kỹ thuật."
+   },
+   {
+    "id": "hit_xa",
+    "ten": "Pull Up · hít xà đơn",
+    "kieu": "so_lan",
+    "bang": "hit_xa",
+    "anh": "",
+    "cach": "Treo thẳng tay, kéo cằm qua xà, không đung đưa. Đếm số lần hoàn chỉnh."
+   }
+  ],
+  "deo": [
+   {
+    "id": "ngoi",
+    "ten": "Sit and Reach · ngồi với tay chạm mũi chân",
+    "anh": "deo_ngoi_mau",
+    "cach": "Ngồi sàn, duỗi thẳng gối, bàn chân dựng; với hai tay chồng lên nhau về trước, giữ 2 giây. Đo đầu ngón tay so với mũi chân."
+   },
+   {
+    "id": "dung",
+    "ten": "Toe Touch · đứng cúi chạm mũi chân",
+    "anh": "deo_dung_mau",
+    "cach": "Đứng trên bục, hai chân sát nhau, gối thẳng; cúi người với tay xuống, giữ 2 giây. Đo khoảng cách đầu ngón tay so với mũi chân."
+   }
+  ],
+  "squat": [
+   {
+    "id": "ohs",
+    "ten": "Overhead Squat · squat giơ tay qua đầu",
+    "kieu": "ohs",
+    "anh": "ohs_mau",
+    "cach": "Hai tay thẳng qua đầu, chân rộng bằng hông, squat 5 lần ở mỗi góc (trước, bên, sau). Kết quả lấy từ phần tích lỗi OHS ở thẻ ③."
+   },
+   {
+    "id": "bw",
+    "ten": "Bodyweight Squat · squat tay không 60 giây",
+    "kieu": "so_lan",
+    "anh": "squat_goi_chum_dung",
+    "cach": "Tay đưa ra trước, đùi xuống song song sàn, đứng thẳng hẳn mới tính 1 lần. Đếm số lần đúng kỹ thuật trong 60 giây."
+   },
+   {
+    "id": "goblet",
+    "ten": "Goblet Squat · squat ôm tạ đơn 60 giây",
+    "kieu": "so_lan",
+    "he_so": 1.25,
+    "anh": "squat_gu_lung_dung",
+    "cach": "Ôm 1 quả tạ đơn trước ngực (nam 8–12 kg, nữ 4–8 kg), xuống song song sàn. Đếm số lần trong 60 giây; quy đổi ≈ ×1,25 ra squat tay không (ước tính)."
+   }
+  ],
+  "tim_mach": [
+   {
+    "id": "ymca",
+    "ten": "YMCA 3 phút bước bục",
+    "anh": "ymca_mau",
+    "cach": "Bục 30 cm (bục aerobic hoặc bục gỗ chắc chắn). Mở app máy đếm nhịp 96 nhịp/phút, bước \"lên – lên – xuống – xuống\" (24 bước/phút) liên tục 3 phút. Hết giờ cho khách ngồi ngay, trong 5 giây bắt đầu đếm nhịp tim trọn 1 phút (máy đo kẹp ngón, đồng hồ hoặc bắt mạch cổ tay). Dừng ngay nếu chóng mặt, đau ngực, khó thở bất thường."
+   },
+   {
+    "id": "rockport",
+    "ten": "Rockport · đi bộ nhanh 1,6 km trên máy",
+    "anh": "rockport_mau",
+    "cach": "Dùng khi không có bục, khách quá cân hoặc đau gối khi bước. Máy đi bộ độ dốc 0–1 %, khởi động 3 phút. Khách đi bộ NHANH nhất có thể (không chạy, không vịn tay) đủ 1,6 km. Ghi thời gian hoàn thành (phút, giây) và nhịp tim ngay lúc dừng (đọc trên máy / đồng hồ, hoặc đếm 15 giây × 4). Cần cân nặng ở thẻ ② để tính VO₂max."
+   },
+   {
+    "id": "buoc_2phut",
+    "ten": "Bước tại chỗ 2 phút (khách ≥ 60 tuổi)",
+    "anh": "buoc2phut_mau",
+    "cach": "Dành cho khách cao tuổi hoặc thể lực rất yếu. Dán băng keo lên tường ở độ cao điểm giữa xương bánh chè và mào chậu. Khách đứng cạnh tường, bước tại chỗ nâng gối chạm mốc trong 2 phút (được vịn tường nếu mất thăng bằng, được nghỉ nhưng đồng hồ vẫn chạy). Đếm số lần gối PHẢI chạm mốc."
+   }
+  ]
+ },
+ "keo_ta_don_ti_le": {
+  "nam": [
+   {
+    "tu": 0.75,
+    "nhan": "Nâng cao",
+    "diem": 5
+   },
+   {
+    "tu": 0.5,
+    "nhan": "Trung cấp",
+    "diem": 4
+   },
+   {
+    "tu": 0.3,
+    "nhan": "Sơ cấp",
+    "diem": 3
+   },
+   {
+    "tu": 0.2,
+    "nhan": "Người mới",
+    "diem": 2
+   },
+   {
+    "tu": 0,
+    "nhan": "Chưa đạt người mới",
+    "diem": 1
+   }
+  ],
+  "nu": [
+   {
+    "tu": 0.45,
+    "nhan": "Nâng cao",
+    "diem": 5
+   },
+   {
+    "tu": 0.3,
+    "nhan": "Trung cấp",
+    "diem": 4
+   },
+   {
+    "tu": 0.17,
+    "nhan": "Sơ cấp",
+    "diem": 3
+   },
+   {
+    "tu": 0.1,
+    "nhan": "Người mới",
+    "diem": 2
+   },
+   {
+    "tu": 0,
+    "nhan": "Chưa đạt người mới",
+    "diem": 1
+   }
+  ]
+ },
+ "xa_thap": {
+  "nam": [
+   {
+    "tu": 20,
+    "nhan": "Xuất sắc",
+    "diem": 5
+   },
+   {
+    "tu": 15,
+    "nhan": "Tốt",
+    "diem": 4
+   },
+   {
+    "tu": 10,
+    "nhan": "Trung bình",
+    "diem": 3
+   },
+   {
+    "tu": 5,
+    "nhan": "Dưới trung bình",
+    "diem": 2
+   },
+   {
+    "tu": 0,
+    "nhan": "Kém",
+    "diem": 1
+   }
+  ],
+  "nu": [
+   {
+    "tu": 15,
+    "nhan": "Xuất sắc",
+    "diem": 5
+   },
+   {
+    "tu": 10,
+    "nhan": "Tốt",
+    "diem": 4
+   },
+   {
+    "tu": 6,
+    "nhan": "Trung bình",
+    "diem": 3
+   },
+   {
+    "tu": 3,
+    "nhan": "Dưới trung bình",
+    "diem": 2
+   },
+   {
+    "tu": 0,
+    "nhan": "Kém",
+    "diem": 1
+   }
+  ]
+ },
+ "hit_xa": {
+  "nam": [
+   {
+    "tu": 13,
+    "nhan": "Xuất sắc",
+    "diem": 5
+   },
+   {
+    "tu": 9,
+    "nhan": "Tốt",
+    "diem": 4
+   },
+   {
+    "tu": 6,
+    "nhan": "Trung bình",
+    "diem": 3
+   },
+   {
+    "tu": 1,
+    "nhan": "Dưới trung bình",
+    "diem": 2
+   },
+   {
+    "tu": 0,
+    "nhan": "Kém",
+    "diem": 1
+   }
+  ],
+  "nu": [
+   {
+    "tu": 5,
+    "nhan": "Xuất sắc",
+    "diem": 5
+   },
+   {
+    "tu": 3,
+    "nhan": "Tốt",
+    "diem": 4
+   },
+   {
+    "tu": 1,
+    "nhan": "Trung bình",
+    "diem": 3
+   },
+   {
+    "tu": 0,
+    "nhan": "Chưa kéo được",
+    "diem": 2
+   }
+  ]
+ },
+ "tuoi_co_the": {
+  "_ghi_chu": "Tuổi cơ thể Atlas = tuổi thật + Δ mỡ + Δ mỡ nội tạng + Δ cơ + Δ thể lực, giới hạn ±15 tuổi và không dưới 18. Sửa hệ số ở đây.",
+  "pbf_chuan": {
+   "nam": 15,
+   "nu": 23
+  },
+  "nam_moi_diem_pbf": 0.5,
+  "tran_mo": 8,
+  "noi_tang_nguong": 9,
+  "nam_moi_muc_noi_tang": 1.0,
+  "noi_tang_tot": 4,
+  "thuong_noi_tang_tot": -1,
+  "smm_ti_le_chuan": {
+   "nam": 0.45,
+   "nu": 0.38
+  },
+  "nam_moi_1pt_smm": 0.5,
+  "tran_co": 5,
+  "the_luc_moc": 3,
+  "nam_moi_bac_the_luc": 2,
+  "tran_the_luc": 4,
+  "bien_do": 15,
+  "toi_thieu": 18
+ },
+ "plank_nghieng": {
+  "nam": [
+   {
+    "tu": 120,
+    "nhan": "Xuất sắc",
+    "diem": 5
+   },
+   {
+    "tu": 90,
+    "nhan": "Tốt",
+    "diem": 4
+   },
+   {
+    "tu": 60,
+    "nhan": "Trung bình",
+    "diem": 3
+   },
+   {
+    "tu": 30,
+    "nhan": "Dưới trung bình",
+    "diem": 2
+   },
+   {
+    "tu": 0,
+    "nhan": "Kém",
+    "diem": 1
+   }
+  ],
+  "nu": [
+   {
+    "tu": 90,
+    "nhan": "Xuất sắc",
+    "diem": 5
+   },
+   {
+    "tu": 70,
+    "nhan": "Tốt",
+    "diem": 4
+   },
+   {
+    "tu": 45,
+    "nhan": "Trung bình",
+    "diem": 3
+   },
+   {
+    "tu": 20,
+    "nhan": "Dưới trung bình",
+    "diem": 2
+   },
+   {
+    "tu": 0,
+    "nhan": "Kém",
+    "diem": 1
+   }
+  ]
+ },
+ "keo_ngang_ti_le": {
+  "nam": [
+   {
+    "tu": 1.4,
+    "nhan": "Nâng cao",
+    "diem": 5
+   },
+   {
+    "tu": 1.05,
+    "nhan": "Trung cấp",
+    "diem": 4
+   },
+   {
+    "tu": 0.75,
+    "nhan": "Sơ cấp",
+    "diem": 3
+   },
+   {
+    "tu": 0.5,
+    "nhan": "Người mới",
+    "diem": 2
+   },
+   {
+    "tu": 0,
+    "nhan": "Chưa đạt người mới",
+    "diem": 1
+   }
+  ],
+  "nu": [
+   {
+    "tu": 1.0,
+    "nhan": "Nâng cao",
+    "diem": 5
+   },
+   {
+    "tu": 0.75,
+    "nhan": "Trung cấp",
+    "diem": 4
+   },
+   {
+    "tu": 0.5,
+    "nhan": "Sơ cấp",
+    "diem": 3
+   },
+   {
+    "tu": 0.3,
+    "nhan": "Người mới",
+    "diem": 2
+   },
+   {
+    "tu": 0,
+    "nhan": "Chưa đạt người mới",
+    "diem": 1
+   }
+  ]
+ },
+ "ymca": {
+  "nhan": [
+   "Xuất sắc",
+   "Tốt",
+   "Khá",
+   "Trung bình",
+   "Dưới trung bình",
+   "Kém",
+   "Rất kém"
+  ],
+  "diem": [
+   5,
+   5,
+   4,
+   3,
+   2,
+   1,
+   1
+  ],
+  "_ghi_chu": "Nhịp tim (lần/phút) đếm trong 1 phút ngay sau 3 phút bước bục 30 cm, nhịp 96 (24 bước/phút). 'max' = nhịp tim TỐI ĐA để đạt mức; thấp hơn là tốt hơn.",
+  "nam": {
+   "tuoi": [
+    [
+     0,
+     25
+    ],
+    [
+     26,
+     35
+    ],
+    [
+     36,
+     45
+    ],
+    [
+     46,
+     55
+    ],
+    [
+     56,
+     65
+    ],
+    [
+     66,
+     120
+    ]
+   ],
+   "max": [
+    [
+     76,
+     84,
+     93,
+     100,
+     107,
+     119
+    ],
+    [
+     76,
+     85,
+     94,
+     102,
+     110,
+     121
+    ],
+    [
+     76,
+     88,
+     98,
+     105,
+     113,
+     124
+    ],
+    [
+     82,
+     93,
+     101,
+     111,
+     119,
+     126
+    ],
+    [
+     77,
+     94,
+     100,
+     109,
+     117,
+     128
+    ],
+    [
+     81,
+     92,
+     102,
+     110,
+     118,
+     126
+    ]
+   ]
+  },
+  "nu": {
+   "tuoi": [
+    [
+     0,
+     25
+    ],
+    [
+     26,
+     35
+    ],
+    [
+     36,
+     45
+    ],
+    [
+     46,
+     55
+    ],
+    [
+     56,
+     65
+    ],
+    [
+     66,
+     120
+    ]
+   ],
+   "max": [
+    [
+     81,
+     93,
+     102,
+     110,
+     120,
+     131
+    ],
+    [
+     80,
+     92,
+     101,
+     110,
+     119,
+     129
+    ],
+    [
+     84,
+     96,
+     104,
+     112,
+     120,
+     132
+    ],
+    [
+     91,
+     101,
+     110,
+     118,
+     124,
+     132
+    ],
+    [
+     92,
+     103,
+     111,
+     118,
+     127,
+     135
+    ],
+    [
+     92,
+     101,
+     111,
+     121,
+     126,
+     133
+    ]
+   ]
+  }
+ },
+ "squat_1phut": {
+  "nhan": [
+   "Xuất sắc",
+   "Tốt",
+   "Khá",
+   "Trung bình",
+   "Dưới trung bình",
+   "Kém",
+   "Rất kém"
+  ],
+  "diem": [
+   5,
+   5,
+   4,
+   3,
+   2,
+   1,
+   1
+  ],
+  "_ghi_chu": "Số lần squat tay không đúng kỹ thuật trong 60 giây; 'tu' = số lần tối thiểu để đạt mức.",
+  "nam": {
+   "tuoi": [
+    [
+     0,
+     25
+    ],
+    [
+     26,
+     35
+    ],
+    [
+     36,
+     45
+    ],
+    [
+     46,
+     55
+    ],
+    [
+     56,
+     65
+    ],
+    [
+     66,
+     120
+    ]
+   ],
+   "tu": [
+    [
+     50,
+     44,
+     39,
+     35,
+     31,
+     25,
+     0
+    ],
+    [
+     46,
+     40,
+     35,
+     31,
+     29,
+     22,
+     0
+    ],
+    [
+     42,
+     35,
+     30,
+     27,
+     23,
+     17,
+     0
+    ],
+    [
+     36,
+     29,
+     25,
+     22,
+     18,
+     13,
+     0
+    ],
+    [
+     32,
+     28,
+     22,
+     20,
+     17,
+     9,
+     0
+    ],
+    [
+     29,
+     24,
+     21,
+     19,
+     15,
+     7,
+     0
+    ]
+   ]
+  },
+  "nu": {
+   "tuoi": [
+    [
+     0,
+     25
+    ],
+    [
+     26,
+     35
+    ],
+    [
+     36,
+     45
+    ],
+    [
+     46,
+     55
+    ],
+    [
+     56,
+     65
+    ],
+    [
+     66,
+     120
+    ]
+   ],
+   "tu": [
+    [
+     44,
+     37,
+     33,
+     29,
+     25,
+     18,
+     0
+    ],
+    [
+     40,
+     33,
+     29,
+     25,
+     21,
+     13,
+     0
+    ],
+    [
+     34,
+     27,
+     23,
+     19,
+     15,
+     7,
+     0
+    ],
+    [
+     28,
+     22,
+     18,
+     14,
+     10,
+     5,
+     0
+    ],
+    [
+     25,
+     18,
+     13,
+     10,
+     7,
+     3,
+     0
+    ],
+    [
+     24,
+     17,
+     14,
+     11,
+     5,
+     2,
+     0
+    ]
+   ]
+  }
+ },
+ "keo_day": {
+  "nam": [
+   {
+    "tu": 40,
+    "nhan": "Xuất sắc",
+    "diem": 5
+   },
+   {
+    "tu": 30,
+    "nhan": "Tốt",
+    "diem": 4
+   },
+   {
+    "tu": 20,
+    "nhan": "Trung bình",
+    "diem": 3
+   },
+   {
+    "tu": 10,
+    "nhan": "Dưới trung bình",
+    "diem": 2
+   },
+   {
+    "tu": 0,
+    "nhan": "Kém",
+    "diem": 1
+   }
+  ],
+  "nu": [
+   {
+    "tu": 35,
+    "nhan": "Xuất sắc",
+    "diem": 5
+   },
+   {
+    "tu": 25,
+    "nhan": "Tốt",
+    "diem": 4
+   },
+   {
+    "tu": 15,
+    "nhan": "Trung bình",
+    "diem": 3
+   },
+   {
+    "tu": 8,
+    "nhan": "Dưới trung bình",
+    "diem": 2
+   },
+   {
+    "tu": 0,
+    "nhan": "Kém",
+    "diem": 1
+   }
+  ]
+ },
+ "ohs_diem": [
+  {
+   "tu": 0,
+   "nhan": "Vận động tốt",
+   "diem": 5
+  },
+  {
+   "tu": 1,
+   "nhan": "1 điểm bù trừ",
+   "diem": 4
+  },
+  {
+   "tu": 2,
+   "nhan": "2 điểm bù trừ",
+   "diem": 3
+  },
+  {
+   "tu": 3,
+   "nhan": "3 điểm bù trừ",
+   "diem": 2
+  },
+  {
+   "tu": 4,
+   "nhan": "Nhiều bù trừ",
+   "diem": 1
+  }
+ ],
+ "strongman": [
+  {
+   "id": "battle_rope",
+   "ten": "Battle Rope · thừng chiến đấu",
+   "anh": "battlerope_mau",
+   "cach": "Sóng đôi liên tục, giữ nhịp đều. Ghi số giây giữ được nhịp (tối đa 60 giây) hoặc số hiệp 20 giây làm / 10 giây nghỉ."
+  },
+  {
+   "id": "slam_ball",
+   "ten": "Slam Ball · ném bóng nặng",
+   "anh": "slamball_mau",
+   "cach": "Bóng nam 8–10 kg, nữ 4–6 kg. Giơ qua đầu, đập mạnh xuống sàn, gập hông nhặt bóng lưng thẳng. Ghi số lần trong 30 giây."
+  },
+  {
+   "id": "sled",
+   "ten": "Sled Push & Pull · đẩy và kéo xe trượt",
+   "anh": "sled_mau",
+   "cach": "Đẩy 15–20 m, quay lại kéo 15–20 m. Ghi tạ đặt lên xe và thời gian hoàn thành."
+  }
+ ],
+ "y_nghia": {
+  "ymca": "Sức bền tim mạch: tim hồi phục nhanh hay chậm sau gắng sức, làm căn cứ chọn cường độ cardio.",
+  "squat": "Chất lượng vận động thân dưới (cổ chân, gối, hông, lưng) và sức bền đùi – mông.",
+  "keo": "Sức kéo lưng giữa và cân bằng đẩy – kéo, liên quan tư thế vai gù, đau cổ vai.",
+  "hit_dat": "Sức mạnh – sức bền ngực, vai, tay sau và khả năng giữ thân thẳng khi đẩy.",
+  "plank": "Sức bền cơ trọng tâm (bụng, lưng, liên sườn) – nền bảo vệ lưng dưới khi tập nặng.",
+  "deo": "Độ dẻo đùi sau – lưng dưới; dẻo kém thường đi kèm đau lưng và squat, deadlift sai form.",
+  "strongman": "Sức bền toàn thân, công suất và tinh thần khi mệt – bài vui kết buổi, không tính điểm."
+ },
+ "vo2max": {
+  "nhan": [
+   "Xuất sắc",
+   "Rất tốt",
+   "Tốt",
+   "Trung bình",
+   "Kém",
+   "Rất kém"
+  ],
+  "diem": [
+   5,
+   5,
+   4,
+   3,
+   2,
+   1
+  ],
+  "_ghi_chu": "VO₂max (ml/kg/phút) tối thiểu cho từng mức, theo tuổi/giới.",
+  "nam": {
+   "tuoi": [
+    [
+     0,
+     29
+    ],
+    [
+     30,
+     39
+    ],
+    [
+     40,
+     49
+    ],
+    [
+     50,
+     59
+    ],
+    [
+     60,
+     120
+    ]
+   ],
+   "tu": [
+    [
+     52.5,
+     46.5,
+     42.5,
+     36.5,
+     33.0,
+     0
+    ],
+    [
+     49.5,
+     45.0,
+     41.0,
+     35.5,
+     31.5,
+     0
+    ],
+    [
+     48.1,
+     43.8,
+     39.0,
+     33.6,
+     30.2,
+     0
+    ],
+    [
+     45.4,
+     41.0,
+     35.8,
+     31.0,
+     26.1,
+     0
+    ],
+    [
+     44.3,
+     36.5,
+     32.3,
+     26.1,
+     20.5,
+     0
+    ]
+   ]
+  },
+  "nu": {
+   "tuoi": [
+    [
+     0,
+     29
+    ],
+    [
+     30,
+     39
+    ],
+    [
+     40,
+     49
+    ],
+    [
+     50,
+     59
+    ],
+    [
+     60,
+     120
+    ]
+   ],
+   "tu": [
+    [
+     42.0,
+     39.0,
+     35.0,
+     31.0,
+     24.0,
+     0
+    ],
+    [
+     40.1,
+     35.7,
+     31.5,
+     27.0,
+     22.8,
+     0
+    ],
+    [
+     37.0,
+     32.9,
+     29.0,
+     24.5,
+     21.0,
+     0
+    ],
+    [
+     35.8,
+     31.5,
+     27.0,
+     22.8,
+     20.2,
+     0
+    ],
+    [
+     31.5,
+     30.3,
+     24.5,
+     20.2,
+     17.5,
+     0
+    ]
+   ]
+  }
+ },
+ "buoc_2phut": {
+  "_ghi_chu": "Rikli & Jones (Senior Fitness Test): khoảng bình thường (bách phân vị 25–75) số lần nâng gối trong 2 phút.",
+  "tuoi": [
+   [
+    60,
+    64
+   ],
+   [
+    65,
+    69
+   ],
+   [
+    70,
+    74
+   ],
+   [
+    75,
+    79
+   ],
+   [
+    80,
+    84
+   ],
+   [
+    85,
+    89
+   ],
+   [
+    90,
+    120
+   ]
+  ],
+  "nam": [
+   [
+    87,
+    115
+   ],
+   [
+    86,
+    116
+   ],
+   [
+    80,
+    110
+   ],
+   [
+    73,
+    109
+   ],
+   [
+    71,
+    103
+   ],
+   [
+    59,
+    91
+   ],
+   [
+    52,
+    86
+   ]
+  ],
+  "nu": [
+   [
+    75,
+    107
+   ],
+   [
+    73,
+    107
+   ],
+   [
+    68,
+    101
+   ],
+   [
+    68,
+    100
+   ],
+   [
+    60,
+    90
+   ],
+   [
+    55,
+    85
+   ],
+   [
+    44,
+    72
+   ]
+  ]
+ }
+}

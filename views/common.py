@@ -552,17 +552,20 @@ def ghi_buoi(k: dict, vai: str, nguoi: str, G: list[dict], L: list[dict]):
                 st.caption(f"💡 {loi}")
             n = int(x.get("hiep") or 3)
             kl = ga.khoang_lan(x.get("lan"))
-            nan = float("nan")
-            df0 = pd.DataFrame({"Hiệp": list(range(1, n + 1)), "Kg": [kg_g if kg_g is not None else nan] * n,
-                                "Lần": [nan] * n, "RPE": [nan] * n})
-            df = st.data_editor(df0, num_rows="dynamic", hide_index=True, use_container_width=True, key=f"gb_de_{ma}_{vai}_{chon}_{j}",
-                                column_config={"Hiệp": st.column_config.NumberColumn(disabled=True, width="small"),
-                                               "Kg": st.column_config.NumberColumn(min_value=0.0, step=0.5, format="%.1f"),
-                                               "Lần": st.column_config.NumberColumn(min_value=0, step=1,
-                                                                                    help=f"Mục tiêu {kl[0]}–{kl[1]}" if kl else None),
-                                               "RPE": st.column_config.NumberColumn(min_value=5.0, max_value=10.0, step=0.5)})
-            sets = [{"kg": ga._f(r["Kg"]) or 0, "lan": ga._i(r["Lần"]), **({"rpe": float(r["RPE"])} if pd.notna(r["RPE"]) else {})}
-                    for r in df.to_dict("records") if ga._i(r.get("Lần"))]
+            h1, h2, h3 = st.columns([0.5, 1, 1])
+            h1.caption("Hiệp")
+            h2.caption("Kg")
+            h3.caption("Lần" + (f" (mục tiêu {kl[0]}–{kl[1]})" if kl else ""))
+            sets = []
+            for si in range(n):
+                c1, c2, c3 = st.columns([0.5, 1, 1], vertical_alignment="center")
+                c1.markdown(f"<div style='text-align:center;font-weight:700;color:#8b8577'>{si + 1}</div>", unsafe_allow_html=True)
+                kg_ = c2.number_input("kg", 0.0, 400.0, value=kg_g, step=0.5, format="%.1f", placeholder="kg",
+                                      key=f"gb_kg_{ma}_{vai}_{chon}_{j}_{si}", label_visibility="collapsed")
+                ln_ = c3.number_input("lần", 0, 600, value=None, step=1, placeholder="lần",
+                                      key=f"gb_ln_{ma}_{vai}_{chon}_{j}_{si}", label_visibility="collapsed")
+                if ln_:
+                    sets.append({"kg": kg_ or 0, "lan": int(ln_)})
             ket.append({"bai": x["bai"], **({"id": x["id"]} if x.get("id") else {}), "sets": sets})
         a, b, c = st.columns(3)
         cn = a.select_slider("Cảm nhận buổi tập", [1, 2, 3, 4, 5], value=4,
@@ -698,7 +701,17 @@ def tap_luyen(k: dict, vai: str, nguoi: str, q: dict | None = None):
                 xem_giao_an(k, g, L)
     if t2 is not None:
         with t2:
-            ghi_buoi(k, vai, nguoi, G, L)
+            plan_hlv = ga_atlas.current(ma) if (vai != "hlv" and q["giao_an"]) else None
+            tu_tao = [g for g in G if g.get("tac_gia") == "khach"]
+            kieu = "hlv"
+            if plan_hlv and (tu_tao or q["tu_tao_plan"]):
+                kieu = st.segmented_control("Ghi theo", ["hlv", "tu"], default="hlv", key=f"gb_kieu_{ma}_{vai}",
+                                            format_func={"hlv": "📋 Giáo án HLV", "tu": "✍️ Plan tự tạo / buổi tự do"}.get) or "hlv"
+            if plan_hlv and kieu == "hlv":
+                from views import coach_ga
+                coach_ga.ghi_buoi(k, plan_hlv, nguoi, "khach")
+            else:
+                ghi_buoi(k, vai, nguoi, [g for g in G if g.get("loai_ga") != "atlas"] if plan_hlv else G, L)
     if t3 is not None:
         with t3:
             so_ta(k, L)

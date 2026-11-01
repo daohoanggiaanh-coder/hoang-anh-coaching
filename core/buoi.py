@@ -87,7 +87,7 @@ def suggest(item: dict, lieu: str, last: dict | None) -> str:
 def save(ma: str, s: dict, nguoi: str) -> str:
     bai = [{"id": b["id"], "bai": b["ten"], "ten": b["ten"], "sets": b["hiep"], "hiep": b["hiep"],
             **{k: b[k] for k in ("ghi_chu", "thay_cho", "ss", "giay") if b.get(k)}} for b in s["bai"] if b.get("hiep")]
-    return gsimple.save_log(ma, {**s, "ngay": str(s["ngay"])[:10], "bai": bai, "nguoi_ghi": "hlv"}, nguoi)
+    return gsimple.save_log(ma, {**s, "ngay": str(s["ngay"])[:10], "bai": bai, "nguoi_ghi": s.get("nguoi_ghi") or "hlv"}, nguoi)
 
 
 def today() -> date:

@@ -44,6 +44,17 @@ div[class*="st-key-kb_"] label, div[class*="st-key-kb_"] p{color:#F3ECDC!importa
 .gs-ma{background:#E8C76A;color:#1C1B19;font-weight:900;font-size:.72rem;letter-spacing:.1em;border-radius:999px;padding:4px 10px}
 .gs-t{font-weight:700}.gs-n{margin-left:auto;color:#D8D1C1;font-size:.78rem}
 .gs-flow{font-size:.78rem;color:#6C6860;text-align:center;margin:4px 0 2px}
+@media(max-width:640px){.gx-c b{font-size:.86rem}.gs-n{margin-left:0}}
+html[data-hac-theme=dark] div[class*="st-key-gx_"]{background:#1A1814;border-color:#332E25;box-shadow:none}
+html[data-hac-theme=dark] div[class*="st-key-sw_"] div[data-baseweb="select"]>div{background:#221F1A!important;border-color:#4A4234!important}
+html[data-hac-theme=dark] div[class*="st-key-sw_"] div[data-baseweb="select"] div,
+html[data-hac-theme=dark] div[class*="st-key-sw_"] div[data-baseweb="select"] span{color:#F3ECDC!important}
+html[data-hac-theme=dark] .gx-c{background:#221F1A;border-color:#332E25}
+html[data-hac-theme=dark] .gx-c b{color:#F3ECDC}
+html[data-hac-theme=dark] :is(.gx-tip,.gx-tang){background:#2A251D;color:#D8CFBD}
+html[data-hac-theme=dark] :is(.gx-lau,.gx-c small){color:#E2BE62}
+html[data-hac-theme=dark] .gs-flow{color:#A8A091}
+html[data-hac-theme=dark] div[class*="st-key-kb_"]{background:#080706;border:1px solid #332E25}
 </style>"""
 
 
@@ -78,7 +89,6 @@ def trang(user: dict, k: dict):
     S = st.session_state
     ma = k["ma"]
     st.markdown(CSS, unsafe_allow_html=True)
-    hist = bt.sessions(ma)
     plan = ga.current(ma)
     H = store.hens(ma)
     da = store.da_tap(k, H)
@@ -221,172 +231,6 @@ def trang(user: dict, k: dict):
             st.caption(f"Bản đang dùng lưu lúc {plan['thoi_gian'][:16]}.")
 
     # ============================================================== ghi buổi tập
-    @st.fragment
-    def _ghi_buoi(P_: dict, chua_luu: bool):
-        mas = [b_["ma"] for b_ in P_["buoi"]]
-        nx = ga.buoi_tiep(P_, hist)
-        a, b = st.columns([2, 1])
-        bm = a.radio("Buổi hôm nay", mas, index=mas.index(nx["ma"]), horizontal=True, key=f"bm_{ma}",
-                     format_func=lambda m: f"Buổi {m} · " + next(x["ten"] for x in P_["buoi"] if x["ma"] == m).split("·")[0].strip())
-        ngay = b.date_input("Ngày", value=bt.today(), format="DD/MM/YYYY", key=f"ng_{ma}")
-        bu = next(x for x in P_["buoi"] if x["ma"] == bm)
-        wk = ga.week_no(P_["ngay_bat_dau"], ngay)
-        if len(mas) > 1:
-            st.markdown('<div class="gs-flow">Chu kỳ ' + " → ".join(f"<b>{m}</b>" if m == nx["ma"] else m for m in mas)
-                        + f" · hôm nay theo chu kỳ là <b>buổi {nx['ma']}</b></div>", unsafe_allow_html=True)
-        ops = tt_.lua_chon(k.get("gioi_tinh") or "")
-        with st.expander("📋 Chấm điểm sẵn sàng tập — 4 câu, 15 giây (khuyên dùng)", expanded=False):
-            cs = st.columns(4)
-            tl = {ma_: cs[i].select_slider(ten_, options=[1, 2, 3, 4, 5], value=3, format_func=lambda v, o=ops_: o[v - 1],
-                                           key=f"ss_{ma}_{bm}_{ma_}") for i, (ma_, ten_, ops_) in enumerate(tt_.CAU)}
-            diem_, de_xuat = tt_.diem_san_sang(tl)
-            x1, x2 = st.columns([1.2, 1], vertical_alignment="center")
-            x1.markdown(f'<div style="display:flex;align-items:center;gap:12px"><div style="width:64px;height:64px;border-radius:50%;'
-                        f'border:6px solid {tt_.mau_diem(diem_)};display:grid;place-items:center;font-weight:900;font-size:1.2rem">{diem_}</div>'
-                        f'<div><b>Điểm sẵn sàng {diem_}/100</b><br><span style="color:#8b8577;font-size:.85rem">Đề xuất: '
-                        f'{tt_.TINH_TRANG[de_xuat]["icon"]} {de_xuat}</span></div></div>', unsafe_allow_html=True)
-            if x2.button("Áp dụng đề xuất", key=f"ssok_{ma}_{bm}", use_container_width=True, type="primary"):
-                S[f"tt_{ma}_{bm}"] = de_xuat
-                S[f"ssd_{ma}"] = diem_
-                st.rerun(scope="fragment")
-        tts = st.pills("🩺 Hôm nay khách thấy thế nào?", ops, default=None if f"tt_{ma}_{bm}" in S else "Khoẻ", key=f"tt_{ma}_{bm}",
-                       format_func=lambda x: f"{tt_.TINH_TRANG[x]['icon']} {x}") or "Khoẻ"
-        cf = tt_.get(tts)
-        mu, mau_ = tt_.MUC[cf["muc"]]
-        st.markdown(f'<div style="display:flex;gap:10px;align-items:flex-start;border:1px solid {mau_}55;background:{mau_}12;'
-                    f'border-radius:14px;padding:10px 14px;margin:2px 0 8px"><span style="background:{mau_};color:#fff;font-weight:800;'
-                    f'font-size:.66rem;letter-spacing:.08em;border-radius:999px;padding:4px 10px;white-space:nowrap">{mu}</span>'
-                    f'<span style="font-size:.86rem;color:#2b2822">{E(cf["loi"])}'
-                    + (f' <b>Tạ gợi ý ×{cf["kg"]:.2f}'.replace(".", ",") + (f", −{cf['hiep']} hiệp" if cf["hiep"] else "") + "</b>"
-                       if cf["kg"] < 1 else "") + "</span></div>", unsafe_allow_html=True)
-        nhe = cf.get("nhe") and st.toggle("🔄 Đổi sang buổi phục hồi nhẹ (không tính vào chu kỳ giáo án)", value=True, key=f"nhe_{ma}_{bm}")
-        if nhe:
-            bu = ga.buoi_nhe(P_["trinh_do"], P_.get("han_che"))
-        elif cf.get("core_nhe"):
-            co_ = {x["id"] for x in bu["bai"]}
-            nhe_ = [c for c in tt_.CORE_NHE if c not in co_]
-            moi_ = []
-            for x in bu["bai"]:
-                if x["id"] in tt_.CORE_NANG and nhe_:
-                    e_ = ga.ex(nhe_.pop(0))
-                    x = {**x, **{q: e_[q] for q in ("id", "ten", "nhom", "loai", "dung_cu")}, "thay_cho": x["ten"]}
-                moi_.append(x)
-            bu = {**bu, "bai": moi_}
-        tkey = ops.index(tts) if tts in ops else 0
-        bm_luu = bu["ma"]
-        st.markdown(f'<div class="gs-h"><span class="gs-ma">{"PHỤC HỒI" if bm_luu == "PH" else "BUỔI " + E(str(bm))}</span>'
-                    f'<span class="gs-t">{E(bu["ten"])}</span><span class="gs-n">Tuần {wk} · {E(ga.PHASES[ga.phase_of(wk)])}</span></div>',
-                    unsafe_allow_html=True)
-        st.caption("Bấm vào **tên bài** để đổi sang bài tương đương. Ghi kg và số lần thực tế từng hiệp; để trống hiệp không tập.")
-        nhan = ga.nhan_ss(bu["bai"])
-        ids = {it["id"] for it in bu["bai"]}
-        lau_cur = None
-        bai = []
-        for j, it0 in enumerate(bu["bai"]):
-            lim_ = sorted(set(P_.get("han_che") or []) | set(CT))
-            alt = [it0["id"]] + ga.ung_vien(it0["id"], ids, P_["trinh_do"], lim_, n=8)
-            t_ = ga.tang(it0["id"])
-            if t_ and t_ != lau_cur and it0.get("loai") not in ("S", "T"):
-                st.markdown(f'<div class="gx-lau">{"⬇️" if t_ == 1 else "⬆️"} LẦU {t_}</div>', unsafe_allow_html=True)
-                lau_cur = t_
-            if it0.get("loai") in ("S", "T") and lau_cur != "ket":
-                st.markdown('<div class="gx-lau">🔥 KẾT BUỔI</div>', unsafe_allow_html=True)
-                lau_cur = "ket"
-            with st.container(key=f"gx_{ma}_{bm_luu}_{j}"):
-                head = st.empty()
-                eid = st.selectbox("Bài tập", alt, key=f"sw_{ma}_{bm_luu}_{j}", label_visibility="collapsed",
-                                   format_func=lambda x, o=it0["id"]: _ten(x) if x == o else
-                                   f"↺ {_ten(x)}  ·  {ga.dang(x)[0]} · {ga.ex(x).get('dung_cu', '')}")
-                e = ga.ex(eid)
-                it = it0 if eid == it0["id"] else {**it0, **{x: e[x] for x in ("id", "ten", "nhom", "loai", "dung_cu")},
-                                                    "thay_cho": it0.get("thay_cho") or it0["ten"]}
-                r = ga.rx(it, P_["muc_tieu"], wk, P_["trinh_do"])
-                dg, mau = ga.dang(it.get("loai") or eid)
-                so = nhan[j] or str(j + 1)
-                head.markdown(f'<div class="gx-h"><span class="gx-n">{E(so)}</span><span class="gx-b" style="background:{mau}">{E(dg)}</span>'
-                              + (f'<span class="gx-tang">LẦU {ga.tang(eid)}</span>' if ga.tang(eid) else "")
-                              + f'<span class="gx-eq">{E(str(e.get("dung_cu") or ""))}</span>'
-                              + (f'<span class="gx-sw">↺ thay cho {E(it["thay_cho"])}</span>' if it.get("thay_cho") else "")
-                              + "".join(f'<span class="gx-b" style="background:#C0392B">⚠️ hại {E(v)}</span>' for v in CT
-                                        if eid in ga.HAN_CHE.get(v, set())) + "</div>", unsafe_allow_html=True)
-                ke = nhan[j + 1] if j + 1 < len(nhan) else ""
-                if nhan[j] and ke[:1] == nhan[j][:1]:
-                    nghi, phu_n = f"→ {ke}", "chuyển ngay, không nghỉ"
-                else:
-                    nghi, phu_n = r["nghi"], ("sau cả cặp superset" if nhan[j] else "giữa các hiệp")
-                rir = r["rir"] if r["rir"] and r["rir"] != r["rpe"] else ""
-                rpe_ = tt_.rpe(r["rpe"], tts)
-                if rpe_ != r["rpe"]:
-                    rir = f"giảm theo thể trạng (gốc {r['rpe']})"
-                st.markdown('<div class="gx-chips">' + _chip("Mục tiêu", r["lieu"], "hiệp × lần")
-                            + _chip("Cường độ", rpe_ or ("—" if not rir else "Kỹ thuật"), rir)
-                            + _chip("Nghỉ", nghi, phu_n) + "</div>", unsafe_allow_html=True)
-                giay = "giây" in r["lieu"]
-                try:
-                    n_set = int(r["lieu"].split("×")[0].split("–")[-1])
-                except ValueError:
-                    n_set = 3
-                n_set = tt_.so_hiep(n_set, tts, it.get("loai", ""))
-                met = r["lieu"].rstrip().endswith(" m")
-                last = bt.last_for(ma, eid, hist)
-                sg = bt.suggest(it, r["lieu"], last)
-                if sg:
-                    st.markdown(f'<div class="gx-tip">💡 {E(sg)}</div>', unsafe_allow_html=True)
-                box = st.container(key=f"sets_{ma}_{bm_luu}_{j}")
-                box.markdown(f'<div class="gx-th"><span>Hiệp</span><span>{"" if giay else "kg"}</span>'
-                             f'<span>{"giây" if giay else "mét" if met else "lần"}</span></div>', unsafe_allow_html=True)
-                tk = None if giay else tt_.kg_goi_y(bt.target_kg(it, r["lieu"], last), tts, it.get("loai", ""), bt._step(it))
-                hs = []
-                for si in range(n_set):
-                    c1, c2, c3 = box.columns([0.55, 1, 1], vertical_alignment="center")
-                    c1.markdown(f"<div style='text-align:center;color:#8b8577;font-weight:700'>{si + 1}</div>", unsafe_allow_html=True)
-                    kg = None if giay else c2.number_input("kg", 0.0, 400.0, value=tk, step=0.5, format="%.1f",
-                                                           key=f"kg_{ma}_{bm_luu}_{j}_{eid}_{si}_{tkey}", placeholder="kg",
-                                                           label_visibility="collapsed")
-                    lan = c3.number_input("lần", 0, 600, value=None, step=1, key=f"ln_{ma}_{bm_luu}_{j}_{eid}_{si}",
-                                          placeholder="giây" if giay else "mét" if met else "lần", label_visibility="collapsed")
-                    if lan:
-                        hs.append({"kg": kg or 0, "lan": lan})
-                gc = st.text_input("Ghi chú bài", key=f"gcb_{ma}_{bm_luu}_{j}", placeholder="Ghi chú bài (VD đau nhẹ gối, đổi tay cầm…)",
-                                   label_visibility="collapsed")
-                bai.append({"id": eid, "ten": it["ten"], "hiep": hs, "ghi_chu": gc, "giay": giay,
-                            **({"thay_cho": it["thay_cho"]} if it.get("thay_cho") else {}), **({"ss": nhan[j]} if nhan[j] else {})})
-        with st.container(key=f"kb_{ma}_{bm}"):
-            st.markdown("**🏁 Kết buổi**")
-            cardio = st.text_input("Cardio", value=ga.cardio(P_["muc_tieu"], wk), key=f"cd_{ma}_{bm}")
-            a, b = st.columns(2)
-            cam = a.select_slider("Khách cảm thấy", bt.CAM_NHAN, value="Bình thường", key=f"cn_{ma}_{bm}")
-            rpe = b.slider("Độ nặng cả buổi (RPE 1–10)", 1, 10, 7, key=f"rpe_{ma}_{bm}")
-            ghi_pt = st.text_input("Ghi chú nội bộ (khách KHÔNG thấy)", key=f"gpt_{ma}_{bm}")
-            loi = st.text_area("Lời nhắn gửi khách (khách thấy trong lịch sử buổi)", height=70, key=f"loi_{ma}_{bm}",
-                               placeholder="VD Hôm nay squat chắc hơn hẳn! Tối nay nhớ ăn đủ đạm, ngủ trước 23h.")
-            tru = st.checkbox("Tính 1 buổi trong gói (đánh dấu Đã tập trên lịch)", value=True, key=f"tru_{ma}_{bm}")
-            done = st.button("✅ Kết thúc buổi & lưu" + (" (lưu luôn giáo án mới)" if chua_luu else ""), type="primary",
-                             use_container_width=True, key=f"done_{ma}_{bm}")
-        if done:
-            if not any(x["hiep"] for x in bai):
-                st.error("Chưa ghi hiệp nào — nhập ít nhất số lần của 1 bài.")
-                return
-            if chua_luu and not _luu(P_):
-                st.error("Chưa lưu được giáo án — kiểm tra kết nối rồi bấm lại.")
-                return
-            s_ = {"ngay": ngay, "ga_id": ga.KHOA.format(ma), "buoi": f"Buổi {bm_luu} · {bu['ten']}", "buoi_ma": bm_luu, "tuan": wk,
-                  "tinh_trang": tts, "san_sang": S.get(f"ssd_{ma}", ""), "bai": bai, "cardio": cardio, "cam_nhan": cam,
-                  "rpe": rpe, "ghi_chu_hlv": ghi_pt, "loi_nhan": loi, "thoi_luong": 60}
-            bt.save(ma, s_, user["name"])
-            if tru:
-                hom = [x for x in store.buoi([k], ngay, ngay, H) if x["trang_thai"] == "hen"]
-                if hom:
-                    store.ghi_hen(ma, ngay, hom[0]["gio"], "xong", user["name"], hom[0].get("dia_diem", ""), goc=hom[0]["id"])
-                elif not [x for x in store.buoi([k], ngay, ngay, H) if x["trang_thai"] == "xong"]:
-                    store.ghi_hen(ma, ngay, "—", "xong", user["name"], k.get("dia_diem", ""), "ghi từ giáo án")
-            for kk in [x for x in S if str(x).startswith((f"kg_{ma}_", f"ln_{ma}_", f"gcb_{ma}_", f"loi_{ma}_", f"sw_{ma}_", f"bm_{ma}",
-                                                          f"tt_{ma}_", f"nhe_{ma}_", f"gpt_{ma}_"))]:
-                S.pop(kk, None)
-            con = max(tong - da - (1 if tru else 0), 0) if tong else None
-            S["_ga_flash"] = f"Đã lưu buổi {bm_luu}" + (f" — gói còn {con} buổi" if con is not None else "")
-            st.rerun()
-
     with t1:
         if S.get("_ga_flash"):
             st.success(S.pop("_ga_flash"))
@@ -403,7 +247,7 @@ def trang(user: dict, k: dict):
                     if _luu(P_):
                         st.toast("Đã lưu giáo án")
                         st.rerun()
-            _ghi_buoi(P_, chua)
+            ghi_buoi(k, P_, user["name"], "hlv", chua, _luu)
 
     with t3:
         from core import giao_an as gsimple
@@ -421,6 +265,194 @@ def trang(user: dict, k: dict):
         for g in tu:
             with st.expander(f"{g.get('ten')} · tạo lúc {str(g.get('_luc'))[:16]}"):
                 C.xem_giao_an(k, g, gsimple.logs(ma))
+
+
+@st.fragment
+def ghi_buoi(k: dict, P_: dict, nguoi: str, vai: str = "hlv", chua_luu: bool = False, luu=None):
+    """Ghi buổi theo giáo án Atlas — dùng chung HLV và khách (khách: không có ghi chú nội bộ / lời nhắn / trừ buổi gói)."""
+    S = st.session_state
+    st.markdown(CSS, unsafe_allow_html=True)
+    ma = k["ma"]
+    km = ma if vai == "hlv" else f"{ma}_kh"
+    hlv = vai == "hlv"
+    hist = bt.sessions(ma)
+    CT = ga.guess_limits(k.get("chan_thuong"))
+    H = store.hens(ma)
+    da = store.da_tap(k, H)
+    tong = int(float(k.get("goi_buoi") or 0)) if store.loai_goi(k) == "buoi" else 0
+    if not hlv and S.get(f"_ga_flash_{km}"):
+        st.success(S.pop(f"_ga_flash_{km}"))
+        st.balloons()
+    mas = [b_["ma"] for b_ in P_["buoi"]]
+    nx = ga.buoi_tiep(P_, hist)
+    a, b = st.columns([2, 1])
+    bm = a.radio("Buổi hôm nay", mas, index=mas.index(nx["ma"]), horizontal=True, key=f"bm_{km}",
+                 format_func=lambda m: f"Buổi {m} · " + next(x["ten"] for x in P_["buoi"] if x["ma"] == m).split("·")[0].strip())
+    ngay = b.date_input("Ngày", value=bt.today(), format="DD/MM/YYYY", key=f"ng_{km}")
+    bu = next(x for x in P_["buoi"] if x["ma"] == bm)
+    wk = ga.week_no(P_["ngay_bat_dau"], ngay)
+    if len(mas) > 1:
+        st.markdown('<div class="gs-flow">Chu kỳ ' + " → ".join(f"<b>{m}</b>" if m == nx["ma"] else m for m in mas)
+                    + f" · hôm nay theo chu kỳ là <b>buổi {nx['ma']}</b></div>", unsafe_allow_html=True)
+    ops = tt_.lua_chon(k.get("gioi_tinh") or "")
+    with st.expander("📋 Chấm điểm sẵn sàng tập — 4 câu, 15 giây (khuyên dùng)", expanded=False):
+        cs = st.columns(4)
+        tl = {ma_: cs[i].select_slider(ten_, options=[1, 2, 3, 4, 5], value=3, format_func=lambda v, o=ops_: o[v - 1],
+                                       key=f"ss_{km}_{bm}_{ma_}") for i, (ma_, ten_, ops_) in enumerate(tt_.CAU)}
+        diem_, de_xuat = tt_.diem_san_sang(tl)
+        x1, x2 = st.columns([1.2, 1], vertical_alignment="center")
+        x1.markdown(f'<div style="display:flex;align-items:center;gap:12px"><div style="width:64px;height:64px;border-radius:50%;'
+                    f'border:6px solid {tt_.mau_diem(diem_)};display:grid;place-items:center;font-weight:900;font-size:1.2rem">{diem_}</div>'
+                    f'<div><b>Điểm sẵn sàng {diem_}/100</b><br><span style="color:#8b8577;font-size:.85rem">Đề xuất: '
+                    f'{tt_.TINH_TRANG[de_xuat]["icon"]} {de_xuat}</span></div></div>', unsafe_allow_html=True)
+        if x2.button("Áp dụng đề xuất", key=f"ssok_{km}_{bm}", use_container_width=True, type="primary"):
+            S[f"tt_{km}_{bm}"] = de_xuat
+            S[f"ssd_{km}"] = diem_
+            st.rerun(scope="fragment")
+    tts = st.pills("🩺 Hôm nay " + ("khách" if hlv else "bạn") + " thấy thế nào?", ops, default=None if f"tt_{km}_{bm}" in S else "Khoẻ", key=f"tt_{km}_{bm}",
+                   format_func=lambda x: f"{tt_.TINH_TRANG[x]['icon']} {x}") or "Khoẻ"
+    cf = tt_.get(tts)
+    mu, mau_ = tt_.MUC[cf["muc"]]
+    st.markdown(f'<div style="display:flex;gap:10px;align-items:flex-start;border:1px solid {mau_}55;background:{mau_}12;'
+                f'border-radius:14px;padding:10px 14px;margin:2px 0 8px"><span style="background:{mau_};color:#fff;font-weight:800;'
+                f'font-size:.66rem;letter-spacing:.08em;border-radius:999px;padding:4px 10px;white-space:nowrap">{mu}</span>'
+                f'<span style="font-size:.86rem;color:#2b2822">{E(cf["loi"])}'
+                + (f' <b>Tạ gợi ý ×{cf["kg"]:.2f}'.replace(".", ",") + (f", −{cf['hiep']} hiệp" if cf["hiep"] else "") + "</b>"
+                   if cf["kg"] < 1 else "") + "</span></div>", unsafe_allow_html=True)
+    nhe = cf.get("nhe") and st.toggle("🔄 Đổi sang buổi phục hồi nhẹ (không tính vào chu kỳ giáo án)", value=True, key=f"nhe_{km}_{bm}")
+    if nhe:
+        bu = ga.buoi_nhe(P_["trinh_do"], P_.get("han_che"))
+    elif cf.get("core_nhe"):
+        co_ = {x["id"] for x in bu["bai"]}
+        nhe_ = [c for c in tt_.CORE_NHE if c not in co_]
+        moi_ = []
+        for x in bu["bai"]:
+            if x["id"] in tt_.CORE_NANG and nhe_:
+                e_ = ga.ex(nhe_.pop(0))
+                x = {**x, **{q: e_[q] for q in ("id", "ten", "nhom", "loai", "dung_cu")}, "thay_cho": x["ten"]}
+            moi_.append(x)
+        bu = {**bu, "bai": moi_}
+    tkey = ops.index(tts) if tts in ops else 0
+    bm_luu = bu["ma"]
+    st.markdown(f'<div class="gs-h"><span class="gs-ma">{"PHỤC HỒI" if bm_luu == "PH" else "BUỔI " + E(str(bm))}</span>'
+                f'<span class="gs-t">{E(bu["ten"])}</span><span class="gs-n">Tuần {wk} · {E(ga.PHASES[ga.phase_of(wk)])}</span></div>',
+                unsafe_allow_html=True)
+    st.caption("Bấm vào **tên bài** để đổi sang bài tương đương. Ghi kg và số lần thực tế từng hiệp; để trống hiệp không tập.")
+    nhan = ga.nhan_ss(bu["bai"])
+    ids = {it["id"] for it in bu["bai"]}
+    lau_cur = None
+    bai = []
+    for j, it0 in enumerate(bu["bai"]):
+        lim_ = sorted(set(P_.get("han_che") or []) | set(CT))
+        alt = [it0["id"]] + ga.ung_vien(it0["id"], ids, P_["trinh_do"], lim_, n=8)
+        t_ = ga.tang(it0["id"])
+        if t_ and t_ != lau_cur and it0.get("loai") not in ("S", "T"):
+            st.markdown(f'<div class="gx-lau">{"⬇️" if t_ == 1 else "⬆️"} LẦU {t_}</div>', unsafe_allow_html=True)
+            lau_cur = t_
+        if it0.get("loai") in ("S", "T") and lau_cur != "ket":
+            st.markdown('<div class="gx-lau">🔥 KẾT BUỔI</div>', unsafe_allow_html=True)
+            lau_cur = "ket"
+        with st.container(key=f"gx_{km}_{bm_luu}_{j}"):
+            head = st.empty()
+            eid = st.selectbox("Bài tập", alt, key=f"sw_{km}_{bm_luu}_{j}", label_visibility="collapsed",
+                               format_func=lambda x, o=it0["id"]: _ten(x) if x == o else
+                               f"↺ {_ten(x)}  ·  {ga.dang(x)[0]} · {ga.ex(x).get('dung_cu', '')}")
+            e = ga.ex(eid)
+            it = it0 if eid == it0["id"] else {**it0, **{x: e[x] for x in ("id", "ten", "nhom", "loai", "dung_cu")},
+                                                "thay_cho": it0.get("thay_cho") or it0["ten"]}
+            r = ga.rx(it, P_["muc_tieu"], wk, P_["trinh_do"])
+            dg, mau = ga.dang(it.get("loai") or eid)
+            so = nhan[j] or str(j + 1)
+            head.markdown(f'<div class="gx-h"><span class="gx-n">{E(so)}</span><span class="gx-b" style="background:{mau}">{E(dg)}</span>'
+                          + (f'<span class="gx-tang">LẦU {ga.tang(eid)}</span>' if ga.tang(eid) else "")
+                          + f'<span class="gx-eq">{E(str(e.get("dung_cu") or ""))}</span>'
+                          + (f'<span class="gx-sw">↺ thay cho {E(it["thay_cho"])}</span>' if it.get("thay_cho") else "")
+                          + "".join(f'<span class="gx-b" style="background:#C0392B">⚠️ hại {E(v)}</span>' for v in CT
+                                    if eid in ga.HAN_CHE.get(v, set())) + "</div>", unsafe_allow_html=True)
+            ke = nhan[j + 1] if j + 1 < len(nhan) else ""
+            if nhan[j] and ke[:1] == nhan[j][:1]:
+                nghi, phu_n = f"→ {ke}", "chuyển ngay, không nghỉ"
+            else:
+                nghi, phu_n = r["nghi"], ("sau cả cặp superset" if nhan[j] else "giữa các hiệp")
+            rir = r["rir"] if r["rir"] and r["rir"] != r["rpe"] else ""
+            rpe_ = tt_.rpe(r["rpe"], tts)
+            if rpe_ != r["rpe"]:
+                rir = f"giảm theo thể trạng (gốc {r['rpe']})"
+            st.markdown('<div class="gx-chips">' + _chip("Mục tiêu", r["lieu"], "hiệp × lần")
+                        + _chip("Cường độ", rpe_ or ("—" if not rir else "Kỹ thuật"), rir)
+                        + _chip("Nghỉ", nghi, phu_n) + "</div>", unsafe_allow_html=True)
+            giay = "giây" in r["lieu"]
+            try:
+                n_set = int(r["lieu"].split("×")[0].split("–")[-1])
+            except ValueError:
+                n_set = 3
+            n_set = tt_.so_hiep(n_set, tts, it.get("loai", ""))
+            met = r["lieu"].rstrip().endswith(" m")
+            last = bt.last_for(ma, eid, hist)
+            sg = bt.suggest(it, r["lieu"], last)
+            if sg:
+                st.markdown(f'<div class="gx-tip">💡 {E(sg)}</div>', unsafe_allow_html=True)
+            box = st.container(key=f"sets_{km}_{bm_luu}_{j}")
+            box.markdown(f'<div class="gx-th"><span>Hiệp</span><span>{"" if giay else "kg"}</span>'
+                         f'<span>{"giây" if giay else "mét" if met else "lần"}</span></div>', unsafe_allow_html=True)
+            tk = None if giay else tt_.kg_goi_y(bt.target_kg(it, r["lieu"], last), tts, it.get("loai", ""), bt._step(it))
+            hs = []
+            for si in range(n_set):
+                c1, c2, c3 = box.columns([0.55, 1, 1], vertical_alignment="center")
+                c1.markdown(f"<div style='text-align:center;color:#8b8577;font-weight:700'>{si + 1}</div>", unsafe_allow_html=True)
+                kg = None if giay else c2.number_input("kg", 0.0, 400.0, value=tk, step=0.5, format="%.1f",
+                                                       key=f"kg_{km}_{bm_luu}_{j}_{eid}_{si}_{tkey}", placeholder="kg",
+                                                       label_visibility="collapsed")
+                lan = c3.number_input("lần", 0, 600, value=None, step=1, key=f"ln_{km}_{bm_luu}_{j}_{eid}_{si}",
+                                      placeholder="giây" if giay else "mét" if met else "lần", label_visibility="collapsed")
+                if lan:
+                    hs.append({"kg": kg or 0, "lan": lan})
+            gc = st.text_input("Ghi chú bài", key=f"gcb_{km}_{bm_luu}_{j}", placeholder="Ghi chú bài (VD đau nhẹ gối, đổi tay cầm…)",
+                               label_visibility="collapsed")
+            bai.append({"id": eid, "ten": it["ten"], "hiep": hs, "ghi_chu": gc, "giay": giay,
+                        **({"thay_cho": it["thay_cho"]} if it.get("thay_cho") else {}), **({"ss": nhan[j]} if nhan[j] else {})})
+    with st.container(key=f"kb_{km}_{bm}"):
+        st.markdown("**🏁 Kết buổi**")
+        cardio = st.text_input("Cardio", value=ga.cardio(P_["muc_tieu"], wk), key=f"cd_{km}_{bm}")
+        a, b = st.columns(2)
+        cam = a.select_slider("Khách cảm thấy" if hlv else "Bạn cảm thấy", bt.CAM_NHAN, value="Bình thường", key=f"cn_{km}_{bm}")
+        rpe = b.slider("Độ nặng cả buổi (RPE 1–10)", 1, 10, 7, key=f"rpe_{km}_{bm}")
+        ghi_pt, loi, gkh, tru = "", "", "", False
+        if hlv:
+            ghi_pt = st.text_input("Ghi chú nội bộ (khách KHÔNG thấy)", key=f"gpt_{km}_{bm}")
+            loi = st.text_area("Lời nhắn gửi khách (khách thấy trong lịch sử buổi)", height=70, key=f"loi_{km}_{bm}",
+                               placeholder="VD Hôm nay squat chắc hơn hẳn! Tối nay nhớ ăn đủ đạm, ngủ trước 23h.")
+            tru = st.checkbox("Tính 1 buổi trong gói (đánh dấu Đã tập trên lịch)", value=True, key=f"tru_{km}_{bm}")
+        else:
+            gkh = st.text_area("Gửi HLV (không bắt buộc)", height=70, key=f"gkh_{km}_{bm}",
+                               placeholder="VD Hôm nay gối hơi đau ở bài lunge, squat thấy nhẹ hơn tuần trước")
+        done = st.button("✅ Kết thúc buổi & lưu" + (" (lưu luôn giáo án mới)" if chua_luu else ""), type="primary",
+                         use_container_width=True, key=f"done_{km}_{bm}")
+    if done:
+        if not any(x["hiep"] for x in bai):
+            st.error("Chưa ghi hiệp nào — nhập ít nhất số lần của 1 bài.")
+            return
+        if chua_luu and not luu(P_):
+            st.error("Chưa lưu được giáo án — kiểm tra kết nối rồi bấm lại.")
+            return
+        s_ = {"ngay": ngay, "ga_id": ga.KHOA.format(ma), "buoi": f"Buổi {bm_luu} · {bu['ten']}", "buoi_ma": bm_luu, "tuan": wk,
+              "tinh_trang": tts, "san_sang": S.get(f"ssd_{km}", ""), "bai": bai, "cardio": cardio, "cam_nhan": cam,
+              "rpe": rpe, "ghi_chu_hlv": ghi_pt, "loi_nhan": loi, "thoi_luong": 60, "nguoi_ghi": vai,
+              **({"ghi_chu": gkh.strip()} if gkh.strip() else {})}
+        bt.save(ma, s_, nguoi)
+        if tru:
+            hom = [x for x in store.buoi([k], ngay, ngay, H) if x["trang_thai"] == "hen"]
+            if hom:
+                store.ghi_hen(ma, ngay, hom[0]["gio"], "xong", nguoi, hom[0].get("dia_diem", ""), goc=hom[0]["id"])
+            elif not [x for x in store.buoi([k], ngay, ngay, H) if x["trang_thai"] == "xong"]:
+                store.ghi_hen(ma, ngay, "—", "xong", nguoi, k.get("dia_diem", ""), "ghi từ giáo án")
+        for kk in [x for x in S if str(x).startswith((f"kg_{km}_", f"ln_{km}_", f"gcb_{km}_", f"loi_{km}_", f"sw_{km}_", f"bm_{km}",
+                                                      f"tt_{km}_", f"nhe_{km}_", f"gpt_{km}_", f"gkh_{km}_"))]:
+            S.pop(kk, None)
+        con = max(tong - da - (1 if tru else 0), 0) if tong else None
+        S["_ga_flash" if hlv else f"_ga_flash_{km}"] = (f"Đã lưu buổi {bm_luu}" + (f" — gói còn {con} buổi" if con is not None else "")
+                                                        if hlv else f"💪 Đã lưu buổi {bm_luu} — HLV sẽ xem và nhận xét. +30 điểm 🔥")
+        st.rerun()
 
 
 def _ngay_tuan(d: date) -> date:

@@ -1,11 +1,65 @@
-# Hoàng Anh Coaching v1.0 (2026-10-31)
+# Hoàng Anh Coaching v1.7 (2026-11-01) — 2 giao diện sáng / tối (khách đổi ở ⋮ → Settings, mặc định theo điện thoại)
+# Font: Be Vietnam Pro (Google Fonts, giấy phép OFL) — font hiện đại thiết kế cho tiếng Việt.
 [theme]
-base = "light"
+font = "BeVietnamPro, sans-serif"
+headingFont = "BeVietnamPro, sans-serif"
+baseRadius = "medium"
+baseFontWeight = 400
+headingFontWeights = [800, 800, 700, 700, 700, 700]
+metricValueFontWeight = 800
+
+[[theme.fontFaces]]
+family = "BeVietnamPro"
+url = "app/static/BeVietnamPro-Regular.ttf"
+weight = 400
+
+[[theme.fontFaces]]
+family = "BeVietnamPro"
+url = "app/static/BeVietnamPro-Medium.ttf"
+weight = 500
+
+[[theme.fontFaces]]
+family = "BeVietnamPro"
+url = "app/static/BeVietnamPro-SemiBold.ttf"
+weight = 600
+
+[[theme.fontFaces]]
+family = "BeVietnamPro"
+url = "app/static/BeVietnamPro-Bold.ttf"
+weight = 700
+
+[[theme.fontFaces]]
+family = "BeVietnamPro"
+url = "app/static/BeVietnamPro-ExtraBold.ttf"
+weight = 800
+
+[theme.light]
 primaryColor = "#B8912F"
 backgroundColor = "#FFFFFF"
 secondaryBackgroundColor = "#F7F4EC"
 textColor = "#1B1B1B"
-font = "sans serif"
+borderColor = "#E6DCC6"
+
+[theme.light.sidebar]
+backgroundColor = "#14120F"
+secondaryBackgroundColor = "#24201A"
+textColor = "#E9E2D0"
+primaryColor = "#E8C76A"
+borderColor = "#2E2920"
+
+[theme.dark]
+primaryColor = "#D9B65C"
+backgroundColor = "#0F0E0C"
+secondaryBackgroundColor = "#1D1A16"
+textColor = "#EDE6D6"
+borderColor = "#332E25"
+
+[theme.dark.sidebar]
+backgroundColor = "#080706"
+secondaryBackgroundColor = "#1A1712"
+textColor = "#E9E2D0"
+primaryColor = "#E8C76A"
+borderColor = "#262119"
 
 [client]
 toolbarMode = "minimal"

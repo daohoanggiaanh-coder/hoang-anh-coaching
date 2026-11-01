@@ -108,8 +108,10 @@ else:
                               (st.Page(V.tien_do, title="Cân & số đo", icon="📈", url_path="can_so_do"), _tr["tien_do"])) if on]
     pages.append(st.Page(V.tai_khoan, title="Tài khoản", icon="🔐", url_path="tai_khoan"))
 
+st.logo(str(ROOT / "assets" / "app" / "wordmark-dark.png"), size="large", icon_image=str(ROOT / "assets" / "app" / "icon-192.png"))
 with st.sidebar:
-    st.markdown(f"<div style='font-weight:800;letter-spacing:.16em;color:#E8C76A;font-size:.7rem'>{config.BRAND}</div>"
+    st.markdown(f"<div style='font-size:.7rem;letter-spacing:.14em;color:#A8A091;font-weight:700'>"
+                f"{'HUẤN LUYỆN VIÊN' if user['role'] == 'coach' else 'HỌC VIÊN'}</div>"
                 f"<div style='font-size:1.05rem;font-weight:800;margin:2px 0 10px'>{ui.E(user['name'])}</div>", unsafe_allow_html=True)
 nav = st.navigation(pages, position="top" if user["role"] == "client" else "sidebar")
 with st.sidebar:

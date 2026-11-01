@@ -14,10 +14,8 @@ MACRO_MAU = {"p": "#B4442F", "c": "#C8A24A", "f": "#4B6A88"}
 
 CSS = """
 <style>
-@font-face{font-family:'BVP';src:url('app/static/BeVietnamPro-Regular.ttf');font-weight:400}
-@font-face{font-family:'BVP';src:url('app/static/BeVietnamPro-SemiBold.ttf');font-weight:600}
-@font-face{font-family:'BVP';src:url('app/static/BeVietnamPro-Bold.ttf');font-weight:800}
-html,body,[class*="css"],.stMarkdown,.stButton button,input,textarea,select{font-family:'BVP',system-ui,sans-serif}
+html,body,.stMarkdown,.stButton button,input,textarea,select{font-family:'BeVietnamPro',system-ui,sans-serif}
+h1,h2,h3,h4{letter-spacing:-.01em}
 .block-container{padding-top:1.4rem;max-width:1100px}
 [data-testid="stSidebar"]{background:#14120F}
 [data-testid="stSidebar"] *{color:#E9E2D0}
@@ -60,7 +58,26 @@ html,body,[class*="css"],.stMarkdown,.stButton button,input,textarea,select{font
 .hac-b .t{font-weight:900;font-size:1.05rem;min-width:62px}.hac-b .n{font-weight:800}.hac-b .m{color:#8b8577;font-size:.8rem}
 .hac-d{margin:14px 0 4px;font-weight:900;color:#7A5B14;letter-spacing:.1em;font-size:.78rem}
 .hac-foot{color:#a39d8f;font-size:.72rem;text-align:center;margin:36px 0 8px}
-div[data-testid="stMetricValue"]{font-weight:800}
+div[data-testid="stMetricValue"]{font-weight:800;letter-spacing:-.01em}
+.hac-hero .t{letter-spacing:-.015em}
+/* ---------- giao diện tối (html[data-hac-theme=dark] do pwa.py tự đặt theo nền của app) ---------- */
+html[data-hac-theme=dark] :is(.hac-tile,.hac-card,.hac-ex,.hac-meal,.hac-b,.dd-bua,.dd-bsc,.dd-wd:not(.t),.cd-d,.dl-m,.dl-b){
+  background:#1A1814!important;border-color:#332E25!important;color:#EDE6D6;box-shadow:none}
+html[data-hac-theme=dark] :is(.hac-tile b,.hac-ex .n,.hac-card h4,.dd-it .n,.dd-it .g,.dd-bsc h4,.cd-d .t,.dl-m,.dl-m .t,.dl-b .t,.dd-wd b,.hac-meal .h b,.hac-b .t,.hac-b .n){color:#F3ECDC!important}
+html[data-hac-theme=dark] :is(.hac-tile small,.hac-ex .m,.dd-it .n small,.cd-d small,.cd-d .p,.cd-d .t i,.dl-m .s,.dl-b .m,.hac-meal .h span,
+  .hac-meal td.u,.hac-b .m,.dd-bsc .e,.dd-wd i,.dd-wd small,.dd-bsc p){color:#A8A091!important}
+html[data-hac-theme=dark] :is(.hac-sec,.hac-d,.dd-bsc .l,.dd-it .g small){color:#E2BE62!important}
+html[data-hac-theme=dark] .hac-note{background:#1D1A15!important;border-color:#3A3429!important;color:#CFC6B4!important}
+html[data-hac-theme=dark] .dd-bf{background:#15130F!important;border-color:#2A251D!important;color:#A8A091}
+html[data-hac-theme=dark] .dd-bf b{color:#F3ECDC}
+html[data-hac-theme=dark] :is(.dd-ic,.cd-d .bar,.hac-bar,.dl-14 div[style*="EEE8DA"]){background:#2A251D!important}
+html[data-hac-theme=dark] :is(.dd-it,.hac-meal td){border-color:#2A251D!important}
+html[data-hac-theme=dark] :is(.cd-d.x,.dl-m.x){background:#12261A!important;border-color:#2E7D4F!important}
+html[data-hac-theme=dark] .cd-d.m{background:#2A1714!important;border-color:#6B2E22!important}
+html[data-hac-theme=dark] .cd-d.h{border-color:#D9B65C!important}
+html[data-hac-theme=dark] .dl-m.x .s{color:#5CC48A!important}
+html[data-hac-theme=dark] .hac-tile i{color:#5CC48A}
+html[data-hac-theme=dark] .hac-foot{color:#6f685c}
 </style>
 """
 
@@ -99,7 +116,7 @@ def macro_bar(p: float, c: float, f: float):
 def layout(fig, h=320, y_title=""):
     fig.update_layout(height=h, margin=dict(l=10, r=10, t=10, b=10), plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
                       legend=dict(orientation="h", y=-0.2), yaxis_title=y_title, hovermode="x unified",
-                      font=dict(family="BVP, system-ui, sans-serif"))
+                      font=dict(family="BeVietnamPro, system-ui, sans-serif"))
     fig.update_xaxes(showgrid=False)
     fig.update_yaxes(gridcolor="rgba(160,150,130,.25)")
     return fig

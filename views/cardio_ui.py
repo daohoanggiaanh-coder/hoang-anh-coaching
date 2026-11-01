@@ -114,7 +114,7 @@ def _bieu_do(w: dict):
         b += d["lam"]
         goc.append(a)
         lam.append(b)
-    fig.add_scatter(x=x, y=goc, name="Cộng dồn target", yaxis="y2", line=dict(color="#1C1B19", dash="dot", width=2), mode="lines+markers")
+    fig.add_scatter(x=x, y=goc, name="Cộng dồn target", yaxis="y2", line=dict(color="#8b8577", dash="dot", width=2), mode="lines+markers")
     fig.add_scatter(x=x, y=lam, name="Cộng dồn đã làm", yaxis="y2", line=dict(color="#B4442F", width=3), mode="lines+markers")
     fig.update_layout(barmode="overlay", yaxis2=dict(overlaying="y", side="right", showgrid=False, title="phút cộng dồn"),
                       legend=dict(orientation="h", y=-0.2))
@@ -250,5 +250,5 @@ def trang(k: dict, vai: str, nguoi: str, q: dict | None = None):
         ui.sec("8 tuần gần nhất")
         fig = go.Figure(go.Bar(x=[f"{x['tu']:%d/%m}" for x in H], y=[x["pct"] for x in H], text=[f"{x['pct']}%" for x in H],
                                textposition="outside", marker_color=["#2E7D4F" if x["pct"] >= 100 else "#C8A24A" for x in H]))
-        fig.add_hline(y=100, line_dash="dot", line_color="#1C1B19")
+        fig.add_hline(y=100, line_dash="dot", line_color="#8b8577")
         st.plotly_chart(ui.layout(fig, 260, "% hoàn thành target tuần"), use_container_width=True, config={"displayModeBar": False})

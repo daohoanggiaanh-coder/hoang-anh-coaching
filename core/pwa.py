@@ -30,6 +30,13 @@ _JS = """<script>
    d.title='Hoàng Anh Coaching';
  }catch(e){} }
  try{chen(window.parent.document);}catch(e){}
+ // giao diện tối: đọc màu nền thật của app → đặt html[data-hac-theme] cho CSS riêng của web (đổi ngay khi khách chuyển sáng / tối)
+ try{ var P=window.parent.document; if(!P.getElementById('hac-theme-js')){ var sc=P.createElement('script'); sc.id='hac-theme-js';
+   sc.textContent="(function(){function f(){try{var a=document.querySelector('.stApp')||document.body;var c=getComputedStyle(a).backgroundColor.match(/[0-9]+/g);"+
+   "if(!c)return;var l=(0.299*c[0]+0.587*c[1]+0.114*c[2]);var t=l<110?'dark':'light';"+
+   "if(document.documentElement.getAttribute('data-hac-theme')!==t)document.documentElement.setAttribute('data-hac-theme',t);}catch(e){}}"+
+   "f();setInterval(f,700);})();";
+   P.head.appendChild(sc);} }catch(e){}
  try{chen(window.top.document);}catch(e){}
 })();
 </script>"""

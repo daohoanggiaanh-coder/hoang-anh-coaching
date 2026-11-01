@@ -353,7 +353,7 @@ def dinh_duong(k: dict, vai: str, nguoi: str, q: dict | None = None):
                 text=[f"{kq['bmr']}", f"+{kq['neat'] + kq['e_cardio']}", f"+{kq['e_buoi']}", f"{kq['tap']['kcal'] - kq['tdee_tap']:+}",
                       f"{kq['tap']['kcal']}"], textposition="outside",
                 connector=dict(line=dict(color="#DDD4C0")), increasing=dict(marker=dict(color="#C8A24A")),
-                decreasing=dict(marker=dict(color="#B4442F")), totals=dict(marker=dict(color="#1C1B19"))))
+                decreasing=dict(marker=dict(color="#B4442F")), totals=dict(marker=dict(color="#7A5B14"))))
             st.plotly_chart(ui.layout(fig, 320, "kcal"), use_container_width=True, config={"displayModeBar": False})
             st.markdown(f"""
 | Bước | Cách tính | Kết quả |
@@ -717,12 +717,12 @@ def bieu_do_can(k: dict, CAN: pd.DataFrame, h: int = 320):
     nhan = [f"{v:g}" if (i % buoc == 0 or i == n - 1) else "" for i, v in enumerate(CAN["kg"].round(1))]
     fig = go.Figure()
     fig.add_scatter(x=CAN["ngay"], y=CAN["kg"], mode="lines+markers+text", name="Cân từng ngày", text=nhan,
-                    textposition="bottom center", textfont=dict(size=12, color="#4a463f"),
+                    textposition="bottom center", textfont=dict(size=12, color="#9A9284"),
                     line=dict(color=ui.XAM, width=1.5), marker=dict(size=7),
                     hovertemplate="%{x|%d/%m}: <b>%{y:.1f} kg</b><extra></extra>")
     fig.add_scatter(x=CAN["ngay"], y=CAN["tb7"], mode="lines+markers+text", name="Trung bình 7 ngày", line=dict(color=ui.VANG, width=3.5),
                     marker=dict(size=[0] * (n - 1) + [9]), text=[""] * (n - 1) + [f"TB {CAN['tb7'].iloc[-1]:.1f}"],
-                    textposition="top center", textfont=dict(size=13, color="#7A5B14"),
+                    textposition="top center", textfont=dict(size=13, color="#B8912F"),
                     hovertemplate="%{x|%d/%m} · TB 7 ngày: <b>%{y:.1f} kg</b><extra></extra>")
     lo, hi = float(min(CAN["kg"].min(), CAN["tb7"].min())), float(max(CAN["kg"].max(), CAN["tb7"].max()))
     dich = td._so(k.get("can_muc_tieu"))

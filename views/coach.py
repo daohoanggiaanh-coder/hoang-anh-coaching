@@ -403,11 +403,11 @@ def tien_do():
     c3.metric("Tới mục tiêu", f"{_pt}%" if _pt is not None else "—", f"mục tiêu {k['can_muc_tieu']} kg" if k.get("can_muc_tieu") else None,
               delta_color="off")
     c4.metric("Lần đo · lần cân", f"{len(SD)} · {len(CAN)}")
-    the_danh_gia(k, CAN, hom)
     s1, s2, s3, s4 = st.tabs(["⚖️ Cân hằng ngày", "📏 Số đo", "📸 Ảnh", "📄 Báo cáo"])
     with s1:
         C.nhap_can(k, u["name"], CAN, "hlv")
         C.bieu_do_can(k, CAN, 340)
+        the_danh_gia(k, CAN, hom)
         if len(CAN):
             with st.expander(f"Bảng cân · {len(CAN)} lần"):
                 st.dataframe(CAN.sort_values("ngay", ascending=False).rename(columns={"ngay": "Ngày", "kg": "Cân (kg)", "tb7": "TB 7 ngày"}),

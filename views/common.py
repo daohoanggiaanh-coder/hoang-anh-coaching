@@ -712,13 +712,30 @@ def bieu_do_can(k: dict, CAN: pd.DataFrame, h: int = 320):
     if not len(CAN):
         st.info("Chưa có lần cân nào.")
         return
+    n = len(CAN)
+    buoc = 1 if n <= 16 else max(2, n // 12)               # nhiều điểm → ghi số cách quãng, luôn ghi điểm đầu + cuối
+    nhan = [f"{v:g}" if (i % buoc == 0 or i == n - 1) else "" for i, v in enumerate(CAN["kg"].round(1))]
     fig = go.Figure()
-    fig.add_scatter(x=CAN["ngay"], y=CAN["kg"], mode="lines+markers", name="Cân từng ngày", line=dict(color=ui.XAM, width=1.5),
-                    marker=dict(size=6))
-    fig.add_scatter(x=CAN["ngay"], y=CAN["tb7"], mode="lines", name="Trung bình 7 ngày", line=dict(color=ui.VANG, width=3.5))
-    if k.get("can_muc_tieu"):
-        fig.add_hline(y=float(k["can_muc_tieu"]), line_dash="dot", line_color="#2E7D4F",
-                      annotation_text=f"Mục tiêu {k['can_muc_tieu']} kg", annotation_position="bottom right")
+    fig.add_scatter(x=CAN["ngay"], y=CAN["kg"], mode="lines+markers+text", name="Cân từng ngày", text=nhan,
+                    textposition="bottom center", textfont=dict(size=12, color="#4a463f"),
+                    line=dict(color=ui.XAM, width=1.5), marker=dict(size=7),
+                    hovertemplate="%{x|%d/%m}: <b>%{y:.1f} kg</b><extra></extra>")
+    fig.add_scatter(x=CAN["ngay"], y=CAN["tb7"], mode="lines+markers+text", name="Trung bình 7 ngày", line=dict(color=ui.VANG, width=3.5),
+                    marker=dict(size=[0] * (n - 1) + [9]), text=[""] * (n - 1) + [f"TB {CAN['tb7'].iloc[-1]:.1f}"],
+                    textposition="top center", textfont=dict(size=13, color="#7A5B14"),
+                    hovertemplate="%{x|%d/%m} · TB 7 ngày: <b>%{y:.1f} kg</b><extra></extra>")
+    lo, hi = float(min(CAN["kg"].min(), CAN["tb7"].min())), float(max(CAN["kg"].max(), CAN["tb7"].max()))
+    dich = td._so(k.get("can_muc_tieu"))
+    if dich and lo - 6 <= dich <= hi + 6:                   # mục tiêu gần → vẽ luôn đường mục tiêu
+        lo, hi = min(lo, dich), max(hi, dich)
+        fig.add_hline(y=dich, line_dash="dot", line_color="#2E7D4F", annotation_text=f"Mục tiêu {dich:g} kg",
+                      annotation_position="bottom right")
+    elif dich:                                              # mục tiêu xa → không ép trục (biểu đồ bẹp), ghi chú phía trên
+        con = abs(float(CAN["tb7"].iloc[-1]) - dich)
+        fig.add_annotation(xref="paper", yref="paper", x=1, y=1.08, showarrow=False, align="right",
+                           text=f"🎯 Mục tiêu {dich:g} kg · còn {con:.1f} kg", font=dict(color="#2E7D4F", size=12))
+    pad = max((hi - lo) * 0.18, 0.8)
+    fig.update_yaxes(range=[lo - pad, hi + pad])
     fig.update_xaxes(tickformat="%d/%m")
     st.plotly_chart(ui.layout(fig, h, "kg"), use_container_width=True, config={"displayModeBar": False})
 

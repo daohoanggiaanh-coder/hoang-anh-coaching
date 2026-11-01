@@ -40,7 +40,7 @@ def trang_chu():
     sap = [b for b in B if b["trang_thai"] == "hen"]
     L = ga.logs(ma)
     SD, CAN = td.so_do(ma), td.can_ngay(ma)
-    DAU, MOI = td.dau_khoa(SD), td.moi_nhat(SD, CAN)
+    DAU, MOI = td.dau_khoa(SD, CAN), td.moi_nhat(SD, CAN)
     con, da = store.con_lai(k, H), store.da_tap(k, H)
     ui.hero("HÀNH TRÌNH CỦA BẠN", f"Chào {_ten(k)} 👋",
             (f"Mục tiêu: {ui.E(k['muc_tieu'])}" if k.get("muc_tieu") else "Mỗi buổi tập là một bước gần hơn tới mục tiêu.")
@@ -139,7 +139,7 @@ def tien_do():
         C.bieu_do_can(k, CAN)
     if not q["so_do"]:
         return
-    DAU, MOI = td.dau_khoa(SD), td.moi_nhat(SD, CAN)
+    DAU, MOI = td.dau_khoa(SD, CAN), td.moi_nhat(SD, CAN)
     if DAU and MOI:
         ui.sec("Số đo: đầu khoá → hiện tại")
         ss = td.so_sanh(DAU, MOI)

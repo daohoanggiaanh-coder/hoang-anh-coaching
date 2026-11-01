@@ -99,3 +99,112 @@ def goi_y(tdo: dict | None, cc: dict, toc: float | None, muc_tieu_loai: str) -> 
 
 def ke_hoach_line(goc: float, dich: float, d0: date, han: date) -> pd.DataFrame:
     return pd.DataFrame({"ngay": pd.to_datetime([d0, han]), "v": [goc, dich]})
+
+
+# ------------------------------------------------------------------ v1.6: đánh giá mục tiêu cân — khả thi, tốc độ, lời khuyên
+# Mốc tham chiếu: giảm mỡ giữ cơ ~0,5–1,0 % cân nặng / tuần (Helms et al. 2014, JISSN); tăng cơ "sạch" ~0,25–0,5 % / tuần
+# (mức thực hành phổ biến). Người BMI ≥ 30 thường giảm nhanh hơn được mà vẫn an toàn → nới ngưỡng 0,25 %.
+def danh_gia_can(k: dict, CAN: pd.DataFrame, hom: date) -> dict | None:
+    import math
+    if len(CAN) < 1:
+        return None
+    t = td._so(k.get("can_muc_tieu"))
+    d0, kg0 = CAN["ngay"].iloc[0], float(CAN["kg"].iloc[0])
+    now = float(CAN["tb7"].iloc[-1])
+    span = (CAN["ngay"].iloc[-1] - d0).days
+    cao = td._so(k.get("chieu_cao"))
+    bmi = now / (cao / 100) ** 2 if cao else None
+    toc14 = toc_do_can(k["ma"], 14)
+    toc_all = round((now - kg0) / (span / 7), 2) if span >= 6 else None
+    toc = toc14 if toc14 is not None else toc_all
+    pct = round(toc / now * 100, 2) if toc is not None else None
+    nho14 = int((CAN["ngay"] >= CAN["ngay"].iloc[-1] - timedelta(days=13)).sum())
+    out = {"kg0": kg0, "d0": d0, "now": round(now, 1), "span": span, "toc": toc, "pct": pct, "toc_all": toc_all, "bmi": bmi,
+           "muc_tieu": t, "loi_khuyen": [], "so_lan_14": nho14}
+    if not t:
+        out["loi_khuyen"].append("Chưa đặt **cân mục tiêu** — đặt ở trang Khách hoặc Lộ trình để web đánh giá tính khả thi.")
+        return out
+    giam = t < kg0
+    con = round(now - t, 1) if giam else round(t - now, 1)
+    da = round(kg0 - now, 1) if giam else round(now - kg0, 1)
+    tong = abs(kg0 - t)
+    out.update({"giam": giam, "con": con, "da": da, "pct_xong": max(0, min(100, round(da / tong * 100))) if tong else 100})
+    nguong = (0.5, 1.0) if giam else (0.25, 0.5)
+    if giam and bmi and bmi >= 30:
+        nguong = (0.5, 1.25)
+    out["nguong"] = nguong
+    # ---- đánh giá tốc độ hiện tại
+    if pct is None:
+        out["toc_nhan"], out["toc_mau"] = "Chưa đủ dữ liệu (cần cân ≥ 7 ngày)", "#8b8577"
+    else:
+        p = -pct if giam else pct
+        if p < 0.1:
+            out["toc_nhan"], out["toc_mau"] = ("Đang chững / đi ngược", "#B4442F")
+        elif p < nguong[0]:
+            out["toc_nhan"], out["toc_mau"] = ("Chậm hơn mức khuyến nghị", "#D98E04")
+        elif p <= nguong[1]:
+            out["toc_nhan"], out["toc_mau"] = ("Tốt — đúng nhịp khuyến nghị", "#1E7B4A")
+        else:
+            out["toc_nhan"], out["toc_mau"] = ("Nhanh hơn khuyến nghị", "#B4442F" if p > nguong[1] * 1.6 else "#D98E04")
+    # ---- khả thi theo hạn
+    han = None
+    try:
+        han = date.fromisoformat(str(k.get("muc_tieu_ngay"))[:10])
+    except ValueError:
+        han = store.han_goi(k)
+    out["han"] = han
+    giua = (nguong[0] + nguong[1]) / 2 / 100
+    if con > 0:
+        tuan_an_toan = math.log(t / now) / math.log(1 - giua) if giam else math.log(t / now) / math.log(1 + giua)
+        out["ngay_an_toan"] = hom + timedelta(weeks=max(tuan_an_toan, 0))
+        if toc and ((giam and toc < 0) or (not giam and toc > 0)):
+            out["ngay_nhip"] = hom + timedelta(weeks=con / abs(toc))
+    if han and con > 0:
+        tuan_con = max((han - hom).days / 7, 0.1)
+        can_pct = round(con / tuan_con / now * 100, 2)
+        out["can_pct"] = can_pct
+        if can_pct <= nguong[1] * 0.85:
+            out["kha_thi"], out["kt_mau"] = "Khả thi", "#1E7B4A"
+        elif can_pct <= nguong[1] * 1.15:
+            out["kha_thi"], out["kt_mau"] = "Thách thức — cần bám sát kế hoạch", "#D98E04"
+        else:
+            out["kha_thi"], out["kt_mau"] = "Khó đạt đúng hạn ở tốc độ an toàn", "#B4442F"
+    elif con <= 0:
+        out["kha_thi"], out["kt_mau"] = "Đã đạt mục tiêu 🎉", "#1E7B4A"
+    else:
+        out["kha_thi"], out["kt_mau"] = "Chưa có hạn — xem mốc dự kiến", "#8b8577"
+    # ---- mục tiêu có hợp lý không
+    if cao:
+        bmi_t = t / (cao / 100) ** 2
+        out["bmi_t"] = round(bmi_t, 1)
+        if bmi_t < 18.5:
+            out["loi_khuyen"].append(f"⚠️ Cân mục tiêu {t:g} kg ứng với BMI {bmi_t:.1f} (< 18,5 — thiếu cân). Nên đặt lại mục tiêu theo "
+                                     "% mỡ / vòng eo thay vì số cân.")
+        elif giam and bmi_t >= 25:
+            out["loi_khuyen"].append(f"Cân mục tiêu {t:g} kg ứng với BMI {bmi_t:.1f}. Có thể chia thành mốc này trước, đạt rồi đặt mốc "
+                                     "tiếp — mốc gần dễ giữ động lực hơn.")
+    # ---- lời khuyên theo tốc độ
+    if span <= 21 and pct is not None and giam and -pct > nguong[1]:
+        out["loi_khuyen"].append("Khách mới vào 2–3 tuần: giảm nhanh lúc đầu phần lớn là **nước + glycogen** (bớt tinh bột, muối). "
+                                 "Đừng vội tăng ăn — đánh giá tốc độ thật từ tuần 3–4.")
+    elif pct is not None and giam and -pct > nguong[1] * 1.3:
+        out["loi_khuyen"].append("Giảm nhanh kéo dài dễ **mất cơ, mệt, đói, ngủ kém** → tăng 100–200 kcal/ngày (chủ yếu tinh bột quanh "
+                                 "buổi tập), giữ đạm 2 g/kg, theo dõi sức tạ.")
+    elif pct is not None and giam and -pct < nguong[0]:
+        out["loi_khuyen"].append("Tốc độ chậm → trước hết kiểm tra **tuân thủ**: check-in ăn theo thực đơn, cardio đủ phút, số bước. "
+                                 "Đã tuân thủ tốt ≥ 2 tuần mà vẫn chậm → giảm 100–200 kcal/ngày hoặc thêm 2.000–3.000 bước/ngày.")
+    elif pct is not None and not giam and pct > nguong[1]:
+        out["loi_khuyen"].append("Tăng cân nhanh hơn mức tăng cơ thực tế → phần dư dễ thành mỡ; bớt 100–150 kcal/ngày.")
+    elif pct is not None and not giam and pct < nguong[0]:
+        out["loi_khuyen"].append("Tăng chậm → thêm 150–200 kcal/ngày, kiểm tra đủ đạm, tăng tạ đều mỗi tuần.")
+    elif pct is not None:
+        out["loi_khuyen"].append("Đúng nhịp — **giữ nguyên** kế hoạch, không cần chỉnh. Khen khách để giữ động lực.")
+    if out.get("kha_thi", "").startswith("Khó"):
+        mk = out.get("ngay_an_toan")
+        out["loi_khuyen"].append("Không nên ép nhanh hơn để kịp hạn. Gợi ý: dời hạn"
+                                 + (f" tới khoảng **{mk:%d/%m/%Y}**" if mk else "") + " hoặc đặt mốc trung gian trong hạn hiện tại.")
+    if nho14 < 4:
+        out["loi_khuyen"].append(f"14 ngày qua chỉ có {nho14} lần cân — khuyên khách cân ≥ 4 buổi sáng/tuần để đường trung bình chính xác.")
+    out["loi_khuyen"].append("Cân chỉ là 1 chỉ số — kết hợp vòng eo, % mỡ (InBody) và ảnh mỗi 2–4 tuần: tập tạ có thể giữ cân nhưng vẫn "
+                             "giảm mỡ.")
+    return out

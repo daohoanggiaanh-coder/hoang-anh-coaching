@@ -390,7 +390,7 @@ def tien_do():
         return
     ma = k["ma"]
     SD, CAN, ANH = td.so_do(ma), td.can_ngay(ma), td.anh(ma)
-    DAU, MOI = td.dau_khoa(SD), td.moi_nhat(SD, CAN)
+    DAU, MOI = td.dau_khoa(SD, CAN), td.moi_nhat(SD, CAN)
     hom = db.now_vn().date()
     if not k.get("chieu_cao") or not k.get("gioi_tinh"):
         st.caption("💡 Nhập **giới tính, chiều cao, cân mục tiêu** ở trang Khách để báo cáo có BMI, mức mỡ và % tiến độ.")
@@ -403,6 +403,7 @@ def tien_do():
     c3.metric("Tới mục tiêu", f"{_pt}%" if _pt is not None else "—", f"mục tiêu {k['can_muc_tieu']} kg" if k.get("can_muc_tieu") else None,
               delta_color="off")
     c4.metric("Lần đo · lần cân", f"{len(SD)} · {len(CAN)}")
+    the_danh_gia(k, CAN, hom)
     s1, s2, s3, s4 = st.tabs(["⚖️ Cân hằng ngày", "📏 Số đo", "📸 Ảnh", "📄 Báo cáo"])
     with s1:
         C.nhap_can(k, u["name"], CAN, "hlv")
@@ -603,6 +604,7 @@ def lo_trinh():
             fig.update_layout(title=dict(text=f"{r['ten']} ({r['dv']})", font=dict(size=13)))
             fig.update_xaxes(tickformat="%d/%m")
             cs[i % 2].plotly_chart(ui.layout(fig, 260), use_container_width=True, config={"displayModeBar": False})
+    the_danh_gia(k, td.can_ngay(ma), hom)
     ui.sec("Gợi ý điều chỉnh")
     for g in lt.goi_y(tdo, cc, toc, lo0):
         st.markdown(f"- {g}")
@@ -642,6 +644,49 @@ def lo_trinh():
         st.plotly_chart(ui.layout(fig, 280, "kg"), use_container_width=True, config={"displayModeBar": False})
         st.caption("Lộ trình an toàn theo khung tư vấn F1 của Atlas: giảm mỡ ~0,6 % cân / tuần, tăng cơ ~0,35 % / tuần, recomp ~0,2 % / tuần "
                    "(mức thực hành, không phải cam kết kết quả).")
+
+
+def the_danh_gia(k: dict, CAN: pd.DataFrame, hom):
+    """🔒 Đánh giá mục tiêu cân: tốc độ (kg & % cân / tuần), tính khả thi theo hạn, mốc dự kiến, lời khuyên. Chỉ HLV thấy."""
+    from core import lo_trinh as lt
+    g = lt.danh_gia_can(k, CAN, hom)
+    if not g:
+        return
+    with st.container(border=True):
+        st.markdown("#### 🎯 Đánh giá mục tiêu cân <span style='font-size:.75rem;color:#8b8577;font-weight:500'>🔒 chỉ HLV thấy</span>",
+                    unsafe_allow_html=True)
+        if not g.get("muc_tieu"):
+            for x in g["loi_khuyen"][:1]:
+                st.markdown(x)
+            return
+        huong = "giảm" if g["giam"] else "tăng"
+        a, b, c, d = st.columns(4)
+        a.metric(f"Đã {huong}", f"{g['da']:g} kg",
+                 f"{g['pct_xong']}% chặng đường", delta_color="off")
+        b.metric("Còn lại", f"{max(g['con'], 0):g} kg", f"từ {g['now']:g} → {g['muc_tieu']:g} kg", delta_color="off")
+        b_t = "—" if g["toc"] is None else f"{g['toc']:+g} kg"
+        c.metric("Tốc độ / tuần", b_t, None if g["pct"] is None else f"{g['pct']:+.2f}% cân nặng", delta_color="off")
+        ng = g["nguong"]
+        d.metric("Khuyến nghị / tuần", f"{ng[0]:g}–{ng[1]:g}%", f"≈ {g['now'] * ng[0] / 100:.1f}–{g['now'] * ng[1] / 100:.1f} kg/tuần",
+                 delta_color="off")
+        pill = lambda txt, mau: (f"<span style='background:{mau};color:#fff;border-radius:999px;padding:4px 12px;font-weight:800;"  # noqa: E731
+                                 f"font-size:.82rem;margin-right:8px'>{E(txt)}</span>")
+        st.markdown("**Độ " + huong + ":** " + pill(g["toc_nhan"], g["toc_mau"]) + " &nbsp; **Tính khả thi:** "
+                    + pill(g["kha_thi"], g["kt_mau"]), unsafe_allow_html=True)
+        moc = []
+        if g.get("han") and g.get("con", 0) > 0:
+            moc.append(f"Hạn **{g['han']:%d/%m/%Y}** → cần **{g.get('can_pct', 0):.2f}% cân nặng/tuần** "
+                       f"(≈ {g['now'] * g.get('can_pct', 0) / 100:.2f} kg/tuần)")
+        if g.get("ngay_nhip"):
+            moc.append(f"Giữ nhịp hiện tại → đạt khoảng **{g['ngay_nhip']:%d/%m/%Y}**")
+        if g.get("ngay_an_toan"):
+            moc.append(f"Theo tốc độ khuyến nghị (giữa khoảng) → khoảng **{g['ngay_an_toan']:%d/%m/%Y}**")
+        if moc:
+            st.markdown("  \n".join("📅 " + x for x in moc))
+        st.markdown("**💡 Lời khuyên**  \n" + "  \n".join(f"• {x}" for x in g["loi_khuyen"]))
+        st.caption(f"Tính từ cân trung bình 7 ngày ({g['span']} ngày dữ liệu). Khoảng khuyến nghị: giảm mỡ 0,5–1 % cân/tuần "
+                   "(Helms và cộng sự, 2014), người BMI ≥ 30 nới tới 1,25 %; tăng cơ 0,25–0,5 %/tuần (mức thực hành). "
+                   "Mốc ngày là ước tính — cơ thể thường chậm dần về sau.")
 
 
 def _quet_inbody(k: dict, u: dict):

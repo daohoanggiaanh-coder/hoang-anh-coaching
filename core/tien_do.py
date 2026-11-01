@@ -78,12 +78,20 @@ def bo_anh(ds: list[dict], dau: bool = True) -> dict[str, dict]:
     return out
 
 
-def dau_khoa(sd: pd.DataFrame) -> dict | None:
-    """Lần đo đầu khoá (đợt 'dau_khoa' sớm nhất; chưa đánh dấu thì lần đo đầu tiên)."""
-    if sd.empty:
-        return None
-    dk = sd[sd["dot"] == "dau_khoa"]
-    return (dk.iloc[0] if len(dk) else sd.iloc[0]).to_dict()
+def dau_khoa(sd: pd.DataFrame, can: pd.DataFrame | None = None) -> dict | None:
+    """Lần đo đầu khoá (đợt 'dau_khoa' sớm nhất; chưa đánh dấu thì lần đo đầu tiên).
+    Lần đo không có cân nặng (hoặc chưa đo lần nào) → lấy lần cân hằng ngày sớm nhất làm cân đầu khoá."""
+    d = None
+    if not sd.empty:
+        dk = sd[sd["dot"] == "dau_khoa"]
+        d = (dk.iloc[0] if len(dk) else sd.iloc[0]).to_dict()
+    if can is not None and not can.empty:
+        c0 = can.iloc[0]
+        if d is None:
+            d = {"ngay": c0["ngay"], "dot": "dau_khoa"}
+        if not _so(d.get("can_nang")) or (d.get("ngay") is not None and c0["ngay"] < d["ngay"]):
+            d = {**d, "can_nang": float(c0["kg"]), "_ngay_can": c0["ngay"]}
+    return d
 
 
 def moi_nhat(sd: pd.DataFrame, can: pd.DataFrame | None = None) -> dict | None:
@@ -250,7 +258,7 @@ def pdf(k: dict, kieu: str, sd: pd.DataFrame, can: pd.DataFrame, imgs: dict[str,
     W, H = A4
     M = 40
     DARK, GOLD, GREEN, RED = HexColor("#1C1B19"), HexColor("#C8A24A"), HexColor("#2E7D4F"), HexColor("#B4442F")
-    dau = dau_khoa(sd) or {}
+    dau = dau_khoa(sd, can) or {}
     moi = moi_nhat(sd, can) or {}
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)

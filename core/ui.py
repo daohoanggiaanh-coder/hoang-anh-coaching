@@ -86,9 +86,11 @@ def setup():
     st.markdown(CSS, unsafe_allow_html=True)
 
 
-def hero(kicker: str, title: str, sub: str = ""):
-    st.markdown(f'<div class="hac-hero"><small>{E(kicker)}</small><div class="t">{E(title)}</div>'
-                + (f'<div class="s">{sub}</div>' if sub else "") + "</div>", unsafe_allow_html=True)
+def hero(kicker: str, title: str, sub: str = "", avatar: str = ""):
+    noi = f'<small>{E(kicker)}</small><div class="t">{E(title)}</div>' + (f'<div class="s">{sub}</div>' if sub else "")
+    if avatar:
+        noi = f'<div style="display:flex;gap:14px;align-items:center">{avatar}<div>{noi}</div></div>'
+    st.markdown(f'<div class="hac-hero">{noi}</div>', unsafe_allow_html=True)
 
 
 def tiles(items: list[tuple[str, str, str]]):

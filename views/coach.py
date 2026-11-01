@@ -339,6 +339,11 @@ def an():
         C.dinh_duong(k, "hlv", u["name"])
 
 
+def ho_so():
+    from views import thanh_qua_ui
+    thanh_qua_ui.trang_hlv(_user()["name"])
+
+
 def cam_ket():
     ui.hero("CAM KẾT KHÁCH", "Ai đang chăm, ai đang chững?", "Chuỗi lửa, điểm chăm chỉ tuần, việc hôm nay còn thiếu — xếp khách cần nhắc lên đầu.")
     from views import dong_luc_ui as DL

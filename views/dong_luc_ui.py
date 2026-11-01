@@ -224,8 +224,11 @@ def bang_hlv(DS: list[dict]):
         mau = "#B4442F" if t["diem_tuan"] < 50 else "#C8A24A" if t["diem_tuan"] < 80 else "#1E7B4A"
         with st.container(border=True):
             a, b, c, d = st.columns([2.2, 1, 1, 1.2])
-            a.markdown(f"**{E(k['ho_ten'])}** · {t['cap'][2]} {t['cap'][1]}  \n"
-                       + (f"Báo cáo gần nhất: **{r['lan_cuoi']:%d/%m}**" if r["lan_cuoi"] else "Chưa báo cáo lần nào"))
+            from core import hinh
+            a.markdown(f"<div style='display:flex;gap:10px;align-items:center'>{hinh.the_avatar(hinh.avatar_khach(k), k['ho_ten'], 46)}"
+                       f"<div><b>{E(k['ho_ten'])}</b> · {t['cap'][2]} {t['cap'][1]}<br>"
+                       + (f"Báo cáo gần nhất: <b>{r['lan_cuoi']:%d/%m}</b>" if r["lan_cuoi"] else "Chưa báo cáo lần nào") + "</div></div>",
+                       unsafe_allow_html=True)
             b.metric("🔥 Chuỗi", t["chuoi"])
             c.markdown(f"<div style='font-size:.75rem;color:#8b8577'>Điểm tuần</div><div style='font-size:1.6rem;font-weight:900;"
                        f"color:{mau}'>{t['diem_tuan']}</div>", unsafe_allow_html=True)

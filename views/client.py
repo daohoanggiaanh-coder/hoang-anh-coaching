@@ -42,7 +42,8 @@ def trang_chu():
     SD, CAN = td.so_do(ma), td.can_ngay(ma)
     DAU, MOI = td.dau_khoa(SD, CAN), td.moi_nhat(SD, CAN)
     con, da = store.con_lai(k, H), store.da_tap(k, H)
-    ui.hero("HÀNH TRÌNH CỦA BẠN", f"Chào {_ten(k)} 👋",
+    from core import hinh
+    ui.hero("HÀNH TRÌNH CỦA BẠN", f"Chào {_ten(k)} 👋", avatar=hinh.the_avatar(hinh.avatar_khach(k), k["ho_ten"], 64), sub=
             (f"Mục tiêu: {ui.E(k['muc_tieu'])}" if k.get("muc_tieu") else "Mỗi buổi tập là một bước gần hơn tới mục tiêu.")
             + (f" · buổi tới: <b>{store.THU[sap[0]['ngay'].weekday()]} {sap[0]['ngay']:%d/%m} lúc {store.gio_s(sap[0]['gio'])}</b>"
                if sap and q["lich"] else ""))
@@ -54,7 +55,9 @@ def trang_chu():
     if q["can"] and not any(x["id"] == "can" and x["xong"] for x in t["nv"]):
         C.nhap_can(k, k["ho_ten"], td.can_ngay(ma), "home")
     DL.check_in(k, k["ho_ten"], t)
-    ui.note(f"💬 <b>HLV Hoàng Anh:</b> {ui.E(t['loi'])}")
+    hs = hinh.ho_so_hlv()
+    st.markdown(f'<div class="hac-note" style="display:flex;gap:12px;align-items:center">{hinh.the_avatar(hinh.avatar_hlv(hs), hs["ten"], 44)}'
+                f'<div><b>HLV {ui.E(hs["ten"])}:</b> {ui.E(t["loi"])}</div></div>', unsafe_allow_html=True)
     DL.tuan_va_lich(t)
     DL.huy_hieu(t)
     can_s, ch_s = "—", ""
@@ -168,6 +171,12 @@ def tien_do():
                     cs[i].image(IMG[v["id"]], caption=f"{td.GOC[g]} · {pd.Timestamp(v['ngay']):%d/%m/%Y}", use_container_width=True)
             if d0 == d1:
                 break
+
+
+def thanh_qua():
+    _k()
+    from views import thanh_qua_ui
+    thanh_qua_ui.trang_khach()
 
 
 def tai_khoan():

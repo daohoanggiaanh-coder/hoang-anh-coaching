@@ -16,7 +16,8 @@ FIELDS = ["ma", "ho_ten", "sdt", "ten_zalo", "goi_khach", "xung_toi", "dia_diem"
           "gioi_tinh", "chieu_cao", "muc_tieu", "can_muc_tieu", "hinh_thuc", "chan_thuong",
           "muc_tieu_loai", "muc_tieu_mo", "muc_tieu_co", "muc_tieu_eo", "muc_tieu_ngay",     # v1.1: lộ trình (chỉ HLV xem)
           "goi_ten", "goi_loai", "goi_so",                                                      # v1.2: gói theo buổi / tuần / tháng
-          "quyen"]                                                                              # v1.3: mục khách được thấy / dùng
+          "quyen",                                                                              # v1.3: mục khách được thấy / dùng
+          "anh_dai_dien", "avatar_y", "avatar_r"]                                               # v1.8: ảnh đại diện                                                                              # v1.3: mục khách được thấy / dùng
 LOAI_GOI = {"buoi": "buổi", "tuan": "tuần", "thang": "tháng"}
 # v1.3 — quyền cổng khách: id → (nhóm, nhãn, mô tả). Mặc định bật hết; HLV tắt từng mục cho từng khách.
 QUYEN = {
@@ -34,6 +35,7 @@ QUYEN = {
     "di_cho": ("🍽 Dinh dưỡng", "Danh sách đi chợ", "Tổng thực phẩm cả tuần"),
     "can": ("📈 Tiến độ", "Cân hằng ngày", "Tự nhập cân + biểu đồ trung bình 7 ngày"),
     "so_do": ("📈 Tiến độ", "Số đo & ảnh", "So sánh số đo đầu khoá → hiện tại, ảnh trước / sau"),
+    "thanh_qua": ("🏆 Thành quả", "Hồ sơ HLV & thành quả học viên", "Ảnh trước / sau, kết quả các học viên đã đồng ý đăng"),
     "lich": ("🏠 Tổng quan", "Lịch hẹn & gói", "Buổi hẹn 2 tuần tới, số buổi / ngày còn trong gói"),
 }
 
@@ -52,7 +54,7 @@ def quyen(k: dict | None) -> dict[str, bool]:
 def trang_khach(q: dict[str, bool]) -> dict[str, bool]:
     """Trang nào của cổng khách được hiện (tắt hết mục con → ẩn luôn trang)."""
     return {"tap": q["giao_an"] or q["ghi_buoi"] or q["so_ta"] or q["tu_tao_plan"], "an": q["thuc_don"], "tien_do": q["can"] or q["so_do"],
-            "cardio": q["cardio"] or q["ghi_cardio"]}
+            "cardio": q["cardio"] or q["ghi_cardio"], "thanh_qua": q["thanh_qua"]}
 
 
 # ------------------------------------------------------------------ khách

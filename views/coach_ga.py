@@ -313,12 +313,13 @@ def ghi_buoi(k: dict, P_: dict, nguoi: str, vai: str = "hlv", chua_luu: bool = F
                    format_func=lambda x: f"{tt_.TINH_TRANG[x]['icon']} {x}") or "Khoẻ"
     cf = tt_.get(tts)
     mu, mau_ = tt_.MUC[cf["muc"]]
-    st.markdown(f'<div style="display:flex;gap:10px;align-items:flex-start;border:1px solid {mau_}55;background:{mau_}12;'
-                f'border-radius:14px;padding:10px 14px;margin:2px 0 8px"><span style="background:{mau_};color:#fff;font-weight:800;'
-                f'font-size:.66rem;letter-spacing:.08em;border-radius:999px;padding:4px 10px;white-space:nowrap">{mu}</span>'
-                f'<span style="font-size:.86rem;color:#2b2822">{E(cf["loi"])}'
-                + (f' <b>Tạ gợi ý ×{cf["kg"]:.2f}'.replace(".", ",") + (f", −{cf['hiep']} hiệp" if cf["hiep"] else "") + "</b>"
-                   if cf["kg"] < 1 else "") + "</span></div>", unsafe_allow_html=True)
+    if hlv:                                            # gợi ý giảm tạ theo thể trạng: chỉ HLV thấy
+        st.markdown(f'<div style="display:flex;gap:10px;align-items:flex-start;border:1px solid {mau_}55;background:{mau_}12;'
+                    f'border-radius:14px;padding:10px 14px;margin:2px 0 8px"><span style="background:{mau_};color:#fff;font-weight:800;'
+                    f'font-size:.66rem;letter-spacing:.08em;border-radius:999px;padding:4px 10px;white-space:nowrap">{mu}</span>'
+                    f'<span style="font-size:.86rem;color:#2b2822">{E(cf["loi"])}'
+                    + (f' <b>Tạ gợi ý ×{cf["kg"]:.2f}'.replace(".", ",") + (f", −{cf['hiep']} hiệp" if cf["hiep"] else "") + "</b>"
+                       if cf["kg"] < 1 else "") + "</span></div>", unsafe_allow_html=True)
     nhe = cf.get("nhe") and st.toggle("🔄 Đổi sang buổi phục hồi nhẹ (không tính vào chu kỳ giáo án)", value=True, key=f"nhe_{km}_{bm}")
     if nhe:
         bu = ga.buoi_nhe(P_["trinh_do"], P_.get("han_che"))
@@ -376,7 +377,7 @@ def ghi_buoi(k: dict, P_: dict, nguoi: str, vai: str = "hlv", chua_luu: bool = F
                 nghi, phu_n = r["nghi"], ("sau cả cặp superset" if nhan[j] else "giữa các hiệp")
             rir = r["rir"] if r["rir"] and r["rir"] != r["rpe"] else ""
             rpe_ = tt_.rpe(r["rpe"], tts)
-            if rpe_ != r["rpe"]:
+            if rpe_ != r["rpe"] and hlv:
                 rir = f"giảm theo thể trạng (gốc {r['rpe']})"
             st.markdown('<div class="gx-chips">' + _chip("Mục tiêu", r["lieu"], "hiệp × lần")
                         + _chip("Cường độ", rpe_ or ("—" if not rir else "Kỹ thuật"), rir)

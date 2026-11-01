@@ -242,7 +242,7 @@ def test_quyen_mac_dinh_va_tat():
     assert all(q.values()) and set(q) == set(store.QUYEN)
     q2 = store.quyen({"quyen": '{"thuc_don": false, "can": false, "so_do": false}'})
     tr = store.trang_khach(q2)
-    assert not q2["thuc_don"] and tr == {"tap": True, "an": False, "tien_do": False, "cardio": True}
+    assert not q2["thuc_don"] and tr == {"tap": True, "an": False, "tien_do": False, "cardio": True, "thanh_qua": True}
 
 
 def test_dam_cao_va_trai_cay():
@@ -312,3 +312,13 @@ def test_minh_hoa_bai():
     m = MH.tim("dead_bug")
     assert m and len(m["anh"]) == 2 and m["loi"]
     assert MH.tim(None, "Leg Press (máy)")["id"] == "leg_press"
+
+
+def test_cat_avatar():
+    import io
+    from PIL import Image
+    from core import hinh
+    buf = io.BytesIO()
+    Image.new("RGB", (900, 1600), "red").save(buf, "JPEG")
+    out = hinh.cat_vuong(buf.getvalue(), 14, 62)
+    assert Image.open(io.BytesIO(out)).size == (320, 320)

@@ -86,6 +86,7 @@ if user["role"] == "coach":
     pages = {
         "Huấn luyện": [st.Page(V.lich, title="Lịch & nhắc tập", icon="📅", url_path="lich", default=True),
                        st.Page(V.cam_ket, title="Cam kết khách", icon="🔥", url_path="cam_ket"),
+                       st.Page(V.ho_so, title="Hồ sơ HLV & thành quả", icon="🏆", url_path="ho_so"),
                        st.Page(V.khach, title="Khách & tài khoản", icon="👤", url_path="khach"),
                        st.Page(V.tap, title="Giáo án khách", icon="🏋️", url_path="tap"),
                        st.Page(V.cardio, title="Cardio", icon="🏃", url_path="cardio"),
@@ -105,7 +106,8 @@ else:
     pages += [p for p, on in ((st.Page(V.tap, title="Tập luyện", icon="🏋️", url_path="tap_luyen"), _tr["tap"]),
                               (st.Page(V.cardio, title="Cardio", icon="🏃", url_path="cardio"), _tr["cardio"]),
                               (st.Page(V.an, title="Thực đơn", icon="🍽", url_path="thuc_don"), _tr["an"]),
-                              (st.Page(V.tien_do, title="Cân & số đo", icon="📈", url_path="can_so_do"), _tr["tien_do"])) if on]
+                              (st.Page(V.tien_do, title="Cân & số đo", icon="📈", url_path="can_so_do"), _tr["tien_do"]),
+                              (st.Page(V.thanh_qua, title="Thành quả", icon="🏆", url_path="thanh_qua"), _tr["thanh_qua"])) if on]
     pages.append(st.Page(V.tai_khoan, title="Tài khoản", icon="🔐", url_path="tai_khoan"))
 
 st.logo(str(ROOT / "assets" / "app" / "wordmark-dark.png"), size="large", icon_image=str(ROOT / "assets" / "app" / "icon-192.png"))

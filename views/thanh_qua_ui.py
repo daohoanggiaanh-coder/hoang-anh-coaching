@@ -28,6 +28,10 @@ CSS = """<style>
 .tq-kq{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
 .tq-kq b{background:#F0F9F3;color:#1E7B4A;border:1px solid #BFE3CB;border-radius:999px;padding:4px 10px;font-size:.78rem}
 .tq-b q{display:block;color:#4a463f;font-size:.88rem;line-height:1.55;font-style:italic;margin-top:4px}
+.tq-sw{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;background:#14120F;scrollbar-width:none}
+.tq-sw::-webkit-scrollbar{display:none}
+.tq-sw img{flex:0 0 100%;width:100%;aspect-ratio:4/5;object-fit:cover;scroll-snap-align:center;display:block}
+.tq-dots{text-align:center;font-size:.7rem;color:#8b8577;padding:6px 0 0;letter-spacing:.06em}
 html[data-hac-theme=dark] .tq-c{background:#1A1814;border-color:#332E25;box-shadow:none}
 html[data-hac-theme=dark] .tq-b .t{color:#F3ECDC}html[data-hac-theme=dark] .tq-b q{color:#CFC6B4}
 html[data-hac-theme=dark] .tq-kq b{background:#12261A;border-color:#2E7D4F;color:#7BD3A0}
@@ -55,6 +59,16 @@ def gallery(ds: list[dict]):
         return
     o = ""
     for t in ds:
+        if t.get("anh_ds"):                                   # ảnh ghép sẵn trước / sau (1080×1350) — vuốt xem từng góc
+            imgs = [hinh.anh_full(i) for i in t["anh_ds"]]
+            slide = "".join(f'<img src="{u}" alt="">' for u in imgs if u)
+            kq = "".join(f"<b>{E(x.strip())}</b>" for x in re.split(r"[;\n|]|,\s+", str(t.get("ket_qua") or "")) if x.strip())
+            o += (f'<div class="tq-c"><div class="tq-sw">{slide}</div>'
+                  + (f'<div class="tq-dots">⇠ vuốt xem {len(imgs)} góc ⇢</div>' if len(imgs) > 1 else "")
+                  + f'<div class="tq-b"><div class="t">{E(t.get("ten") or "Học viên")}</div>'
+                  f'<div class="m">{E(" · ".join(x for x in (t.get("mo_ta"), t.get("thoi_gian")) if x))}</div>'
+                  + (f'<div class="tq-kq">{kq}</div>' if kq else "") + (f'<q>{E(t["loi"])}</q>' if t.get("loi") else "") + "</div></div>")
+            continue
         a, b = hinh.anh_full(t.get("anh_truoc", "")), hinh.anh_full(t.get("anh_sau", ""))
         kq = "".join(f"<b>{E(x.strip())}</b>" for x in re.split(r"[;\n|]|,\s+", str(t.get("ket_qua") or "")) if x.strip())
         o += (f'<div class="tq-c"><div class="tq-ba"><div>{f"<img src={chr(34)}{a}{chr(34)}>" if a else ""}<span>TRƯỚC</span></div>'
@@ -84,7 +98,9 @@ def _anh_moi(f, canh: int = 1400) -> str | None:
 def trang_hlv(nguoi: str):
     ui.hero("HỒ SƠ HLV & THÀNH QUẢ", "Ảnh đại diện · giới thiệu · transform học viên",
             "Khách thấy hồ sơ của anh và các ca transform ở mục 🏆 Thành quả. Ảnh đại diện khách tự cắt từ ảnh đầu khoá.")
-    t1, t2, t3 = st.tabs(["👤 Hồ sơ HLV", "🏆 Thành quả học viên", "🖼 Ảnh đại diện khách"])
+    t1, t2, t3, t4 = st.tabs(["👤 Hồ sơ HLV", "🏆 Thành quả học viên", "🖼 Ảnh đại diện khách", "📦 Nhập hàng loạt (ZIP)"])
+    with t4:
+        nhap_zip(nguoi)
     with t1:
         hs = hinh.ho_so_hlv()
         a, b = st.columns([1, 2])
@@ -155,7 +171,7 @@ def trang_hlv(nguoi: str):
                 t2_["anh_truoc"] = _anh_moi(fa)
             if fb is not None:
                 t2_["anh_sau"] = _anh_moi(fb)
-            if not t2_.get("anh_truoc") or not t2_.get("anh_sau"):
+            if not t2_.get("anh_ds") and (not t2_.get("anh_truoc") or not t2_.get("anh_sau")):
                 st.error("Cần đủ ảnh TRƯỚC và SAU.")
             elif hinh.luu_transform(t2_, nguoi):
                 st.toast("Đã lưu" + ("" if dy else " — đang ẩn vì chưa đánh dấu học viên đồng ý"))
@@ -196,3 +212,54 @@ def trang_hlv(nguoi: str):
                 store.save_client({**k, "anh_dai_dien": ""}, nguoi)
                 st.rerun()
             st.caption("Kéo thanh trượt — ảnh bên trái đổi ngay; bấm Lưu để áp dụng cho khách.")
+
+
+def nhap_zip(nguoi: str):
+    """ZIP gồm manifest.json + ảnh: {"hlv": {"file", "y", "r"}, "transforms": [{"ten", "files": [...], "mo_ta", "thoi_gian",
+    "ket_qua", "loi", "thu_tu"}]}. Mỗi ca lưu = học viên đã đồng ý (HLV chọn đưa lên) + hiện cho khách."""
+    import json
+    import zipfile
+    st.caption("Tải file ZIP chuẩn bị sẵn (có manifest.json) — web tự tải ảnh lên Drive và tạo từng ca. Ca trùng tên sẽ được cập nhật.")
+    f = st.file_uploader("File ZIP", type=["zip"], key="tq_zip")
+    if f is None:
+        return
+    try:
+        z = zipfile.ZipFile(f)
+        mf = json.loads(z.read("manifest.json").decode("utf-8"))
+    except Exception as e:  # noqa: BLE001
+        st.error(f"File ZIP chưa đúng định dạng: {e}")
+        return
+    ds = mf.get("transforms") or []
+    st.markdown(f"Tìm thấy **{len(ds)} ca** thành quả" + (" + **ảnh đại diện HLV**" if mf.get("hlv") else "") + ":")
+    for t in ds:
+        st.markdown(f"- {E(t.get('ten', ''))} · {len(t.get('files') or [])} ảnh")
+    if not st.button("⬆️ Nhập tất cả", type="primary"):
+        return
+    cu = {t.get("ten"): t for t in hinh.transforms(ca_an=True)}
+    tien = st.progress(0.0, text="Đang tải ảnh lên…")
+    n = len(ds) + (1 if mf.get("hlv") else 0)
+    i = 0
+    if mf.get("hlv"):
+        h = mf["hlv"]
+        up = db.upload_images({"hlv": A.shrink(z.read(h["file"]), 1200)}, "HAC_HLV_")
+        if up and up.get("hlv"):
+            hinh.luu_ho_so_hlv({**hinh.ho_so_hlv(), "anh": up["hlv"], "y": h.get("y", 36), "r": h.get("r", 56)}, nguoi)
+        i += 1
+        tien.progress(i / n, text="Đã xong ảnh đại diện HLV")
+    loi = []
+    for t in ds:
+        files = {f"a{j}": A.shrink(z.read(fn), 1350) for j, fn in enumerate(t.get("files") or [])}
+        up = db.upload_images(files, "HAC_TQ_") if files else {}
+        ids = [up.get(f"a{j}") for j in range(len(files))] if up else []
+        if not ids or not all(ids):
+            loi.append(t.get("ten", ""))
+        else:
+            goc = cu.get(t.get("ten"), {})
+            hinh.luu_transform({**goc, **{k: v for k, v in t.items() if k != "files"}, "anh_ds": ids, "dong_y": True, "hien": True}, nguoi)
+        i += 1
+        tien.progress(i / n, text=f"Đã xong {t.get('ten', '')}")
+    if loi:
+        st.error("Chưa tải được: " + ", ".join(loi) + " — bấm Nhập lại (ca đã xong sẽ được cập nhật, không nhân đôi).")
+    else:
+        st.success(f"Đã nhập {len(ds)} ca thành quả" + (" và ảnh đại diện HLV" if mf.get("hlv") else "") + ".")
+        st.balloons()

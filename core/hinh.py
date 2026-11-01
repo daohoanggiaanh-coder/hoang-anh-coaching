@@ -38,11 +38,23 @@ def data_uri(b: bytes | None) -> str:
 _CACHE: dict[tuple, str] = {}
 
 
+def thu_nho(data: bytes, rong: int = 640) -> bytes:
+    try:
+        from PIL import Image, ImageOps
+        im = ImageOps.exif_transpose(Image.open(io.BytesIO(data))).convert("RGB")
+        im.thumbnail((rong, rong * 2))
+        buf = io.BytesIO()
+        im.save(buf, "JPEG", quality=80, optimize=True)
+        return buf.getvalue()
+    except Exception:  # noqa: BLE001
+        return data
+
+
 def _uri(anh_id: str, y: float, r: float, cat: bool = True) -> str:
     key = (anh_id, y, r, cat)
     if key not in _CACHE:
         raw = db.get_images([anh_id]).get(anh_id)
-        _CACHE[key] = data_uri(cat_vuong(raw, y, r) if cat else raw) if raw else ""
+        _CACHE[key] = data_uri(cat_vuong(raw, y, r) if cat else thu_nho(raw)) if raw else ""
         if len(_CACHE) > 200:
             _CACHE.pop(next(iter(_CACHE)))
     return _CACHE[key]

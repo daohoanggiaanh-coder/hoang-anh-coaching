@@ -11,7 +11,7 @@ from core import db, dong_luc as dl, store
 
 E = html.escape
 S = st.session_state
-LINK = {"tap": "tap_luyen", "cardio": "cardio", "can": None, "checkin": None}
+LINK = {"tap": "tap_luyen", "cardio": "cardio", "can": None, "checkin": None, "so_do": "can_so_do", "anh": "can_so_do"}
 CSS = """<style>
 .dl-hero{background:radial-gradient(circle at 12% 0%,#4a3b22,#17140F 62%);border-radius:24px;padding:20px 22px;color:#F3ECDC;
   border:1px solid rgba(232,199,106,.35);display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center;margin:4px 0 12px}
@@ -60,8 +60,9 @@ def the_chinh(k: dict, t: dict):
         + (f'<span>còn <b>{sau[0] - t["xp"]:,}</b> điểm lên {sau[2]} {E(sau[1])}</span>'.replace(",", ".") if sau else "<span>Cấp cao nhất 👑</span>")
         + f'<span>🛡️ <b>{t["khien"]}</b> khiên</span><span>Kỷ lục chuỗi <b>{t["dai_nhat"]}</b> ngày</span></div></div></div>',
         unsafe_allow_html=True)
-    xong = sum(1 for x in t["nv"] if x["xong"])
-    con = len(t["nv"]) - xong
+    chinh = [x for x in t["nv"] if not x.get("phu")]
+    xong = sum(1 for x in chinh if x["xong"])
+    con = len(chinh) - xong
     if t["lua_hom"] and con == 0:
         st.markdown('<div class="dl-ok">✅ Hôm nay hoàn thành 100% — xuất sắc! +20 điểm thưởng. Hẹn bạn ngày mai 🔥</div>', unsafe_allow_html=True)
         if not S.get(f"dl_mung_{k['ma']}_{t['hom']}"):
@@ -70,13 +71,14 @@ def the_chinh(k: dict, t: dict):
     elif t["lua_hom"]:
         st.markdown(f'<div class="dl-ok">🔥 Đã giữ lửa hôm nay. Làm nốt {con} việc để lấy trọn điểm + thưởng 100%.</div>', unsafe_allow_html=True)
     else:
-        can = max(0, -(-len(t["nv"]) * 2 // 3) - xong)
+        can = max(0, -(-len(chinh) * 2 // 3) - xong)
         st.markdown(f'<div class="dl-warn">⏳ Còn {_con_lai()} — làm thêm {can} việc để giữ lửa'
                     f'{" chuỗi " + str(t["chuoi"]) + " ngày" if t["chuoi"] else ""}'
                     + (f' (có {t["khien"]} khiên đỡ nếu lỡ)' if t["khien"] else "") + "</div>", unsafe_allow_html=True)
     o = ""
     for x in t["nv"]:
-        sub = "✓ Xong · +" + str(DIEM_X(x)) if x["xong"] else (f'{x["lam"]}/{x["tg"]} phút' if x["id"] == "cardio" else f'+{dl.DIEM[x["id"]]} điểm')
+        sub = "✓ Xong · +" + str(DIEM_X(x)) if x["xong"] else (f'{x["lam"]}/{x["tg"]} phút' if x["id"] == "cardio" else
+                                                               f'{"🎁 Thưởng " if x.get("phu") else ""}+{dl.DIEM[x["id"]]} điểm')
         the = f'<div class="dl-m{" x" if x["xong"] else ""}"><div class="i">{x["icon"]}</div><div class="t">{E(x["ten"])}</div><div class="s">{sub}</div></div>'
         o += f'<a href="/{LINK[x["id"]]}" target="_self">{the}</a>' if LINK.get(x["id"]) and not x["xong"] else the
     st.markdown(f'<div class="dl-nv">{o}</div>', unsafe_allow_html=True)

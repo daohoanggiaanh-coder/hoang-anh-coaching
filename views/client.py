@@ -55,6 +55,11 @@ def trang_chu():
     if q["can"] and not any(x["id"] == "can" and x["xong"] for x in t["nv"]):
         C.nhap_can(k, k["ho_ten"], td.can_ngay(ma), "home")
     DL.check_in(k, k["ho_ten"], t)
+    from views import ho_so_ui
+    pt_hs = ho_so_ui.phan_tram(k)
+    if pt_hs < 80:
+        ui.note(f"🪪 Hồ sơ của bạn mới hoàn thành <b>{pt_hs}%</b> — vào <a href='/tai_khoan' target='_self'><b>Hồ sơ & tài khoản</b></a> "
+                "điền ngày sinh, kinh nghiệm tập, giấc ngủ… để HLV chỉnh giáo án và thực đơn sát với bạn hơn.")
     hs = hinh.ho_so_hlv()
     st.markdown(f'<div class="hac-note" style="display:flex;gap:12px;align-items:center">{hinh.the_avatar(hinh.avatar_hlv(hs), hs["ten"], 44)}'
                 f'<div><b>HLV {ui.E(hs["ten"])}:</b> {ui.E(t["loi"])}</div></div>', unsafe_allow_html=True)
@@ -135,42 +140,57 @@ def tien_do():
     k = _k()
     ma = k["ma"]
     q = store.quyen(k)
-    ui.hero("TIẾN ĐỘ", "Cân & số đo", "Cân mỗi sáng, xem đường trung bình 7 ngày — đừng lo dao động từng ngày.")
+    ui.hero("TIẾN ĐỘ", "Cân · số đo · ảnh", "Cân mỗi sáng · đo vòng mỗi thứ Hai · chụp ảnh mỗi 4 tuần — đủ 3 thứ này HLV mới thấy rõ bạn đang tiến bộ.")
+    from views import tien_do_ui
     CAN, SD = td.can_ngay(ma), td.so_do(ma)
-    if q["can"]:
-        C.nhap_can(k, k["ho_ten"], CAN, "kh")
-        C.bieu_do_can(k, CAN)
+    tabs = [x for x, on in (("⚖️ Cân hằng ngày", q["can"]), ("📏 Số đo hằng tuần", q["so_do"]), ("📸 Ảnh 4 tuần", q["so_do"])) if on]
+    if not tabs:
+        return
+    T = dict(zip(tabs, st.tabs(tabs)))
+    if "⚖️ Cân hằng ngày" in T:
+        with T["⚖️ Cân hằng ngày"]:
+            C.nhap_can(k, k["ho_ten"], CAN, "kh")
+            C.bieu_do_can(k, CAN)
     if not q["so_do"]:
         return
-    DAU, MOI = td.dau_khoa(SD, CAN), td.moi_nhat(SD, CAN)
-    if DAU and MOI:
-        ui.sec("Số đo: đầu khoá → hiện tại")
-        ss = td.so_sanh(DAU, MOI)
-        if ss:
-            st.dataframe(pd.DataFrame([{"Chỉ số": x["ten"], "Đầu khoá": f"{x['dau']:g} {x['dv']}", "Hiện tại": f"{x['moi']:g} {x['dv']}",
-                                        "Thay đổi": f"{'✅' if x['tot'] else '⚠️' if x['tot'] is False else '➖'} {x['chenh']:+g} {x['dv']}"}
-                                       for x in ss]), hide_index=True, use_container_width=True)
-    if len(SD):
-        with st.expander(f"Tất cả lần đo ({len(SD)})"):
-            bang = SD.copy()
-            bang["dot"] = bang["dot"].map(lambda x: td.DOT.get(x, x))
-            st.dataframe(bang.rename(columns={"ngay": "Ngày", "dot": "Đợt", "ghi_chu": "Ghi chú",
-                                              **{c: f"{t}{f' ({d})' if d else ''}" for c, t, d, _ in td.CHI_SO}}).dropna(axis=1, how="all"),
-                         hide_index=True, use_container_width=True)
+    with T["📸 Ảnh 4 tuần"]:
+        tien_do_ui.nhap_anh(k, k["ho_ten"])
+        _anh_khach(ma)
+    with T["📏 Số đo hằng tuần"]:
+        tien_do_ui.nhap_so_do(k, k["ho_ten"])
+        DAU, MOI = td.dau_khoa(SD, CAN), td.moi_nhat(SD, CAN)
+        if DAU and MOI:
+            ui.sec("Số đo: đầu khoá → hiện tại")
+            ss = td.so_sanh(DAU, MOI)
+            if ss:
+                st.dataframe(pd.DataFrame([{"Chỉ số": x["ten"], "Đầu khoá": f"{x['dau']:g} {x['dv']}", "Hiện tại": f"{x['moi']:g} {x['dv']}",
+                                            "Thay đổi": f"{'✅' if x['tot'] else '⚠️' if x['tot'] is False else '➖'} {x['chenh']:+g} {x['dv']}"}
+                                           for x in ss]), hide_index=True, use_container_width=True)
+        if len(SD):
+            with st.expander(f"Tất cả lần đo ({len(SD)})"):
+                bang = SD.copy()
+                bang["dot"] = bang["dot"].map(lambda x: td.DOT.get(x, x))
+                st.dataframe(bang.rename(columns={"ngay": "Ngày", "dot": "Đợt", "ghi_chu": "Ghi chú",
+                                                  **{c: f"{t}{f' ({d})' if d else ''}" for c, t, d, _ in td.CHI_SO}}).dropna(axis=1, how="all"),
+                             hide_index=True, use_container_width=True)
+
+
+def _anh_khach(ma: str):
     ANH = td.anh(ma)
-    if ANH:
-        ui.sec("Ảnh trước / hiện tại")
-        IMG = db.get_images([v["id"] for v in ANH])
-        d0, d1 = td.bo_anh(ANH, True), td.bo_anh(ANH, False)
-        for nhan, bo in (("Đầu tiên", d0), ("Mới nhất", d1)):
-            st.markdown(f"**{nhan}**")
-            cs = st.columns(3)
-            for i, g in enumerate(td.GOC):
-                v = bo.get(g)
-                if v and v["id"] in IMG:
-                    cs[i].image(IMG[v["id"]], caption=f"{td.GOC[g]} · {pd.Timestamp(v['ngay']):%d/%m/%Y}", use_container_width=True)
-            if d0 == d1:
-                break
+    if not ANH:
+        return
+    ui.sec("Ảnh trước / hiện tại")
+    IMG = db.get_images([v["id"] for v in ANH])
+    d0, d1 = td.bo_anh(ANH, True), td.bo_anh(ANH, False)
+    for nhan, bo in (("Đầu tiên", d0), ("Mới nhất", d1)):
+        st.markdown(f"**{nhan}**")
+        cs = st.columns(3)
+        for i, g in enumerate(td.GOC):
+            v = bo.get(g)
+            if v and v["id"] in IMG:
+                cs[i].image(IMG[v["id"]], caption=f"{td.GOC[g]} · {pd.Timestamp(v['ngay']):%d/%m/%Y}", use_container_width=True)
+        if d0 == d1:
+            break
 
 
 def thanh_qua():
@@ -182,7 +202,12 @@ def thanh_qua():
 def tai_khoan():
     k = _k()
     u = auth.current_user()
-    ui.hero("TÀI KHOẢN", k["ho_ten"], f"Tên đăng nhập: <b>{ui.E(u['username'])}</b>")
+    from core import hinh
+    from views import ho_so_ui
+    ui.hero("HỒ SƠ & TÀI KHOẢN", k["ho_ten"], f"Tên đăng nhập: <b>{ui.E(u['username'])}</b>",
+            avatar=hinh.the_avatar(hinh.avatar_khach(k), k["ho_ten"], 64))
+    ho_so_ui.form(k, k["ho_ten"], "khach")
+    st.divider()
     with st.form("doi_mk"):
         st.markdown("**Đổi mật khẩu**")
         cu = st.text_input("Mật khẩu hiện tại", type="password")

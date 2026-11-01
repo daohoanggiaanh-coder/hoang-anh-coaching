@@ -7,9 +7,11 @@ from datetime import date, timedelta
 
 from core import cardio as cd, db, giao_an as ga, store, tien_do as td
 
-DIEM = {"can": 10, "tap": 30, "cardio": 20, "checkin": 15}
+DIEM = {"can": 10, "tap": 30, "cardio": 20, "checkin": 15, "so_do": 25, "anh": 40}
 TEN_NV = {"can": ("⚖️", "Cân buổi sáng"), "tap": ("🏋️", "Ghi buổi tập"), "cardio": ("🏃", "Cardio đạt target"),
-          "checkin": ("📝", "Check-in ăn · ngủ · nước")}
+          "checkin": ("📝", "Check-in ăn · ngủ · nước"), "so_do": ("📏", "Đo vòng tuần này"), "anh": ("📸", "Chụp ảnh 4 tuần")}
+THU_DO = 0                    # thứ Hai: ngày đo vòng hằng tuần
+CHU_KY_ANH = 28
 CAP = [(0, "Tân binh", "🌱"), (300, "Chiến binh", "⚔️"), (800, "Bền bỉ", "🛡️"), (1600, "Kỷ luật thép", "🔩"),
        (3000, "Tinh anh", "💎"), (5000, "Huyền thoại", "👑")]
 NGUONG_LUA = 2 / 3            # làm ≥ 2/3 nhiệm vụ của ngày → giữ lửa
@@ -76,7 +78,10 @@ def du_lieu(k: dict, q: dict | None = None) -> dict:
         d = _d(r.get("ngay"))
         if d:
             cardio[d] = cardio.get(d, 0) + float(r.get("phut") or 0)
-    return {"can": {_d(x) for x in CAN["ngay"]} if len(CAN) else set(), "tap_log": {_d(x.get("ngay")) for x in L if not x.get("xoa")},
+    SD = td.so_do(ma)
+    ANH = td.anh(ma)
+    return {"so_do": {x for x in SD["ngay"]} if len(SD) else set(), "anh": sorted({_d(v.get("ngay")) for v in ANH if _d(v.get("ngay"))}),
+            "can": {_d(x) for x in CAN["ngay"]} if len(CAN) else set(), "tap_log": {_d(x.get("ngay")) for x in L if not x.get("xoa")},
             "cardio": cardio, "checkin": checkins(ma), "ngay_tap": set(tap), "goc": goc, "q": q, "L": L, "CAN": CAN,
             "bat_dau": _d(k.get("ngay_bat_dau")) or None}
 
@@ -93,6 +98,14 @@ def nhiem_vu(D: dict, d: date) -> list[dict]:
         lam = D["cardio"].get(d, 0)
         out.append({"id": "cardio", "xong": lam >= tg * 0.9, "phan": min(lam / tg, 1), "lam": round(lam), "tg": tg})
     out.append({"id": "checkin", "xong": d in D["checkin"]})
+    if q.get("so_do"):                                   # nhiệm vụ THƯỞNG: không tính vào giữ lửa
+        t2 = d - timedelta(days=d.weekday())
+        da_tuan = any(t2 <= x < d for x in D.get("so_do", ()))      # đã đo từ đầu tuần tới hôm qua → hôm nay không nhắc
+        if d.weekday() >= THU_DO and not da_tuan:
+            out.append({"id": "so_do", "xong": d in D.get("so_do", ()), "phu": True})
+        truoc = [x for x in D.get("anh", []) if x < d]
+        if d in D.get("anh", []) or not truoc or (d - truoc[-1]).days >= CHU_KY_ANH:
+            out.append({"id": "anh", "xong": d in D.get("anh", []), "phu": True})
     for x in out:
         x["icon"], x["ten"] = TEN_NV[x["id"]]
         x["diem"] = DIEM[x["id"]] if x["xong"] else round(DIEM[x["id"]] * x.get("phan", 0) * 0.5)
@@ -100,6 +113,7 @@ def nhiem_vu(D: dict, d: date) -> list[dict]:
 
 
 def _ty_le(nv: list[dict]) -> float:
+    nv = [x for x in nv if not x.get("phu")]               # nhiệm vụ thưởng không tính vào giữ lửa
     return sum(1 for x in nv if x["xong"]) / len(nv) if nv else 0
 
 

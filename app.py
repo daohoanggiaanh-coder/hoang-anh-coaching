@@ -108,7 +108,7 @@ else:
                               (st.Page(V.an, title="Thực đơn", icon="🍽", url_path="thuc_don"), _tr["an"]),
                               (st.Page(V.tien_do, title="Cân & số đo", icon="📈", url_path="can_so_do"), _tr["tien_do"]),
                               (st.Page(V.thanh_qua, title="Thành quả", icon="🏆", url_path="thanh_qua"), _tr["thanh_qua"])) if on]
-    pages.append(st.Page(V.tai_khoan, title="Tài khoản", icon="🔐", url_path="tai_khoan"))
+    pages.append(st.Page(V.tai_khoan, title="Hồ sơ", icon="🪪", url_path="tai_khoan"))
 
 st.logo(str(ROOT / "assets" / "app" / "wordmark-dark.png"), size="large", icon_image=str(ROOT / "assets" / "app" / "icon-192.png"))
 with st.sidebar:

@@ -173,7 +173,20 @@ def khach():
                        format_func=lambda m: "➕ Thêm khách mới" if m == "__moi__" else f"{by[m]['ho_ten']} · {by[m].get('trang_thai') or 'Đang tập'}",
                        key="k_pick")
     k0 = {} if cot == "__moi__" else by[cot]
-    t1, t2 = st.tabs(["✏️ Hồ sơ khách", "🔐 Tài khoản cổng khách"])
+    t1, t3, t2 = st.tabs(["✏️ Gói & lịch tập", "🪪 Hồ sơ đầy đủ & ảnh đại diện", "🔐 Tài khoản cổng khách"])
+    with t3:
+        if not k0:
+            st.info("Lưu khách trước (tab Gói & lịch tập), rồi điền hồ sơ đầy đủ.")
+        else:
+            from views import ho_so_ui
+            if ho_so_ui.tom_tat(k0):
+                st.caption(ho_so_ui.tom_tat(k0))
+            if k0.get("ly_do"):
+                st.markdown(f"💡 **Động lực của khách:** {E(k0['ly_do'])}")
+            if k0.get("can_mong_muon") and str(k0.get("can_mong_muon")) != str(k0.get("can_muc_tieu")):
+                st.caption(f"Khách mong muốn {float(k0['can_mong_muon']):g} kg — cân mục tiêu anh đặt: "
+                           + (f"{float(k0['can_muc_tieu']):g} kg" if k0.get("can_muc_tieu") else "chưa đặt"))
+            ho_so_ui.form(k0, u["name"], "hlv")
     with t1:
         lich0 = store.lich_co_dinh(k0)
         with st.form(f"kf_{cot}"):

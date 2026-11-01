@@ -9,7 +9,7 @@ import pandas as pd
 
 from core import db
 
-DOT = {"dau_khoa": "Đầu khoá", "tuan": "Hằng tuần", "cuoi_khoa": "Cuối khoá", "khac": "Khác"}
+DOT = {"dau_khoa": "Đầu khoá", "tuan": "Hằng tuần", "hang_thang": "Mỗi 4 tuần", "cuoi_khoa": "Cuối khoá", "khac": "Khác"}
 GOC = {"truoc": "Trước", "nghieng": "Nghiêng", "sau": "Sau"}
 CHI_SO = [("can_nang", "Cân nặng", "kg", -1), ("pbf", "% mỡ", "%", -1), ("smm", "Khối cơ", "kg", 1),
           ("khoi_mo", "Khối mỡ", "kg", -1), ("mo_noi_tang", "Mỡ nội tạng", "", -1),

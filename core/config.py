@@ -7,7 +7,7 @@ import os
 from functools import lru_cache
 from pathlib import Path
 
-VERSION = "v1.8.1"
+VERSION = "v1.8.2"
 VERSION_DATE = "2026-11-01"
 VERSION_LABEL = f"{VERSION} · {VERSION_DATE}"
 BRAND = "HOÀNG ANH COACHING"

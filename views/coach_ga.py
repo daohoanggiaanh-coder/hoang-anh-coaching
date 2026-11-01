@@ -387,7 +387,7 @@ def ghi_buoi(k: dict, P_: dict, nguoi: str, vai: str = "hlv", chua_luu: bool = F
                 n_set = int(r["lieu"].split("×")[0].split("–")[-1])
             except ValueError:
                 n_set = 3
-            n_set = tt_.so_hiep(n_set, tts, it.get("loai", ""))
+            n_goi_y = tt_.so_hiep(n_set, tts, it.get("loai", ""))      # gợi ý theo thể trạng; vẫn hiện đủ dòng theo giáo án
             met = r["lieu"].rstrip().endswith(" m")
             last = bt.last_for(ma, eid, hist)
             sg = bt.suggest(it, r["lieu"], last)
@@ -398,9 +398,12 @@ def ghi_buoi(k: dict, P_: dict, nguoi: str, vai: str = "hlv", chua_luu: bool = F
                          f'<span>{"giây" if giay else "mét" if met else "lần"}</span></div>', unsafe_allow_html=True)
             tk = None if giay else tt_.kg_goi_y(bt.target_kg(it, r["lieu"], last), tts, it.get("loai", ""), bt._step(it))
             hs = []
-            for si in range(n_set):
+            for si in range(max(n_set, 1)):
                 c1, c2, c3 = box.columns([0.55, 1, 1], vertical_alignment="center")
-                c1.markdown(f"<div style='text-align:center;color:#8b8577;font-weight:700'>{si + 1}</div>", unsafe_allow_html=True)
+                tuy = si >= n_goi_y
+                c1.markdown(f"<div style='text-align:center;color:{'#C9BFA9' if tuy else '#8b8577'};font-weight:700' "
+                            f"title='{'Tuỳ chọn hôm nay — có thể bỏ theo thể trạng' if tuy else ''}'>{si + 1}{'*' if tuy else ''}</div>",
+                            unsafe_allow_html=True)
                 kg = None if giay else c2.number_input("kg", 0.0, 400.0, value=tk, step=0.5, format="%.1f",
                                                        key=f"kg_{km}_{bm_luu}_{j}_{eid}_{si}_{tkey}", placeholder="kg",
                                                        label_visibility="collapsed")
@@ -408,13 +411,23 @@ def ghi_buoi(k: dict, P_: dict, nguoi: str, vai: str = "hlv", chua_luu: bool = F
                                       placeholder="giây" if giay else "mét" if met else "lần", label_visibility="collapsed")
                 if lan:
                     hs.append({"kg": kg or 0, "lan": lan})
+            if n_goi_y < n_set:
+                st.caption(f"\\* Hiệp {n_goi_y + 1}{f'–{n_set}' if n_set > n_goi_y + 1 else ''} tuỳ chọn hôm nay"
+                           + (" (giảm theo thể trạng)" if hlv else " — mệt thì có thể bỏ"))
             gc = st.text_input("Ghi chú bài", key=f"gcb_{km}_{bm_luu}_{j}", placeholder="Ghi chú bài (VD đau nhẹ gối, đổi tay cầm…)",
                                label_visibility="collapsed")
             bai.append({"id": eid, "ten": it["ten"], "hiep": hs, "ghi_chu": gc, "giay": giay,
                         **({"thay_cho": it["thay_cho"]} if it.get("thay_cho") else {}), **({"ss": nhan[j]} if nhan[j] else {})})
     with st.container(key=f"kb_{km}_{bm}"):
         st.markdown("**🏁 Kết buổi**")
-        cardio = st.text_input("Cardio", value=ga.cardio(P_["muc_tieu"], wk), key=f"cd_{km}_{bm}")
+        from core import cardio as cdm
+        ct = cdm.cai_dat(ma)["tap"]
+        lo, hi = cdm.KHOANG["tap"]
+        ts = f"{cdm.MAY.get(ct['may'], '')}" + (f" · dốc {float(ct['doc']):g}% · {float(ct['toc_do']):g} km/h" if ct["may"] in cdm.CO_DOC else "")
+        st.markdown(f"🏃 **Cardio sau tập: {lo}–{hi} phút** — target {int(ct['phut'])} phút · {ts}")
+        cd_phut = st.number_input("Cardio sau tập đã làm (phút) — để 0 nếu chưa làm", 0, 180, value=0, step=5,
+                                  key=f"cd_{km}_{bm}", help="Lưu buổi sẽ ghi luôn vào mục 🏃 Cardio (tính vào target tuần)")
+        cardio = f"{cd_phut} phút sau tập · {ts}" if cd_phut else "Chưa làm cardio sau tập"
         a, b = st.columns(2)
         cam = a.select_slider("Khách cảm thấy" if hlv else "Bạn cảm thấy", bt.CAM_NHAN, value="Bình thường", key=f"cn_{km}_{bm}")
         rpe = b.slider("Độ nặng cả buổi (RPE 1–10)", 1, 10, 7, key=f"rpe_{km}_{bm}")
@@ -441,6 +454,10 @@ def ghi_buoi(k: dict, P_: dict, nguoi: str, vai: str = "hlv", chua_luu: bool = F
               "rpe": rpe, "ghi_chu_hlv": ghi_pt, "loi_nhan": loi, "thoi_luong": 60, "nguoi_ghi": vai,
               **({"ghi_chu": gkh.strip()} if gkh.strip() else {})}
         bt.save(ma, s_, nguoi)
+        if cd_phut:
+            r_cd = {"ngay": str(ngay)[:10], "may": ct["may"], "phut": float(cd_phut), "doc": ct["doc"] if ct["may"] in cdm.CO_DOC else None,
+                    "toc_do": ct["toc_do"] if ct["may"] in cdm.CO_DOC else None, "ghi_chu": f"Sau buổi {bm_luu}"}
+            cdm.ghi(ma, r_cd, nguoi, vai)
         if tru:
             hom = [x for x in store.buoi([k], ngay, ngay, H) if x["trang_thai"] == "hen"]
             if hom:

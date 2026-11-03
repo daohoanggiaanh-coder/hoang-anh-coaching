@@ -81,7 +81,7 @@ def _chip(nhan: str, gia: str, phu: str = "") -> str:
 
 def _sig(x: dict | None) -> tuple:
     x = x or {}
-    return (x.get("muc_tieu"), int(x.get("trinh_do") or 0), min(max(int(x.get("buoi_tuan") or 3), 2), 5),
+    return (x.get("muc_tieu"), int(x.get("trinh_do") or 0), min(max(int(x.get("buoi_tuan") or 3), 2), 6),
             tuple(sorted(x.get("han_che") or [])), x.get("kieu") or "auto")
 
 
@@ -129,8 +129,10 @@ def trang(user: dict, k: dict):
             goal = a.selectbox("Mục tiêu", gks, index=gks.index(g0) if g0 in gks else 0, format_func=ga.GOALS.get, key=f"g_{ma}")
             lv = b.select_slider("Trình độ", list(range(5)), value=base["trinh_do"] if base else 0,
                                  format_func=lambda i: ga.LEVELS[i], key=f"lv_{ma}")
-            pw = c.select_slider("Số buổi / tuần", [2, 3, 4, 5], value=min(max(base["buoi_tuan"], 2), 5) if base else
-                                 min(max(len(store.lich_co_dinh(k)) or 3, 2), 5), key=f"pw_{ma}")
+            pw = c.select_slider("Số buổi / tuần", [2, 3, 4, 5, 6], value=min(max(base["buoi_tuan"], 2), 6) if base else
+                                 min(max(len(store.lich_co_dinh(k)) or 3, 2), 6), key=f"pw_{ma}")
+            if pw == 6:
+                c.caption("6 buổi: nên xen buổi nặng / nhẹ và giữ ≥ 1 ngày nghỉ hẳn; người mới thường hồi phục tốt hơn với 3–4 buổi.")
             a, b = st.columns([1.3, 1])
             kks = list(ga.KIEU_LICH)
             k0 = (base or {}).get("kieu") or ("mong_nu" if (k.get("gioi_tinh") == "Nữ" and "mông" in str(k.get("muc_tieu", "")).lower())

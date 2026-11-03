@@ -180,8 +180,9 @@ def tinh(h: HoSo) -> dict:
                    f"mục tiêu / cân ở BMI 25 ({can_tc:.0f} kg → {gkg * can_tc:.0f} g) — HLV cân nhắc ghi đè.")
 
     def _macro(kcal: float) -> dict:
-        pct_beo = 0.25 if h.muc_tieu == "giam_mo" else 0.28
-        beo = max(pct_beo * kcal / 9, 0.6 * can_tc)
+        # v2.0: nữ cần đủ béo (nội tiết, hấp thu vitamin tan trong dầu) → 30 % năng lượng, sàn 0,8 g/kg (mức thực hành)
+        pct_beo = 0.30 if h.nu else (0.25 if h.muc_tieu == "giam_mo" else 0.28)
+        beo = max(pct_beo * kcal / 9, (0.8 if h.nu else 0.6) * can_tc)
         beo = min(beo, 0.35 * kcal / 9)
         bot = max((kcal - dam * 4 - beo * 9) / 4, 0)
         return {"kcal": round(kcal), "p": round(dam), "f": round(beo), "c": round(bot),
@@ -271,7 +272,7 @@ MAU_BUA = {
     "sau":   {"dam": ["whey", "sua_chua_hy_lap", "sua_dau_nanh", "edamame"],
               "tinh_bot": ["chuoi", "banh_mi", "khoai_lang", "yen_mach"], "beo": [], "kem": [("trai_cay", 100)]},
 }
-GIOI_HAN = {"whey": 45, "trung": 200, "long_trang": 264, "dau_an": 15, "bo_dau_phong": 32, "dau_phong": 40, "hanh_nhan": 40,
+GIOI_HAN = {"whey": 45, "trung": 200, "long_trang": 264, "dau_an": 10, "bo_dau_phong": 32, "dau_phong": 40, "hanh_nhan": 40,
             "hat_dieu": 40, "qua_bo": 120, "sua_dau_nanh": 500, "sua_tuoi": 400, "sua_tach_beo": 400, "edamame": 250, "dau_lang": 300, "yen_mach": 100, "banh_mi": 150, "com": 400, "com_gao_lut": 400, "bun": 400,
             "mi_y": 350, "khoai_lang": 450, "khoai_tay": 450, "bap": 300, "chuoi": 240, "tao": 300, "cam": 300, "du_du": 300,
             "dua_hau": 400, "sua_chua_hy_lap": 300, "ca_ngu_hop": 150, "dau_phu": 300,
@@ -288,6 +289,12 @@ MON_VIET = {
                     "rau": [("gia_do", 100)], "nuoc": 1},
     "banh_mi_trung": {"ten": "Bánh mì ốp la + dưa leo", "bua": {"sang"}, "dam": ["trung", "long_trang"], "tb": "banh_mi", "beo": "dau_an",
                       "rau": [("rau_song", 50)]},
+    "banh_mi_bo":  {"ten": "Bánh mì trứng ốp + trái bơ", "bua": {"sang"}, "dam": ["trung", "long_trang"], "tb": "banh_mi", "beo": "qua_bo",
+                    "rau": [("rau_song", 50)]},
+    "salad_ga_bo": {"ten": "Salad ức gà + trái bơ + khoai lang", "bua": {"trua", "toi"}, "dam": ["uc_ga"], "tb": "khoai_lang", "beo": "qua_bo",
+                    "rau": [("dua_leo_ca_chua", 150), ("cai_bo_xoi", 50)]},
+    "ca_hoi_bo":   {"ten": "Cơm gạo lứt + cá hồi áp chảo + bơ", "bua": {"trua", "toi"}, "dam": ["ca_hoi"], "tb": "com_gao_lut", "beo": "qua_bo",
+                    "rau": [("bong_cai", 150)]},
     "banh_mi_ga":  {"ten": "Bánh mì gà xé + rau", "bua": {"sang"}, "dam": ["uc_ga"], "tb": "banh_mi", "beo": None, "rau": [("rau_song", 50)]},
     "xoi_ga":      {"ten": "Xôi gà xé", "bua": {"sang"}, "dam": ["uc_ga"], "tb": "xoi", "beo": None, "rau": [("rau_song", 40)]},
     "chao_ga":     {"ten": "Cháo gà xé hành gừng", "bua": {"sang", "toi"}, "dam": ["uc_ga"], "tb": "chao", "beo": None, "rau": [("rau_song", 50)], "nuoc": 1},
@@ -393,6 +400,8 @@ def mo_ta_luong(m: str, g: float, F: dict) -> str:
     dv = F[m].get("don_vi")
     if not dv or g <= 0:
         return ""
+    if m == "dau_an":                                     # dầu: 1 thìa cà phê = 5 ml ≈ 4,6 g
+        return f"≈ {g / 0.92:.0f} ml · {g / 0.92 / 5:.1f} thìa cà phê".replace(".0 ", " ").replace(".", ",")
     n = g / dv["g"]
     if m in ("trung", "long_trang", "whey"):
         return f"{n:.0f} {dv['ten']}"
@@ -426,9 +435,12 @@ def bua_an(b: dict, F: dict, che_do: list[str], seed: int, chon: dict | None = N
             uu = [x for x in ids if x not in (tranh_mon or set())] or ids
             mid = chon.get("mon") if chon.get("mon") in DS else uu[seed % len(uu)]
             mv = {"id": mid, **DS[mid]}
-            mon = list(mv["dam"]) + [mv["tb"]] + ([mv["beo"]] if mv["beo"] else [])
+            bot_tb = it_tb and mau == "toi" and b["c"] < 25          # ngày ít tinh bột: bữa tối bỏ cơm, thêm rau
+            mon = list(mv["dam"]) + ([] if bot_tb else [mv["tb"]]) + ([mv["beo"]] if mv["beo"] else [])
             for x, g in mv["rau"]:
-                kem[x] = float(g)
+                kem[x] = float(g) + (100 if bot_tb else 0)
+            if bot_tb:
+                mv = {**mv, "ten": mv["ten"] + " · tối nay bỏ cơm, thêm rau", "tb": None}
     for i, vt in enumerate(("dam", "tinh_bot", "beo")):
         if mv:
             break
@@ -458,7 +470,7 @@ def bua_an(b: dict, F: dict, che_do: list[str], seed: int, chon: dict | None = N
                     "tinh_bot": [], "beo": []}
     gram: dict[str, float] = {}
     for _ in range(4):
-        gram = _giai(mon, F, muc, {mv["tb"]: SAN_TB_VIET.get(mv["tb"], 0)} if mv else None)
+        gram = _giai(mon, F, muc, {mv["tb"]: SAN_TB_VIET.get(mv["tb"], 0)} if mv and mv.get("tb") else None)
         nho = [m for m, g in gram.items() if g < TOI_THIEU.get(m, TOI_THIEU_NHOM.get(F[m]["nhom"], 10)) * 0.8]
         if mv:                                         # món Việt giữ đủ thành phần chính (trừ dầu / món đạm phụ quá ít)
             nho = [m for m in nho if m == mv["beo"] or (m in mv["dam"][1:])]
@@ -502,17 +514,18 @@ def thuc_don_ngay(h: HoSo, kq: dict, ngay_tap: bool, thu: int, ma: str = "", cho
                 da_mon |= {i for i, v in MON_VIET.items() if v.get("nuoc")}
         out.append(x)
     _can_ngay(out, m, F)
-    _bu_beo(out, m, F, h.che_do, bo or set())
+    _bu_beo(out, m, F, h.che_do, bo or set(), h.nu)
     return out
 
 
-def _bu_beo(ds: list[dict], m: dict, F: dict, che_do: list[str], bo: set[str]) -> None:
+def _bu_beo(ds: list[dict], m: dict, F: dict, che_do: list[str], bo: set[str], nu: bool = False) -> None:
     """Ngày nhiều món nước (phở, bún, cháo) thường thiếu béo. Thứ tự bù: dầu nấu cho món cơm / áp chảo → hạt ở bữa phụ
     (không phải bữa ngay trước tập) → dầu / mỡ hành cho các món còn lại."""
     thieu = m["f"] - sum(tong(b["mon"], F)["f"] for b in ds)
     if thieu * 9 < 45:
         return
-    hat = [x for x in ("hanh_nhan", "dau_phong", "hat_dieu", "qua_bo") if x in F and duoc_an(F[x], che_do) and x not in bo]
+    thu_tu = ("qua_bo", "hanh_nhan", "dau_phong", "hat_dieu") if nu else ("hanh_nhan", "dau_phong", "hat_dieu", "qua_bo")
+    hat = [x for x in thu_tu if x in F and duoc_an(F[x], che_do) and x not in bo]
     co_dau = "dau_an" in F and "dau_an" not in bo
     nuoc = ("banh_pho", "bun", "hu_tieu", "chao", "xoi")
 
@@ -522,13 +535,17 @@ def _bu_beo(ds: list[dict], m: dict, F: dict, che_do: list[str], bo: set[str]) -
     buoc = [(lambda b: co_dau and chinh(b) and (not b.get("mon_id") or MON_VIET[b["mon_id"]]["tb"] not in nuoc), "dau_an"),
             (lambda b: bool(hat) and not chinh(b) and b.get("vai") != "truoc", "hat"),
             (lambda b: co_dau and chinh(b), "dau_an")]
+    if nu:                                                 # nữ: ưu tiên béo từ trái bơ / hạt trước, dầu nấu sau
+        co_bo = "qua_bo" in hat
+        buoc = [(lambda b: bool(hat) and not chinh(b) and b.get("vai") != "truoc", "hat"),
+                (lambda b: co_bo and chinh(b) and b["bua"] in ("sang", "trua"), "qua_bo")] + buoc
     for dk, loai in buoc:
         for b in ds:
             if thieu * 9 < 45:
                 break
             if not dk(b):
                 continue
-            x = "dau_an" if loai == "dau_an" else next((h for h in hat if h in b["mon"]), hat[0])
+            x = "dau_an" if loai == "dau_an" else "qua_bo" if loai == "qua_bo" else next((h for h in hat if h in b["mon"]), hat[0])
             g0 = b["mon"].get(x, 0)
             g1 = max(min(_tron(x, g0 + thieu / F[x]["f"] * 100, F), GIOI_HAN.get(x, 40)), TOI_THIEU.get(x, 5))
             if g1 > g0:

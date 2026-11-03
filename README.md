@@ -33,6 +33,11 @@ Streamlit Community Cloud + Google Sheets / Drive đứng tên Gmail cá nhân.
 - 🖼 Hình minh hoạ (free-exercise-db, public domain) + mẹo + lỗi hay sai cho 92 bài tập.
 - 👁 **Khách thấy gì** (v1.3): bật / tắt 13 mục cổng khách cho từng khách + **xem trước đúng màn hình khách**.
 - 📈 **Tiến độ & báo cáo**: cân hằng ngày (TB 7 ngày), số đo theo đợt, ảnh 3 góc, báo cáo đầu khoá / tiến độ (tin Zalo + PDF).
+- 🆕 **v2.0**: lịch tập **6 buổi / tuần**; **bước chân** theo mục tiêu (nhập + biểu đồ 14 ngày, nhiệm vụ thưởng);
+  nữ: béo 30 % năng lượng (≥ 0,8 g/kg), thêm **trái bơ**, dầu nấu ≤ 10 ml / bữa (hiện ml + thìa), ngày nghỉ ít tinh bột → bữa tối bỏ cơm thêm rau;
+  tab **📝 Đã ăn · còn lại** (ghi từng bữa: đúng thực đơn / ăn ngoài / tự nhập → còn lại kcal · đạm · tinh bột · béo, chia lại cho bữa chưa ăn);
+  tab **🍜 Ăn ngoài** (~33 món: macro ước lượng, cách gọi, bỏ gì, áng chừng bằng bàn tay, món hay ăn + món riêng);
+  trang **🗺 Lộ trình** theo giai đoạn (tập tạ · cardio · bước chân · dinh dưỡng · mốc đo) cho cả khách và HLV.
 - ✉️ Soạn tin Zalo · 🥗 Bảng thực phẩm (sửa số theo nhãn) · 📥 Chuyển dữ liệu từ Atlas.
 
 **Cổng khách** (tài khoản + mật khẩu do HLV cấp, mỗi khách chỉ thấy dữ liệu của mình và những mục HLV mở)

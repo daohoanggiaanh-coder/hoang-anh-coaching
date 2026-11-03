@@ -10,6 +10,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from core import db, dinh_duong as dd, giao_an as ga, store, tien_do as td, ui
+from views import an_ngoai_ui as an_ui
 
 E = html.escape
 S = st.session_state
@@ -24,7 +25,17 @@ def can_pbf(ma: str) -> tuple[float | None, float | None, str]:
     if not SD.empty and SD["pbf"].notna().any():
         pbf = float(SD.dropna(subset=["pbf"]).iloc[-1]["pbf"])
     ngay = moi.get("_ngay_can") or moi.get("ngay")
-    return (float(moi["can_nang"]) if moi.get("can_nang") else None), pbf, (f"{ngay:%d/%m/%Y}" if ngay else "")
+    kg = moi.get("can_nang")
+    if kg is None or pd.isna(kg):          # lần đo mới nhất chỉ có vòng eo… → lấy lần cân gần nhất có số
+        kg, ngay = None, None
+        ds = []
+        if not CAN.empty:
+            ds += [(r["ngay"], r["kg"]) for _, r in CAN.dropna(subset=["kg"]).iterrows()]
+        if not SD.empty and "can_nang" in SD:
+            ds += [(r["ngay"], r["can_nang"]) for _, r in SD.dropna(subset=["can_nang"]).iterrows()]
+        if ds:
+            ngay, kg = max(ds, key=lambda x: str(x[0]))
+    return (float(kg) if kg else None), pbf, (f"{ngay:%d/%m/%Y}" if ngay and hasattr(ngay, "strftime") else str(ngay or ""))
 
 
 def ho_so_dd(k: dict) -> dict:
@@ -193,7 +204,9 @@ def _bang_bua(b: dict, F: dict) -> str:
     return (f'<div class="dd-bua"><div class="dd-bh"><b><span class="dd-gio">🕒 {E(b["gio"])}</span>{E(b["ten"])}{tag}{ten_mon}</b>'
             f'<span class="kc">{t["kcal"]:.0f} kcal</span></div>{dong}'
             f'<div class="dd-bf"><span>Đạm <b>{t["p"]:.0f} g</b></span><span>Tinh bột <b>{t["c"]:.0f} g</b></span>'
-            f'<span>Béo <b>{t["f"]:.0f} g</b></span><span>Xơ <b>{t["xo"]:.0f} g</b></span></div></div>')
+            f'<span>Béo <b>{t["f"]:.0f} g</b></span><span>Xơ <b>{t["xo"]:.0f} g</b></span></div>'
+            f'<div style="font-size:.72rem;opacity:.7;padding:2px 12px 8px">🎯 Mục tiêu bữa này · ăn ngoài thì chọn món ≈ {t["kcal"]:.0f} kcal, '
+            f'≥ {t["p"]:.0f} g đạm</div></div>')
 
 
 def _the_bo_sung(ds: list[dict], h) -> str:
@@ -244,7 +257,12 @@ def dinh_duong(k: dict, vai: str, nguoi: str, q: dict | None = None):
         for g in kq["ghi"]:
             st.caption(f"⚠️ {g}")
 
-    tabs = [("hom", "🍽 Thực đơn hôm nay"), ("tuan", "📅 7 ngày")]
+    tabs = [("hom", "🍽 Thực đơn hôm nay")]
+    if hlv or q.get("nhat_ky_an"):
+        tabs.append(("an", "📝 Đã ăn · còn lại"))
+    tabs.append(("tuan", "📅 7 ngày"))
+    if hlv or q.get("an_ngoai"):
+        tabs.append(("ngoai", "🍜 Ăn ngoài"))
     if hlv or q.get("bo_sung"):
         tabs.append(("bs", "💊 Bổ sung"))
     if hlv or q.get("doi_mon"):
@@ -300,6 +318,13 @@ def dinh_duong(k: dict, vai: str, nguoi: str, q: dict | None = None):
         ui.note("Gram là <b>khối lượng đã nấu chín</b> (cơm, thịt, cá) — riêng yến mạch, whey là khô. Dầu trong thực đơn đã tính sẵn — "
                 "nấu luộc, hấp, áp chảo ít dầu. Rau ăn thoải mái thêm nếu còn đói. Uống đủ nước "
                 f"<b>{kq['nuoc_nghi']:g}–{kq['nuoc_tap']:g} lít</b> mỗi ngày.")
+
+    if "an" in T:
+        with T["an"]:
+            an_ui.nhat_ky(k, vai, nguoi, h, kq, F, bo, tap_set)
+    if "ngoai" in T:
+        with T["ngoai"]:
+            an_ui.an_ngoai(k, vai, nguoi, h, kq, bo, tap_set)
 
     with T["tuan"]:
         tuan = dd.thuc_don_tuan(h, kq, k["ma"], bo)
@@ -365,7 +390,7 @@ def dinh_duong(k: dict, vai: str, nguoi: str, q: dict | None = None):
 | TDEE | ngày nghỉ · ngày tập · trung bình tuần | {kq['tdee_nghi']} · {kq['tdee_tap']} · {kq['tdee_tb']} kcal |
 | Điều chỉnh | {dd.MUC_TIEU.get(h.muc_tieu)} · {dd.TOC_DO.get(h.toc_do)} | {kq['delta']:+} kcal / ngày |
 | Đạm | {kq['cach_dam']} — HLV chọn 2 g/kg cho khách tập tạ (Morton 2018: lợi ích tăng cơ chững lại quanh 1,6 g/kg, cận trên ~2,2 g/kg; khi thâm hụt nên cao hơn — Helms 2014) | {kq['dam']} g |
-| Béo | 25–28 % năng lượng, ≥ 0,6 g/kg (AMDR 20–35 %, IOM 2005) | ngày tập {kq['tap']['f']} g |
+| Béo | {'Nữ: 30 % năng lượng, ≥ 0,8 g/kg (mức thực hành — đủ béo cho nội tiết, hấp thu vitamin A, D, E, K)' if h.nu else 'Nam: 25–28 % năng lượng, ≥ 0,6 g/kg'} · trong khoảng AMDR 20–35 % (IOM 2005). Ưu tiên béo từ bơ, hạt, cá, trứng; dầu nấu ≤ 10 ml / bữa | ngày tập {kq['tap']['f']} g |
 | Tinh bột | phần năng lượng còn lại | {kq['tap']['c']} g tập · {kq['nghi']['c']} g nghỉ |
 | Chất xơ | 14 g / 1.000 kcal (IOM 2005) | ≥ {kq['tap']['xo']} g |
 | Rau + trái cây | ≥ 400 g / ngày (WHO) — mỗi ngày đổi loại trái cây | ≥ 400 g |

@@ -11,7 +11,7 @@ from core import db, dong_luc as dl, store
 
 E = html.escape
 S = st.session_state
-LINK = {"tap": "tap_luyen", "cardio": "cardio", "can": None, "checkin": None, "so_do": "can_so_do", "anh": "can_so_do"}
+LINK = {"tap": "tap_luyen", "cardio": "cardio", "can": None, "checkin": None, "so_do": "can_so_do", "anh": "can_so_do", "buoc": "cardio"}
 CSS = """<style>
 .dl-hero{background:radial-gradient(circle at 12% 0%,#4a3b22,#17140F 62%);border-radius:24px;padding:20px 22px;color:#F3ECDC;
   border:1px solid rgba(232,199,106,.35);display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center;margin:4px 0 12px}

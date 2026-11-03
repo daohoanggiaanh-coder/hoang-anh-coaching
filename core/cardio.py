@@ -19,9 +19,38 @@ MAC_DINH = {
     "ngay_tap": [],          # thứ có tập tạ (0 = T2); rỗng → lấy từ lịch cố định / thông số dinh dưỡng
     "ngay_off": [],          # thứ nghỉ hẳn, không cardio
     "ranh": False,           # khách rảnh: phần bù vượt trần được dồn tiếp
+    "buoc": None,            # bước chân / ngày; None → theo mục tiêu (BUOC)
     "ghi_chu": "",
 }
 KHOANG = {"tap": (20, 30), "nghi": (45, 90)}
+# Bước chân / ngày theo mục tiêu — mức thực hành (bước chân là phần lớn năng lượng vận động ngoài giờ tập).
+# Tham khảo sức khoẻ chung: Paluch và cộng sự 2022 (Lancet Public Health) — lợi ích giảm tử vong chững lại quanh 6.000–8.000 bước
+# (≥ 60 tuổi) và 8.000–10.000 bước (< 60 tuổi). Mức cho giảm mỡ là kinh nghiệm huấn luyện, không phải ngưỡng khoa học cứng.
+BUOC = {"giam_mo": 9000, "recomp": 8000, "tang_co": 7000, "giu": 8000}
+
+
+def buoc_muc_tieu(c: dict, muc_tieu: str | None) -> int:
+    return int(c.get("buoc") or BUOC.get(muc_tieu or "", 8000))
+
+
+def van_dong_tu_buoc(buoc: int) -> str:
+    """Quy đổi bước / ngày → mức vận động ngoài giờ tập của thực đơn."""
+    return "ngoi" if buoc < 5000 else "nhe" if buoc < 7500 else "vua" if buoc < 10000 else "nhieu"
+
+
+def buoc_logs(ma: str) -> dict[date, int]:
+    out = {}
+    for kk, v in db.latest("DinhDuong", ma).items():
+        if kk.startswith(f"buoc|{ma}|") and not v.get("xoa"):
+            try:
+                out[date.fromisoformat(str(v["ngay"])[:10])] = int(float(v.get("buoc") or 0))
+            except (KeyError, ValueError):
+                pass
+    return out
+
+
+def ghi_buoc(ma: str, ngay: date, buoc: int, nguoi: str) -> bool:
+    return db.append("DinhDuong", f"buoc|{ma}|{ngay.isoformat()}", {"ngay": ngay.isoformat(), "buoc": int(buoc), "ma_kh": ma}, nguoi, ma)
 
 
 # ------------------------------------------------------------------ cài đặt target
@@ -30,7 +59,7 @@ def cai_dat(ma: str) -> dict:
     out = {k: (dict(v0) if isinstance(v0, dict) else v0) for k, v0 in MAC_DINH.items()}
     for k in ("tap", "nghi"):
         out[k].update({x: y for x, y in (v.get(k) or {}).items() if x in MAC_DINH[k]})
-    for k in ("ngay_tap", "ngay_off", "ranh", "ghi_chu"):
+    for k in ("ngay_tap", "ngay_off", "ranh", "ghi_chu", "buoc"):
         if k in v:
             out[k] = v[k]
     out["_co"] = bool(v)

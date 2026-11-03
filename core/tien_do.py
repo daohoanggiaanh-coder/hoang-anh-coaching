@@ -101,7 +101,7 @@ def moi_nhat(sd: pd.DataFrame, can: pd.DataFrame | None = None) -> dict | None:
     m = sd.iloc[-1].to_dict() if not sd.empty else {"ngay": None}
     if can is not None and not can.empty:
         c = can.iloc[-1]
-        if m.get("ngay") is None or c["ngay"] >= m["ngay"] or not m.get("can_nang"):
+        if m.get("ngay") is None or c["ngay"] >= m["ngay"] or m.get("can_nang") is None or pd.isna(m.get("can_nang")):
             m = {**m, "can_nang": float(c["kg"]), "_ngay_can": c["ngay"]}
     return m
 

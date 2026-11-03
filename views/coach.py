@@ -633,7 +633,9 @@ def lo_trinh():
     if cc["ke_hoach"]:
         fig.add_hline(y=cc["ke_hoach"], line_dash="dot", annotation_text=f"Kế hoạch {cc['ke_hoach']} buổi")
     st.plotly_chart(ui.layout(fig, 220, "buổi"), use_container_width=True, config={"displayModeBar": False})
-    ui.sec("Lộ trình 12 tuần")
+    ui.sec("Lộ trình theo giai đoạn · khách cũng thấy (trang 🗺 Lộ trình)")
+    from views import giai_doan_ui
+    giai_doan_ui.trang(k, "hlv")
     M = lt.bang_do(ma)
     can0 = M["can_nang"].dropna().iloc[0] if M["can_nang"].notna().any() else None
     pbf0 = M["pbf"].dropna().iloc[0] if M["pbf"].notna().any() else None
@@ -642,15 +644,6 @@ def lo_trinh():
         bd = date.fromisoformat(str(k.get("ngay_bat_dau"))[:10])
     except ValueError:
         bd = hom
-    tuan_nay = max(1, (hom - bd).days // 7 + 1)
-    cs = st.columns(3)
-    for i, ph in enumerate(rm["phases"]):
-        dang = (i == 0 and tuan_nay <= 4) or (i == 1 and 5 <= tuan_nay <= 8) or (i == 2 and tuan_nay >= 9)
-        cs[i].markdown(f'<div class="hac-card" style="{"border:2px solid #C8A24A" if dang else ""}"><h4>{E(ph["ten"])}</h4>'
-                       f'<div style="color:#8b8577;font-size:.8rem">{E(ph["tuan"])}{" · ĐANG Ở ĐÂY" if dang else ""}</div>'
-                       f'<p style="font-size:.86rem;margin:6px 0">{E(ph["muc_tieu"])}</p>'
-                       + "".join(f'<div style="font-size:.82rem">• {E(x)}</div>' for x in ph["noi_dung"])
-                       + f'<div style="font-size:.8rem;color:#7A5B14;margin-top:6px">📏 {E(ph["do"])}</div></div>', unsafe_allow_html=True)
     if can0 is not None:
         pj = pd.DataFrame(rm["proj"])
         pj["ngay"] = [pd.Timestamp(bd) + pd.Timedelta(weeks=w) for w in pj["tuan"]]

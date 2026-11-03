@@ -242,7 +242,7 @@ def test_quyen_mac_dinh_va_tat():
     assert all(q.values()) and set(q) == set(store.QUYEN)
     q2 = store.quyen({"quyen": '{"thuc_don": false, "can": false, "so_do": false}'})
     tr = store.trang_khach(q2)
-    assert not q2["thuc_don"] and tr == {"tap": True, "an": False, "tien_do": False, "cardio": True, "thanh_qua": True}
+    assert not q2["thuc_don"] and tr == {"tap": True, "an": False, "tien_do": False, "cardio": True, "thanh_qua": True, "lo_trinh": True}
 
 
 def test_dam_cao_va_trai_cay():
@@ -322,3 +322,36 @@ def test_cat_avatar():
     Image.new("RGB", (900, 1600), "red").save(buf, "JPEG")
     out = hinh.cat_vuong(buf.getvalue(), 14, 62)
     assert Image.open(io.BytesIO(out)).size == (320, 320)
+
+
+def test_an_ngoai_con_lai():
+    from core import an_ngoai as an
+    td = [{"bua": "sang", "kcal": 400, "p": 30, "c": 40, "f": 12, "thuc": {"kcal": 400, "p": 30, "c": 40, "f": 12}},
+          {"bua": "trua", "kcal": 600, "p": 40, "c": 60, "f": 20, "thuc": {"kcal": 600, "p": 40, "c": 60, "f": 20}},
+          {"bua": "toi", "kcal": 600, "p": 40, "c": 60, "f": 20, "thuc": {"kcal": 600, "p": 40, "c": 60, "f": 20}}]
+    m = {"kcal": 1600, "p": 110, "c": 160, "f": 52}
+    pho = an.mon()["com_tam"]
+    logs = {"sang": {"loai": "dung"}, "trua": {"loai": "ngoai"} | an.macro(pho)}
+    t = an.tong_ngay(td, logs, m)
+    assert t["so_chua"] == 1 and set(t["chia"]) == {"toi"}
+    assert abs(t["da"]["kcal"] - (400 + pho["kcal"])) < 1
+    assert abs(t["chia"]["toi"]["kcal"] - (1600 - 400 - pho["kcal"])) < 1
+    assert an.loi_khuyen(t)
+    g = an.goi_y("giam_mo", t["chia"]["toi"], ["pho_bo"])
+    assert g and all(x["hop"] != "han_che" for x in g)
+    for x in an.data()["mon"]:   # macro khớp kcal trong khoảng hợp lý (trừ bia: cồn)
+        if x["id"] != "bia":
+            assert abs(x["p"] * 4 + x["c"] * 4 + x["f"] * 9 - x["kcal"]) / x["kcal"] < 0.15, x["id"]
+
+
+def test_giai_doan():
+    from core import cardio as cd, giai_doan as gd
+    c = {k: (dict(v) if isinstance(v, dict) else v) for k, v in cd.MAC_DINH.items()}
+    for n, so in ((12, 3), (4, 2), (1, 1), (8, 3), (16, 3)):
+        G = gd.ke_hoach("giam_mo", n, 4, c, 9000, 2.0, True)
+        assert len(G) == so and G[0]["tu"] == 1 and G[-1]["den"] == n
+        assert all(G[i]["den"] + 1 == G[i + 1]["tu"] for i in range(len(G) - 1))
+        assert all(g["tap"] and g["cardio"] and g["an"] and g["do"] and g["buoc"] >= 5000 for g in G)
+    G = gd.ke_hoach("giam_mo", 12, 4, c, 9000, 2.0, True)
+    assert G[0]["buoc"] < G[1]["buoc"] < G[2]["buoc"]
+    assert any("bơ" in x for x in G[0]["an"])

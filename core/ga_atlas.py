@@ -378,7 +378,7 @@ KIEU_LICH = {
 }
 KIEU_MO_TA = {
     "toan_than": "Mỗi buổi tập cả thân trên + thân dưới — hợp người mới, khách bận (2–3 buổi/tuần).",
-    "truoc_sau": "Chuỗi trước = đẩy + đùi trước; chuỗi sau = kéo + đùi sau, mông. Hợp 4–5 buổi/tuần.",
+    "truoc_sau": "Chuỗi trước = đẩy + đùi trước; chuỗi sau = kéo + đùi sau, mông. Hợp 4–6 buổi/tuần.",
     "tren_duoi": "Thân trên / thân dưới xen kẽ, mỗi kiểu 2 biến thể: Trên 1 · Dưới 1 · Trên 2 · Dưới 2.",
     "ppl": "Push (ngực, vai, tay sau) · Pull (lưng, vai sau, tay trước) · Legs (chân, mông). Cần tối thiểu 3 buổi/tuần.",
     "mong_nu": "Mông 2–3 buổi/tuần (hip thrust, hinge, một chân, dạng háng) + thân trên giữ dáng. Đầu buổi kích hoạt mông.",
@@ -389,15 +389,19 @@ KIEU_MO_TA = {
                 "Đau nhiều, tê lan, vẹo cột sống nặng → gửi bác sĩ / vật lý trị liệu trước.",
 }
 KIEU_SPLIT = {  # v3.58: chu kỳ buổi — tập theo thứ tự, hết tuần chưa đủ chu kỳ thì buổi kế tiếp nối sang đầu tuần sau
-    "toan_than": {2: ["FB1", "FB2"], 3: ["FB1", "FB2", "FB3"], 4: ["FB1", "FB2", "FB3", "FB4"], 5: ["FB1", "FB2", "FB3", "FB4"]},
-    "truoc_sau": {n: ["TR1", "SAU1", "TR2", "SAU2"] for n in (2, 3, 4, 5)},
-    "tren_duoi": {n: ["UP1", "LO1", "UP2", "LO2"] for n in (2, 3, 4, 5)},
-    "ppl": {n: ["PUSH1", "PULL1", "LEG1", "PUSH2", "PULL2", "LEG2"] for n in (2, 3, 4, 5)},
+    "toan_than": {2: ["FB1", "FB2"], 3: ["FB1", "FB2", "FB3"], 4: ["FB1", "FB2", "FB3", "FB4"], 5: ["FB1", "FB2", "FB3", "FB4"],
+                  6: ["FB1", "FB2", "FB3", "FB4"]},
+    "truoc_sau": {n: ["TR1", "SAU1", "TR2", "SAU2"] for n in (2, 3, 4, 5, 6)},
+    "tren_duoi": {n: ["UP1", "LO1", "UP2", "LO2"] for n in (2, 3, 4, 5, 6)},
+    "ppl": {n: ["PUSH1", "PULL1", "LEG1", "PUSH2", "PULL2", "LEG2"] for n in (2, 3, 4, 5, 6)},
     "mong_nu": {2: ["G1", "G2"], 3: ["G1", "TREN", "G2", "TREN2"], 4: ["G1", "TREN", "G2", "TREN2"],
-                5: ["G1", "TREN", "G2", "TREN2", "G3"]},
-    "circuit": {2: ["C1", "C2"], 3: ["C1", "C2", "C3"], 4: ["C1", "FB1", "C2", "C3"], 5: ["C1", "FB1", "C2", "FB2", "C3"]},
-    "chieu_cao": {2: ["H1", "H2"], 3: ["H1", "H2", "H3"], 4: ["H1", "H2", "H3", "FB1"], 5: ["H1", "H2", "H3", "FB1", "H1"]},
-    "sai_lech": {2: ["S1", "S2"], 3: ["S1", "S2", "S3"], 4: ["S1", "S2", "S3", "FB1"], 5: ["S1", "S2", "S3", "FB1", "FB2"]},
+                5: ["G1", "TREN", "G2", "TREN2", "G3"], 6: ["G1", "TREN", "G2", "TREN2", "G3", "TREN"]},
+    "circuit": {2: ["C1", "C2"], 3: ["C1", "C2", "C3"], 4: ["C1", "FB1", "C2", "C3"], 5: ["C1", "FB1", "C2", "FB2", "C3"],
+                6: ["C1", "FB1", "C2", "FB2", "C3", "FB3"]},
+    "chieu_cao": {2: ["H1", "H2"], 3: ["H1", "H2", "H3"], 4: ["H1", "H2", "H3", "FB1"], 5: ["H1", "H2", "H3", "FB1", "H1"],
+                  6: ["H1", "H2", "H3", "FB1", "H1", "FB2"]},
+    "sai_lech": {2: ["S1", "S2"], 3: ["S1", "S2", "S3"], 4: ["S1", "S2", "S3", "FB1"], 5: ["S1", "S2", "S3", "FB1", "FB2"],
+                 6: ["S1", "S2", "S3", "FB1", "S1", "FB2"]},
 }
 CHU_KY = {"truoc_sau", "tren_duoi", "ppl", "mong_nu"}          # dạng lịch chạy theo chu kỳ, không theo số buổi / tuần
 TAM_BAI = {"auto", "toan_than", "truoc_sau", "tren_duoi", "ppl", "mong_nu"}   # dạng lịch 8 bài / buổi (phong cách Atlas)
@@ -405,7 +409,7 @@ KIEU_MAX_BAI = {"circuit": 7, "chieu_cao": 7, "sai_lech": 7, "mong_nu": 8}     #
 LAP_DUOC = {"phuc_hoi", "bat_nhay", "the_luc", "strongman"}
 GIU_THU_TU = {"mong_nu", "circuit", "chieu_cao", "sai_lech"}     # buổi mẫu đã xếp thứ tự chủ đích → không xếp lại theo loại      # nhóm được lặp trong tuần (kích hoạt, bật nhảy, trạm thể lực)
 SPLIT = {2: ["FB1", "FB2"], 3: ["FB1", "FB2", "FB3"], 4: ["TR1", "SAU1", "TR2", "SAU2"],
-         5: ["TR1", "SAU1", "TR2", "SAU2"]}
+         5: ["TR1", "SAU1", "TR2", "SAU2"], 6: ["PUSH1", "PULL1", "LEG1", "PUSH2", "PULL2", "LEG2"]}
 CARDIO = {
     "giam_mo": ["Kết buổi: đi bộ dốc 15 phút, vẫn nói chuyện được (RPE 5–6)",
                 "Kết buổi: đi bộ dốc 20 phút + 5 phút air bike nhẹ",
@@ -485,7 +489,7 @@ def generate(goal: str, level: int, per_week: int, gioi: str = "Nam", limits: li
     limits = limits or []
     lib = tv.library()["nhom"]
     used: set[str] = set()
-    per_week = min(max(int(per_week), 2), 5)
+    per_week = min(max(int(per_week), 2), 6)
     max_bai = 8 if kieu in TAM_BAI else 5 if level == 0 else 6 if level == 1 else 7      # v3.58: phong cách Atlas 8 bài
     if kieu in KIEU_MAX_BAI:
         max_bai = max(max_bai, KIEU_MAX_BAI[kieu] - (1 if level == 0 and kieu == "mong_nu" else 0))

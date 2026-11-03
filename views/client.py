@@ -136,6 +136,16 @@ def cardio():
     cardio_ui.trang(k, "khach", k["ho_ten"], q)
 
 
+def lo_trinh():
+    k = _k()
+    ui.hero("LỘ TRÌNH", "Lộ trình khoá tập của bạn", "Từng giai đoạn: tập tạ · cardio · bước chân · dinh dưỡng · mốc đo.")
+    if not store.quyen(k)["lo_trinh"]:
+        st.info("Mục lộ trình HLV chưa mở cho bạn.")
+        return
+    from views import giai_doan_ui
+    giai_doan_ui.trang(k, "khach")
+
+
 def tien_do():
     k = _k()
     ma = k["ma"]

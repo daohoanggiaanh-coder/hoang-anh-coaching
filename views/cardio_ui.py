@@ -65,18 +65,23 @@ def _form_target(k: dict, c: dict, tap: list[int], nguoi: str, hs: dict):
         nt = a.multiselect("Thứ có tập tạ", list(range(7)), default=tap, format_func=lambda i: store.THU[i], key=f"cdnt_{k['ma']}")
         off = b.multiselect("Thứ nghỉ hẳn (không cardio)", list(range(7)), default=[int(x) for x in c.get("ngay_off") or []],
                             format_func=lambda i: store.THU[i], key=f"cdo_{k['ma']}")
+        a, b = st.columns(2)
+        buoc = a.number_input("👣 Bước chân / ngày", 2000, 25000, cd.buoc_muc_tieu(c, (hs or {}).get("muc_tieu")), step=500,
+                              key=f"cdb_{k['ma']}", help="Mặc định theo mục tiêu: giảm mỡ 9.000 · recomp 8.000 · giữ 8.000 · tăng cơ 7.000")
+        b.caption("Khách đang đi ít? Bắt đầu thấp hơn rồi tăng 1.000 bước mỗi 1–2 tuần — tăng đột ngột dễ bỏ cuộc.")
         ranh = st.toggle("Khách rảnh — cho phép dồn bù vượt mức tối đa", value=bool(c.get("ranh")), key=f"cdr_{k['ma']}")
         gc = st.text_input("Lời dặn khách (khách thấy)", value=c.get("ghi_chu") or "", key=f"cdg_{k['ma']}",
                            placeholder="VD: giữ nhịp thở nói chuyện được, không vịn tay vịn")
-        dong_bo = st.checkbox("Cập nhật tổng phút cardio vào thông số thực đơn", value=True, key=f"cdsy_{k['ma']}",
-                              help="Thực đơn sẽ cộng năng lượng cardio này vào nhu cầu hằng ngày")
+        dong_bo = st.checkbox("Cập nhật phút cardio + mức bước chân vào thông số thực đơn", value=True, key=f"cdsy_{k['ma']}",
+                              help="Thực đơn sẽ tính năng lượng cardio và mức vận động ngoài giờ theo số bước này")
         if st.form_submit_button("💾 Lưu target cardio", type="primary", use_container_width=True):
-            c2 = {**c, **moi, "ngay_tap": nt, "ngay_off": off, "ranh": ranh, "ghi_chu": gc.strip()}
+            c2 = {**c, **moi, "ngay_tap": nt, "ngay_off": off, "ranh": ranh, "ghi_chu": gc.strip(), "buoc": int(buoc)}
             if cd.luu_cai_dat(k["ma"], c2, nguoi):
                 if dong_bo and hs:
                     from views import common as C
                     W = sum(x["phut"] for x in cd.target_goc(c2, nt or tap).values())
-                    C.luu_hs_dd(k["ma"], {**hs, "cardio_phut_tuan": W, **({"ngay_tap": nt} if nt else {})}, nguoi)
+                    C.luu_hs_dd(k["ma"], {**hs, "cardio_phut_tuan": W, "van_dong": cd.van_dong_tu_buoc(int(buoc)),
+                                          **({"ngay_tap": nt} if nt else {})}, nguoi)
                 st.toast("Đã lưu target cardio")
                 st.rerun()
             st.error("Chưa lưu được — thử lại.")
@@ -184,6 +189,39 @@ def _form_ket_qua(k: dict, vai: str, nguoi: str, w: dict, kg: float | None):
                     st.error("Chưa lưu được — thử lại.")
 
 
+def _buoc_chan(k: dict, vai: str, nguoi: str, c: dict, hs: dict, ghi: bool):
+    ma = k["ma"]
+    hom = db.now_vn().date()
+    tg = cd.buoc_muc_tieu(c, (hs or {}).get("muc_tieu"))
+    B = cd.buoc_logs(ma)
+    ui.sec("👣 Bước chân mỗi ngày")
+    d14 = [hom - timedelta(days=i) for i in range(13, -1, -1)]
+    tuan = [B.get(d, 0) for d in d14[-7:]]
+    co = [x for x in tuan if x]
+    a, b, c_ = st.columns(3)
+    a.metric("Hôm nay", f"{B.get(hom, 0):,}".replace(",", "."), f"target {tg:,}".replace(",", "."), delta_color="off")
+    b.metric("TB 7 ngày", f"{(sum(co) / len(co) if co else 0):,.0f}".replace(",", "."), None)
+    c_.metric("Ngày đạt target (7 ngày)", f"{sum(1 for x in tuan if x >= tg)}/7")
+    if ghi:
+        with st.form(f"buoc_{ma}_{vai}", clear_on_submit=True):
+            x, y, z = st.columns([1.2, 1.2, 1], vertical_alignment="bottom")
+            nd = x.date_input("Ngày", hom, format="DD/MM/YYYY", max_value=hom, min_value=hom - timedelta(days=14), key=f"bd_{ma}_{vai}")
+            n = y.number_input("Số bước (xem app điện thoại / đồng hồ)", 0, 60000, value=None, step=100, placeholder="VD 8500",
+                               key=f"bn_{ma}_{vai}")
+            if z.form_submit_button("💾 Lưu bước", type="primary", use_container_width=True):
+                if n and cd.ghi_buoc(ma, nd, int(n), nguoi):
+                    st.toast(f"Đã lưu {int(n):,} bước".replace(",", "."))
+                    st.rerun()
+                st.error("Nhập số bước.")
+    fig = go.Figure(go.Bar(x=[f"{d:%d/%m}" for d in d14], y=[B.get(d, 0) for d in d14],
+                           marker_color=["#2E7D4F" if B.get(d, 0) >= tg else "#C8A24A" for d in d14],
+                           text=[f"{B[d] / 1000:.1f}k" if B.get(d) else "" for d in d14], textposition="outside"))
+    fig.add_hline(y=tg, line_dash="dot", line_color="#8b8577", annotation_text=f"Target {tg:,}".replace(",", "."))
+    st.plotly_chart(ui.layout(fig, 240, "bước"), use_container_width=True, config={"displayModeBar": False})
+    st.caption("Bước chân là phần lớn năng lượng vận động ngoài giờ tập — đi bộ sau bữa ăn 10–15 phút, đi cầu thang, nghe điện thoại "
+               "khi đi lại. Target theo mục tiêu là mức thực hành của HLV, không phải ngưỡng khoa học cố định.")
+
+
 def trang(k: dict, vai: str, nguoi: str, q: dict | None = None):
     st.markdown(CSS, unsafe_allow_html=True)
     ma = k["ma"]
@@ -223,6 +261,7 @@ def trang(k: dict, vai: str, nguoi: str, q: dict | None = None):
             f"<b>{c['tap']['toi_da']} phút</b> ngày tập, <b>{c['nghi']['toi_da']} phút</b> ngày nghỉ"
             + (" — khách rảnh nên phần vượt vẫn được chia tiếp." if c.get("ranh") else ".")
             + " Kcal tính theo phương trình ACSM (máy chạy) hoặc MET (máy khác) — chỉ là ước tính, sai số khoảng ±10–20 %.")
+    _buoc_chan(k, vai, nguoi, c, hs, hlv or q.get("ghi_cardio"))
     if hlv or q.get("ghi_cardio"):
         _form_ket_qua(k, vai, nguoi, w, kg)
     LS = [r for r in reversed(L)][:40]

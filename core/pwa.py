@@ -1,6 +1,7 @@
 # Hoàng Anh Coaching v1.5 (2026-10-31) — biểu tượng app trên điện thoại (Thêm vào màn hình chính)
 # Streamlit không cho sửa <head>, nên chèn thẻ icon / manifest bằng 1 khung ẩn (cùng tên miền) vào trang cha và trang ngoài cùng.
 # Ảnh icon lấy từ kho GitHub công khai của web (raw.githubusercontent.com).
+# v2.0.1: máy còn mở trang cũ sau khi web cập nhật → lỗi "Importing a module script failed" → tự tải lại trang 1 lần.
 from __future__ import annotations
 
 import base64
@@ -35,7 +36,10 @@ _JS = """<script>
    sc.textContent="(function(){function f(){try{var a=document.querySelector('.stApp')||document.body;var c=getComputedStyle(a).backgroundColor.match(/[0-9]+/g);"+
    "if(!c)return;var l=(0.299*c[0]+0.587*c[1]+0.114*c[2]);var t=l<110?'dark':'light';"+
    "if(document.documentElement.getAttribute('data-hac-theme')!==t)document.documentElement.setAttribute('data-hac-theme',t);}catch(e){}}"+
-   "f();setInterval(f,700);})();";
+   "function g(){try{var n=document.querySelectorAll('[data-testid=stException],[data-testid=stAlert]');for(var i=0;i<n.length;i++){var x=n[i].textContent||'';"+
+   "if(/Importing a module script failed|dynamically imported module|Loading chunk/i.test(x)){var k='hac-reload',t0=+(sessionStorage.getItem(k)||0);"+
+   "if(Date.now()-t0>60000){sessionStorage.setItem(k,Date.now());location.reload();}return;}}}catch(e){}}"+
+   "f();setInterval(function(){f();g();},700);})();";
    P.head.appendChild(sc);} }catch(e){}
  try{chen(window.top.document);}catch(e){}
 })();

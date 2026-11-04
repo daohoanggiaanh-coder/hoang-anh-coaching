@@ -1,5 +1,5 @@
 # Hoàng Anh Coaching v1.0 (2026-10-31)
-streamlit>=1.50,<2
+streamlit==1.66.1   # ghim bản: đổi bản Streamlit làm trang đang mở trên điện thoại lỗi "Importing a module script failed"
 pandas>=2.0
 numpy
 scipy>=1.10

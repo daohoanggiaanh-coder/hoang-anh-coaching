@@ -38,6 +38,10 @@ Streamlit Community Cloud + Google Sheets / Drive đứng tên Gmail cá nhân.
   tab **📝 Đã ăn · còn lại** (ghi từng bữa: đúng thực đơn / ăn ngoài / tự nhập → còn lại kcal · đạm · tinh bột · béo, chia lại cho bữa chưa ăn);
   tab **🍜 Ăn ngoài** (~33 món: macro ước lượng, cách gọi, bỏ gì, áng chừng bằng bàn tay, món hay ăn + món riêng);
   trang **🗺 Lộ trình** theo giai đoạn (tập tạ · cardio · bước chân · dinh dưỡng · mốc đo) cho cả khách và HLV.
+- 🆕 **v2.1**: **💪 Volume & bản đồ cơ** — hình người mặt trước / sau tô màu theo số hiệp nặng mỗi nhóm cơ trong tuần (đã tập hoặc theo giáo án),
+  đánh giá theo mục tiêu hình thể (tăng mông, ngực, vai, lưng chữ V, tay, đùi, giảm mỡ bụng…) + trình độ, mốc duy trì / tối thiểu / vùng tốt / trần,
+  phần kiến thức cho HLV; khách xem ở tab Tập luyện. **Lộ trình** thêm: volume mục tiêu từng giai đoạn, tuần deload, giáo án + liều theo giai đoạn,
+  mức tạ hiện tại, macro ngày tập / nghỉ, vi chất · nước · muối, ngủ & phục hồi, bổ sung.
 - ✉️ Soạn tin Zalo · 🥗 Bảng thực phẩm (sửa số theo nhãn) · 📥 Chuyển dữ liệu từ Atlas.
 
 **Cổng khách** (tài khoản + mật khẩu do HLV cấp, mỗi khách chỉ thấy dữ liệu của mình và những mục HLV mở)

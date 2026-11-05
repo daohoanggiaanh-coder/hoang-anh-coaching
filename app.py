@@ -89,6 +89,7 @@ if user["role"] == "coach":
                        st.Page(V.ho_so, title="Hồ sơ HLV & thành quả", icon="🏆", url_path="ho_so"),
                        st.Page(V.khach, title="Khách & tài khoản", icon="👤", url_path="khach"),
                        st.Page(V.tap, title="Giáo án khách", icon="🏋️", url_path="tap"),
+                       st.Page(V.volume, title="Volume & bản đồ cơ", icon="💪", url_path="volume"),
                        st.Page(V.cardio, title="Cardio", icon="🏃", url_path="cardio"),
                        st.Page(V.an, title="Dinh dưỡng", icon="🍽", url_path="dinh_duong"),
                        st.Page(V.tien_do, title="Tiến độ & báo cáo", icon="📈", url_path="tien_do"),

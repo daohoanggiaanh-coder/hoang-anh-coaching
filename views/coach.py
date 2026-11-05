@@ -344,6 +344,16 @@ def tap():
         coach_ga.trang(u, k)
 
 
+def volume():
+    u = _user()
+    ui.hero("VOLUME & BẢN ĐỒ CƠ", "Tuần này khách tập đủ volume chưa?",
+            "Số hiệp nặng mỗi nhóm cơ trong tuần, tô màu trên cơ thể, đánh giá theo mục tiêu hình thể + trình độ.")
+    k = _chon_khach(store.clients())
+    if k:
+        from views import volume_ui
+        volume_ui.trang(k, "hlv", u["name"])
+
+
 def an():
     u = _user()
     ui.hero("DINH DƯỠNG", "Năng lượng · macro · thực đơn 7 ngày", "Khách xem được thực đơn này ở cổng khách (không thấy phần thông số).")

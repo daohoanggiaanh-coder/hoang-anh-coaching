@@ -688,12 +688,17 @@ def tap_luyen(k: dict, vai: str, nguoi: str, q: dict | None = None):
     if not q["giao_an"]:
         G = [g for g in G if g.get("tac_gia") == "khach"]
     L = ga.logs(ma)
-    tab = [x for x, on in (("ga", q["giao_an"] or q["tu_tao_plan"]), ("ghi", q["ghi_buoi"]), ("ta", q["so_ta"]), ("ls", q["ghi_buoi"])) if on]
+    tab = [x for x, on in (("ga", q["giao_an"] or q["tu_tao_plan"]), ("ghi", q["ghi_buoi"]), ("vol", q.get("volume", True)), ("ta", q["so_ta"]),
+                           ("ls", q["ghi_buoi"])) if on]
     if not tab:
         st.info("Mục này HLV chưa mở cho bạn.")
         return
-    ten = {"ga": "📋 Giáo án", "ghi": "✍️ Ghi buổi tập", "ta": "🏋️ Số tạ & kỷ lục", "ls": "🗓 Lịch sử"}
+    ten = {"ga": "📋 Giáo án", "ghi": "✍️ Ghi buổi tập", "vol": "💪 Volume tuần", "ta": "🏋️ Số tạ & kỷ lục", "ls": "🗓 Lịch sử"}
     T = dict(zip(tab, st.tabs([ten[x] for x in tab])))
+    if "vol" in T:
+        with T["vol"]:
+            from views import volume_ui
+            volume_ui.trang(k, vai, nguoi)
     t1, t2, t3, t4 = (T.get(x) for x in ("ga", "ghi", "ta", "ls"))
     if t1 is not None:
         with t1:

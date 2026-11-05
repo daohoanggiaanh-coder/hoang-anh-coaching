@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 
-from core import cardio as cd, db, dinh_duong as dd, muc_tieu as mt, store
+from core import buoi as bu, cardio as cd, db, dinh_duong as dd, ga_atlas as ga, muc_tieu as mt, store, tu_van as tv, volume as vo
 
 TEN_MT = {"giam_mo": "Giảm mỡ", "recomp": "Giảm mỡ + tăng cơ", "tang_co": "Tăng cơ", "giu": "Giữ dáng / sức khoẻ"}
 _TU_MT = {"suc_khoe": "giu", "suc_manh": "tang_co"}
@@ -49,7 +49,7 @@ def ke_hoach(muc_tieu: str, tong_tuan: int, buoi_tuan: int, c: dict, buoc: int, 
             g["tap"] = [f"{buoi_tuan} buổi / tuần · 3–4 hiệp × 8–12 lần · chừa 1–2 lần (RIR 1–2 · RPE 8–9)",
                         "Nghỉ 90–120 giây bài lớn (squat, đẩy, kéo), 60–90 giây bài phụ",
                         "Tăng tải kép: đủ số lần trên cả hiệp → tuần sau thêm 1–2,5 kg (thân trên) / 2,5–5 kg (thân dưới)",
-                        "Mỗi 4–6 tuần có 1 tuần nhẹ hơn (giảm ~⅓ số hiệp) nếu mệt, ngủ kém, tạ đứng"]
+                        "Tăng volume nhóm ưu tiên 1–2 hiệp / tuần nếu hồi phục tốt (xem bảng volume bên dưới)"]
             cd_tap, cd_nghi = tap_p, nghi_p
             buoc_gd = buoc
             if so == 2:
@@ -102,9 +102,10 @@ def tong_tuan(k: dict) -> int:
     return 12
 
 
-def cua_khach(k: dict, hom: date | None = None) -> dict:
+def cua_khach(k: dict, hom: date | None = None, hs: dict | None = None) -> dict:
+    """hs: thông số dinh dưỡng đã điền sẵn cân / chiều cao (views.common.ho_so_dd) — thiếu thì chỉ lấy bản đã lưu."""
     hom = hom or db.now_vn().date()
-    hs = db.latest("DinhDuong").get(f"hs|{k['ma']}", {})
+    hs = hs if hs is not None else db.latest("DinhDuong").get(f"hs|{k['ma']}", {})
     mt_ = hs.get("muc_tieu") or _TU_MT.get(mt.loai(k), mt.loai(k))
     lich = store.lich_co_dinh(k)
     buoi = len(lich) or int(hs.get("buoi_tuan") or 3)
@@ -119,5 +120,97 @@ def cua_khach(k: dict, hom: date | None = None) -> dict:
     for g in gd:
         g["ngay_tu"], g["ngay_den"] = bd + timedelta(weeks=g["tu"] - 1), bd + timedelta(weeks=g["den"], days=-1)
     dang = next((i for i, g in enumerate(gd) if g["tu"] <= tuan <= g["den"]), len(gd) - 1)
-    return {"gd": gd, "tuan": tuan, "tong": n, "dang": dang, "bat_dau": bd, "muc_tieu": TEN_MT.get(mt_, mt_),
-            "da_qua": hom > bd + timedelta(weeks=n), "chua_bd": hom < bd}
+    out = {"gd": gd, "tuan": tuan, "tong": n, "dang": dang, "bat_dau": bd, "muc_tieu": TEN_MT.get(mt_, mt_),
+           "da_qua": hom > bd + timedelta(weeks=n), "chua_bd": hom < bd}
+    them(out, k, hs, mt_, nu)
+    return out
+
+
+# ------------------------------------------------------------------ v2.1: chi tiết từng giai đoạn
+def tuan_deload(n: int, gd: list[dict]) -> list[int]:
+    """Tuần giảm tải: khoá ≥ 8 tuần → tuần cuối giai đoạn tăng tải; khoá dài hơn → thêm mỗi ~6 tuần."""
+    if n < 8:
+        return []
+    w = [gd[1]["den"]] if len(gd) >= 3 else [round(n / 2)]
+    x = w[0] + 6
+    while x < n - 1:
+        w.append(x)
+        x += 6
+    return w
+
+
+def vi_chat(kq: dict | None, nu: bool) -> list[str]:
+    xo = f"≥ {kq['tap']['xo']} g" if kq else "14 g / 1.000 kcal"
+    nuoc = f"{kq['nuoc_nghi']:g}–{kq['nuoc_tap']:g} lít" if kq else "35 ml / kg + 0,5 L mỗi giờ tập"
+    return [f"Chất xơ {xo} / ngày (14 g / 1.000 kcal — IOM)", "Rau + trái cây ≥ 400 g / ngày, đổi màu, đổi loại (WHO)",
+            f"Nước {nuoc} / ngày (ước lượng)", "Muối: natri < 2.000 mg / ngày ≈ 1 thìa cà phê muối, gồm cả nước mắm, nước chấm (WHO)",
+            "Canxi ~1.000 mg / ngày: sữa, sữa chua, đậu hũ, cá nhỏ ăn cả xương, rau xanh đậm",
+            "Vitamin D: nắng sáng 10–20 phút, cá béo, trứng — nếu ít ra nắng, hỏi bác sĩ xét nghiệm trước khi uống liều cao",
+            ("Sắt ~18 mg / ngày (nữ): thịt bò, gan, huyết, rau xanh + vitamin C; mệt, rụng tóc, kinh nhiều → xét nghiệm"
+             if nu else "Sắt ~8 mg / ngày (nam): thịt đỏ 2–3 bữa / tuần là đủ"),
+            "Omega-3: cá béo (cá hồi, cá thu, cá nục) ≥ 2 bữa / tuần"]
+
+
+def them(L: dict, k: dict, hs: dict, mt_: str, nu: bool) -> None:
+    """Gắn thêm: giáo án + liều theo giai đoạn, volume mục tiêu, tạ hiện tại, deload, macro, vi chất, phục hồi, bổ sung."""
+    ma = k["ma"]
+    G, n = L["gd"], L["tong"]
+    g_an = ga.current(ma)
+    vc = vo.cai_dat(ma)
+    lv = vc["trinh_do"] if vc["trinh_do"] is not None else (g_an or {}).get("trinh_do", 0)
+    td, uu = vo.nhom_td(lv), vc["uu_tien"]
+    goal = (g_an or {}).get("muc_tieu", "giam_mo")
+    dl = tuan_deload(n, G)
+    L.update({"deload": dl, "uu_tien": uu, "trinh_do": ga.LEVELS[int(lv or 0)], "co_giao_an": bool(g_an)})
+    # macro
+    kq = None
+    try:
+        h = dd.HoSo.tu_dict(hs) if hs.get("kg") and hs.get("cao") else None
+        kq = dd.tinh(h) if h else None
+    except Exception:  # noqa: BLE001 — thiếu số liệu thì bỏ phần macro
+        kq = None
+    L["macro"] = None if not kq else {"tap": kq["tap"], "nghi": kq["nghi"], "dam_g_kg": kq["dam_g_kg"]}
+    L["vi_chat"] = vi_chat(kq, nu)
+    L["bo_sung"] = [f"{x['icon']} {x['ten']} — {x['lieu']}" for x in dd.bo_sung(dd.HoSo.tu_dict(hs), hs.get("bo_sung"))] if hs else []
+    L["phuc_hoi"] = ["Ngủ 7–9 tiếng / đêm, giờ ngủ cố định — ngủ thiếu làm giảm sức tập và khó giữ cơ khi giảm mỡ",
+                     "Mỗi nhóm cơ nghỉ ≥ 48 giờ trước khi tập nặng lại",
+                     "Ngày nghỉ: đi bộ, giãn cơ 10 phút; đau khớp nhói / sưng → báo HLV, không tập xuyên đau",
+                     "Theo dõi hằng tuần: tạ có tăng không, ngủ, đau mỏi, cân TB 7 ngày → HLV chỉnh volume / năng lượng"]
+    # tạ hiện tại của bài chính
+    ta = []
+    if g_an:
+        hist = bu.sessions(ma)
+        ids = []
+        for b in g_an["buoi"]:
+            for it in b.get("bai", []):
+                if it.get("loai") in ("C", "M") and it["id"] not in ids:
+                    ids.append(it["id"])
+        for eid in ids:
+            last = bu.last_for(ma, eid, hist)
+            if not last:
+                continue
+            hs_ = [x for x in last["hiep"] if (tv.num(x.get("kg"), 0) or 0) > 0 and (tv.num(x.get("lan"), 0) or 0) > 0]
+            if not hs_:
+                continue
+            top = max(hs_, key=lambda x: tv.num(x.get("kg"), 0) or 0)
+            e = bu.best_1rm(last)
+            ta.append({"bai": ga.ex(eid)["ten"], "ngay": last["ngay"], "top": f"{tv.num(top['kg']):g} kg × {int(tv.num(top['lan']))}",
+                       "e1rm": e})
+    L["ta"] = ta
+    for i, g in enumerate(G):
+        g["deload"] = [w for w in dl if g["tu"] <= w <= g["den"]]
+        g["volume"] = [{"co": c, "ten": vo.CO[c][0], "uu_tien": c in {x for u in uu for x in vo.UU_TIEN[u][1]},
+                        "hiep": vo.muc_giai_doan(c, td, uu, i, len(G))} for c in vo.CHINH]
+        g["giao_an"] = []
+        if g_an:
+            for b in g_an["buoi"]:
+                rows = []
+                for it in b.get("bai", []):
+                    x = ga.rx({**it, **({"circuit": True} if b.get("circuit") else {})}, goal, g["tu"], int(lv or 0))
+                    rows.append({"bai": it["ten"], "lieu": x["lieu"], "rir": x.get("rpe") or x.get("rir") or "", "nghi": x.get("nghi", "")})
+                g["giao_an"].append({"ten": f"Buổi {b.get('ma', '')} · {b.get('ten', '')}", "bai": rows})
+        if L["macro"]:
+            m = L["macro"]
+            g["an"].insert(1, f"Ngày tập ≈ {m['tap']['kcal']:,} kcal · đạm {m['tap']['p']} · tinh bột {m['tap']['c']} · béo {m['tap']['f']} g".replace(",", ".")
+                           + f" — ngày nghỉ ≈ {m['nghi']['kcal']:,} kcal · đạm {m['nghi']['p']} · tinh bột {m['nghi']['c']} · béo {m['nghi']['f']} g".replace(",", ".")
+                           + (" (số hiện tại — HLV chỉnh theo tiến độ)" if i else ""))

@@ -26,6 +26,7 @@ QUYEN = {
     "giao_an": ("🏋️ Tập luyện", "Xem giáo án", "Giáo án HLV soạn (bài, hiệp, lần, RPE, nghỉ)"),
     "ghi_buoi": ("🏋️ Tập luyện", "Tự ghi buổi tập", "Khách tự nhập kg × lần từng hiệp + xem lịch sử, lời nhắn HLV"),
     "tu_tao_plan": ("🏋️ Tập luyện", "Tự tạo plan", "Khách tự tạo / sửa plan riêng khi tập một mình"),
+    "volume": ("🏋️ Tập luyện", "Volume tuần & bản đồ cơ", "Bản đồ cơ thể tô màu theo số hiệp đã tập trong tuần, đánh giá theo mục tiêu"),
     "so_ta": ("🏋️ Tập luyện", "Số tạ & kỷ lục", "Biểu đồ số tạ, 1RM ước tính, kỷ lục"),
     "cardio": ("🏃 Cardio", "Xem target & tiến độ cardio", "Target từng ngày, phần bù, biểu đồ hoàn thành tuần"),
     "ghi_cardio": ("🏃 Cardio", "Tự nhập kết quả cardio", "Khách nhập phút, độ dốc, tốc độ, ảnh màn hình máy"),

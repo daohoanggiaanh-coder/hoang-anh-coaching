@@ -355,3 +355,17 @@ def test_giai_doan():
     G = gd.ke_hoach("giam_mo", 12, 4, c, 9000, 2.0, True)
     assert G[0]["buoc"] < G[1]["buoc"] < G[2]["buoc"]
     assert any("bơ" in x for x in G[0]["an"])
+
+
+def test_volume():
+    from core import volume as vo
+    from core import tu_van as tv
+    ids = {b["id"] for n in tv.library()["nhom"].values() for b in n["bai"] if b["loai"] in ("C", "M", "I", "Core")}
+    assert ids <= set(MAP_ := vo.MAP), sorted(ids - set(MAP_))          # bài tạ / core nào cũng có cơ
+    out = {}
+    vo.tinh_bai("bb_bench", 4, out)
+    assert out == {"nguc": 4, "tay_sau": 2, "vai_truoc": 2}
+    rows = {r["co"]: r for r in vo.danh_gia({"mong": 14, "nguc": 1}, "tb", ["mong"], True)}
+    assert rows["mong"]["uu_tien"] and rows["mong"]["dat"] and rows["nguc"]["tt"] == "thieu" and rows["xo"]["tt"] == "chua"
+    assert vo.moc("mong", "moi")[0] < vo.moc("mong", "cao")[2]
+    assert any("thiếu" in x for x in vo.nhan_xet(list(vo.danh_gia({"mong": 3}, "tb", ["mong"], True)), ["mong"]))

@@ -127,7 +127,10 @@ def trang(k: dict, vai: str, nguoi: str):
         st.markdown(chu_giai(), unsafe_allow_html=True)
     with c2:
         ui.sec("Đánh giá tuần")
-        for x in vo.nhan_xet(rows, uu, (g or {}).get("han_che"), int(lv or 0), V["so_buoi"] if nguon == "da_tap" else 0,
+        if nguon == "da_tap" and V["so_buoi"] == 0:
+            st.markdown("- Tuần này chưa có buổi nào được ghi. Bấm **Theo giáo án** để xem volume dự kiến"
+                        + ("." if g else " (khách chưa có giáo án HLV)."))
+        for x in [] if nguon == "da_tap" and V["so_buoi"] == 0 else vo.nhan_xet(rows, uu, (g or {}).get("han_che"), int(lv or 0), V["so_buoi"] if nguon == "da_tap" else 0,
                              int((g or {}).get("buoi_tuan") or 0) if nguon == "da_tap" and lui == 0 else 0):
             st.markdown(f"- {E(x)}")
         if V["khong_ro"]:

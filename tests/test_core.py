@@ -388,3 +388,16 @@ def test_goi_khoa_bao_luu():
     assert goi.trang_thai(k, date(2026, 10, 30), {})["vao"]
     k["cho_vao"] = True
     assert goi.trang_thai(k, date(2026, 12, 1), {})["vao"]
+
+
+def test_chu_ky_va_thong_tin():
+    from datetime import date
+    from core import chu_ky as ck, thong_tin as ttin
+    c = {**ck.MAC_DINH, "ngay_bd": [date(2026, 9, 1), date(2026, 9, 30), date(2026, 10, 29)]}
+    assert ck.do_dai_tb(c) == 29
+    assert ck.ngay_thu(c, date(2026, 10, 30)) == (2, False)
+    assert ck.ngay_thu(c, date(2026, 11, 27)) == (1, True)            # dự đoán kỳ tới
+    assert ck.ngay_thu(c, date(2026, 11, 10)) is None
+    assert ttin.SANG_DD[ttin.muc_tieu({"muc_tieu_loai": "suc_manh"})] == "giu"
+    assert ttin.tu_dd("giu", {"muc_tieu_loai": "suc_manh"}) == "suc_manh"
+    assert ttin.trinh_do({"kinh_nghiem": "1–3 năm"}) == 2 and ttin.trinh_do({"trinh_do": 3, "kinh_nghiem": "Dưới 6 tháng"}) == 3

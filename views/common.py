@@ -43,6 +43,16 @@ def ho_so_dd(k: dict) -> dict:
     hs = dict(db.latest("DinhDuong").get(f"hs|{k['ma']}", {}))
     kg, pbf, _ = can_pbf(k["ma"])
     hs.setdefault("gioi_tinh", k.get("gioi_tinh") or "Nam")
+    from core import thong_tin as ttin                  # v2.3: hồ sơ khách là nguồn chung — ghi đè số cũ lưu riêng ở dinh dưỡng
+    if k.get("gioi_tinh") in ("Nam", "Nữ"):
+        hs["gioi_tinh"] = k["gioi_tinh"]
+    if k.get("chieu_cao"):
+        try:
+            hs["cao"] = float(k["chieu_cao"])
+        except ValueError:
+            pass
+    if k.get("muc_tieu_loai") or k.get("muc_tieu"):
+        hs["muc_tieu"] = ttin.SANG_DD.get(ttin.muc_tieu(k), "giam_mo")
     if store.tuoi(k):
         hs["tuoi"] = store.tuoi(k)
     if k.get("chieu_cao"):
@@ -124,6 +134,9 @@ def form_dd(k: dict, hs: dict, vai: str, nguoi: str):
                             "ngay_tap": ngay_tap, "muc_tieu": mt, "toc_do": tdo, "kcal_tay": kct or None, "dam_g_kg": dgk or None,
                             "muc_dam": mdam, "bo_sung": bs})
             if luu_hs_dd(k["ma"], moi, nguoi):
+                if hlv:
+                    from core import thong_tin as ttin
+                    ttin.dong_bo(k, nguoi, gioi_tinh=gt, chieu_cao=cao, muc_tieu_loai=ttin.tu_dd(mt, k))
                 S.pop(f"dd_doi_{k['ma']}", None)
                 st.toast("Đã lưu — thực đơn đã tính lại")
                 st.rerun()

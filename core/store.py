@@ -20,7 +20,7 @@ FIELDS = ["ma", "ho_ten", "sdt", "ten_zalo", "goi_khach", "xung_toi", "dia_diem"
           "anh_dai_dien", "avatar_y", "avatar_r",                                               # v1.8: ảnh đại diện
           "email", "nghe_nghiep", "khu_vuc", "kinh_nghiem", "mon_da_tap", "buoi_co_the",       # v1.9: hồ sơ đầy đủ
           "khung_gio", "cong_viec", "giac_ngu", "ly_do", "benh_nen", "thuoc", "lh_ten", "lh_quan_he", "lh_sdt", "can_mong_muon",
-          "ngay_ket_thuc", "thanh_toan", "bao_luu", "cho_vao"]                                  # v2.2: gói · công nợ · bảo lưu · khoá                                                                              # v1.3: mục khách được thấy / dùng
+          "ngay_ket_thuc", "thanh_toan", "bao_luu", "cho_vao", "trinh_do"]                                  # v2.2: gói · công nợ · bảo lưu · khoá                                                                              # v1.3: mục khách được thấy / dùng
 LOAI_GOI = {"buoi": "buổi", "tuan": "tuần", "thang": "tháng"}
 # v1.3 — quyền cổng khách: id → (nhóm, nhãn, mô tả). Mặc định bật hết; HLV tắt từng mục cho từng khách.
 QUYEN = {

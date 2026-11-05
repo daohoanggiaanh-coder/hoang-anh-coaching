@@ -111,6 +111,9 @@ def trang(user: dict, k: dict):
     def _luu(info: dict) -> bool:
         ok = ga.save(ma, {**info, "ngay_bat_dau": info.get("ngay_bat_dau") or date.today().isoformat()}, info["buoi"], user["name"])
         if ok:
+            from core import thong_tin as ttin
+            ttin.dong_bo(k, user["name"], muc_tieu_loai=info.get("muc_tieu"), trinh_do=info.get("trinh_do"))
+        if ok:
             S.pop(DKEY, None)
             S.pop(LKEY, None)
             _reset()
@@ -125,9 +128,13 @@ def trang(user: dict, k: dict):
             st.markdown("**Thông số giáo án** · đổi ô nào giáo án tự xếp lại ngay")
             a, b, c = st.columns(3)
             gks = list(ga.GOALS)
-            g0 = base["muc_tieu"] if base else ga.guess_goal(k.get("muc_tieu"))
+            from core import thong_tin as ttin
+            g0 = base["muc_tieu"] if base else ttin.muc_tieu(k)
+            if base and k.get("muc_tieu_loai") and base["muc_tieu"] != ttin.muc_tieu(k):
+                st.info(f"Hồ sơ khách đang ghi mục tiêu **{ttin.TEN.get(ttin.muc_tieu(k))}**, giáo án đang theo "
+                        f"**{ga.GOALS.get(base['muc_tieu'])}** — chọn lại ô Mục tiêu bên dưới nếu muốn giáo án theo hồ sơ.")
             goal = a.selectbox("Mục tiêu", gks, index=gks.index(g0) if g0 in gks else 0, format_func=ga.GOALS.get, key=f"g_{ma}")
-            lv = b.select_slider("Trình độ", list(range(5)), value=base["trinh_do"] if base else 0,
+            lv = b.select_slider("Trình độ", list(range(5)), value=base["trinh_do"] if base else ttin.trinh_do(k),
                                  format_func=lambda i: ga.LEVELS[i], key=f"lv_{ma}")
             pw = c.select_slider("Số buổi / tuần", [2, 3, 4, 5, 6], value=min(max(base["buoi_tuan"], 2), 6) if base else
                                  min(max(len(store.lich_co_dinh(k)) or 3, 2), 6), key=f"pw_{ma}")
@@ -310,8 +317,19 @@ def ghi_buoi(k: dict, P_: dict, nguoi: str, vai: str = "hlv", chua_luu: bool = F
             S[f"tt_{km}_{bm}"] = de_xuat
             S[f"ssd_{km}"] = diem_
             st.rerun(scope="fragment")
-    tts = st.pills("🩺 Hôm nay " + ("khách" if hlv else "bạn") + " thấy thế nào?", ops, default=None if f"tt_{km}_{bm}" in S else "Khoẻ", key=f"tt_{km}_{bm}",
+    from core import chu_ky as ck_
+    ck = ck_.dieu_chinh(ma, ngay, k)                  # v2.3: ngày rơi vào chu kỳ (HLV ghi, khách không thấy ngày)
+    if ck and hlv:
+        st.markdown(f'<div class="gx-tip" style="border-color:#E6A6C0;background:#FDF1F6">{E(ck["hlv"])} '
+                    f'<span style="color:#8b8577">(chỉ HLV thấy)</span></div>', unsafe_allow_html=True)
+    mac_tt = "Tới tháng" if ck and ck["nang"] and hlv and "Tới tháng" in ops else "Khoẻ"
+    tts = st.pills("🩺 Hôm nay " + ("khách" if hlv else "bạn") + " thấy thế nào?", ops, default=None if f"tt_{km}_{bm}" in S else mac_tt, key=f"tt_{km}_{bm}",
                    format_func=lambda x: f"{tt_.TINH_TRANG[x]['icon']} {x}") or "Khoẻ"
+    tts_chon = tts
+    if ck and ck["nang"] and not hlv and tts == "Khoẻ" and "Tới tháng" in ops:
+        st.markdown(f'<div class="gx-tip" style="border-color:#E6C46A;background:#FFF8E6">{E(ck["khach"])}</div>', unsafe_allow_html=True)
+        if not st.toggle("Hôm nay mình thấy khoẻ — tập như bình thường", value=False, key=f"ckok_{km}_{bm}"):
+            tts = "Tới tháng"                             # áp mức giảm của chu kỳ nhưng không hiện chữ trên nút chọn
     cf = tt_.get(tts)
     mu, mau_ = tt_.MUC[cf["muc"]]
     if hlv:                                            # gợi ý giảm tạ theo thể trạng: chỉ HLV thấy
@@ -321,7 +339,7 @@ def ghi_buoi(k: dict, P_: dict, nguoi: str, vai: str = "hlv", chua_luu: bool = F
                     f'<span style="font-size:.86rem;color:#2b2822">{E(cf["loi"])}'
                     + (f' <b>Tạ gợi ý ×{cf["kg"]:.2f}'.replace(".", ",") + (f", −{cf['hiep']} hiệp" if cf["hiep"] else "") + "</b>"
                        if cf["kg"] < 1 else "") + "</span></div>", unsafe_allow_html=True)
-    nhe = cf.get("nhe") and st.toggle("🔄 Đổi sang buổi phục hồi nhẹ (không tính vào chu kỳ giáo án)", value=True, key=f"nhe_{km}_{bm}")
+    nhe = (cf.get("nhe") or bool(ck and ck["nghi"])) and st.toggle("🔄 Đổi sang buổi phục hồi nhẹ (không tính vào chu kỳ giáo án)", value=True, key=f"nhe_{km}_{bm}")
     if nhe:
         bu = ga.buoi_nhe(P_["trinh_do"], P_.get("han_che"))
     elif cf.get("core_nhe"):
@@ -451,7 +469,7 @@ def ghi_buoi(k: dict, P_: dict, nguoi: str, vai: str = "hlv", chua_luu: bool = F
             st.error("Chưa lưu được giáo án — kiểm tra kết nối rồi bấm lại.")
             return
         s_ = {"ngay": ngay, "ga_id": ga.KHOA.format(ma), "buoi": f"Buổi {bm_luu} · {bu['ten']}", "buoi_ma": bm_luu, "tuan": wk,
-              "tinh_trang": tts, "san_sang": S.get(f"ssd_{km}", ""), "bai": bai, "cardio": cardio, "cam_nhan": cam,
+              "tinh_trang": tts if hlv else tts_chon, **({"ck_dieu_chinh": True} if ck and tts != tts_chon else {}), "san_sang": S.get(f"ssd_{km}", ""), "bai": bai, "cardio": cardio, "cam_nhan": cam,
               "rpe": rpe, "ghi_chu_hlv": ghi_pt, "loi_nhan": loi, "thoi_luong": 60, "nguoi_ghi": vai,
               **({"ghi_chu": gkh.strip()} if gkh.strip() else {})}
         bt.save(ma, s_, nguoi)

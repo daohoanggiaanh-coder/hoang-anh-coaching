@@ -47,6 +47,10 @@ def trang_chu():
             (f"Mục tiêu: {ui.E(k['muc_tieu'])}" if k.get("muc_tieu") else "Mỗi buổi tập là một bước gần hơn tới mục tiêu.")
             + (f" · buổi tới: <b>{store.THU[sap[0]['ngay'].weekday()]} {sap[0]['ngay']:%d/%m} lúc {store.gio_s(sap[0]['gio'])}</b>"
                if sap and q["lich"] else ""))
+    from views import wow_ui
+    wow_ui.di_nhanh()
+    wow_ui.sinh_nhat(k, _ten(k))
+    wow_ui.chu_ky(k)
     from views import dong_luc_ui as DL
     from core import dong_luc as dl
     DL.lan_dau(k, k["ho_ten"])
@@ -64,6 +68,8 @@ def trang_chu():
     st.markdown(f'<div class="hac-note" style="display:flex;gap:12px;align-items:center">{hinh.the_avatar(hinh.avatar_hlv(hs), hs["ten"], 44)}'
                 f'<div><b>HLV {ui.E(hs["ten"])}:</b> {ui.E(t["loi"])}</div></div>', unsafe_allow_html=True)
     DL.tuan_va_lich(t)
+    if q["ghi_buoi"]:
+        wow_ui.tong_ket_tuan(k)
     DL.huy_hieu(t)
     can_s, ch_s = "—", ""
     if MOI and MOI.get("can_nang"):

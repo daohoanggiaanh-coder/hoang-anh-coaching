@@ -157,7 +157,8 @@ def them(L: dict, k: dict, hs: dict, mt_: str, nu: bool) -> None:
     G, n = L["gd"], L["tong"]
     g_an = ga.current(ma)
     vc = vo.cai_dat(ma)
-    lv = vc["trinh_do"] if vc["trinh_do"] is not None else (g_an or {}).get("trinh_do", 0)
+    from core import thong_tin as ttin
+    lv = ttin.trinh_do(k, vc["trinh_do"] if vc["trinh_do"] is not None else (g_an or {}).get("trinh_do", 0))
     td, uu = vo.nhom_td(lv), vc["uu_tien"]
     goal = (g_an or {}).get("muc_tieu", "giam_mo")
     dl = tuan_deload(n, G)

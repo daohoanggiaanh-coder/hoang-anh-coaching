@@ -69,6 +69,30 @@ div[data-testid="stMetricValue"]{font-weight:800;letter-spacing:-.01em}
 .stTabs [data-testid="stTab"]:hover{border-color:#C8A24A!important;background:#FBF6EA!important}
 .stTabs [data-testid="stTab"][aria-selected="true"]{background:#1C1B19!important;border-color:#1C1B19!important;box-shadow:0 3px 10px rgba(0,0,0,.18)!important}
 .stTabs [data-testid="stTab"][aria-selected="true"] p{color:#E8C76A!important}
+/* v2.3: menu trang (trên cùng + thanh bên) thành nút */
+[data-testid="stTopNavLink"]{border:1.5px solid #E2D7BF!important;background:#F6F1E6!important;border-radius:12px!important;
+  padding:6px 12px!important;margin:0 3px!important;box-shadow:0 2px 0 rgba(122,91,20,.10)}
+[data-testid="stTopNavLink"]:hover{border-color:#C8A24A!important;background:#FBF6EA!important}
+[data-testid="stTopNavLink"][aria-current="page"]{background:#1C1B19!important;border-color:#1C1B19!important}
+[data-testid="stTopNavLink"][aria-current="page"] *{color:#E8C76A!important}
+[data-testid="stTopNavLink"] span{font-weight:700!important}
+[data-testid="stSidebarNavLink"]{border:1px solid rgba(200,162,74,.28)!important;background:#1D1A15!important;border-radius:11px!important;
+  margin:3px 0!important;padding:7px 10px!important}
+[data-testid="stSidebarNavLink"]:hover{border-color:#C8A24A!important;background:#26221B!important}
+[data-testid="stSidebarNavLink"][aria-current="page"]{background:#E8C76A!important;border-color:#E8C76A!important;opacity:1!important}
+[data-testid="stSidebarNavLink"][aria-current="page"] *{color:#14120F!important;font-weight:800!important;opacity:1!important}
+[data-testid="stSidebarNavLink"] span{font-weight:600}
+html[data-hac-theme=dark] [data-testid="stTopNavLink"]{background:#211E19!important;border-color:#3A342A!important}
+html[data-hac-theme=dark] [data-testid="stTopNavLink"][aria-current="page"]{background:#C8A24A!important;border-color:#C8A24A!important}
+html[data-hac-theme=dark] [data-testid="stTopNavLink"][aria-current="page"] *{color:#14120F!important}
+/* nút đi tới trang (trang chủ khách) — 2 nút / hàng cả trên điện thoại */
+.st-key-hac_di_toi [data-testid="stHorizontalBlock"]{flex-wrap:nowrap!important;gap:8px!important}
+.st-key-hac_di_toi [data-testid="stColumn"]{min-width:0!important;width:50%!important;flex:1 1 50%!important}
+.st-key-hac_di_toi [data-testid="stPageLink"] a{border:1.5px solid #E2D7BF;background:#FFFDF8;border-radius:14px;padding:12px 10px;
+  justify-content:center;box-shadow:0 2px 0 rgba(122,91,20,.10)}
+.st-key-hac_di_toi [data-testid="stPageLink"] a:hover{border-color:#C8A24A;background:#FBF6EA}
+.st-key-hac_di_toi [data-testid="stPageLink"] p{font-weight:800}
+html[data-hac-theme=dark] .st-key-hac_di_toi [data-testid="stPageLink"] a{background:#1A1814;border-color:#3A342A}
 [data-testid="stExpander"] details{border:1.5px solid #E2D7BF!important;border-radius:12px!important;background:#FFFDF8}
 [data-testid="stExpander"] summary{font-weight:700}
 [data-testid="stExpander"] summary:hover{background:#FBF6EA}

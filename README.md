@@ -46,6 +46,10 @@ Streamlit Community Cloud + Google Sheets / Drive đứng tên Gmail cá nhân.
   gói hết hạn / hết buổi / đang bảo lưu / ngưng tập → **khách không đăng nhập được** (HLV mở tạm được); cảnh báo sắp hết gói, còn nợ;
   tab và mục mở rộng dạng nút bấm dễ nhận ra; thanh bên có ảnh đại diện + tên; lộ trình bản tổng quan cho khách, bản chi tiết chỉ HLV;
   bỏ xếp bài theo tầng máy, chữ "Atlas" → phương pháp Hoàng Anh Coaching.
+- 🆕 **v2.3**: menu trang dạng nút (trên cùng + thanh bên), trang chủ khách có nút đi nhanh; **một nguồn thông tin chung**
+  (mục tiêu chính, trình độ, giới tính, chiều cao… nhập 1 lần ở hồ sơ → giáo án, dinh dưỡng, volume, lộ trình tự dùng);
+  **🌸 Chu kỳ** cho khách nữ (HLV ghi ngày, web dự đoán kỳ tới, tự giảm tạ / bớt hiệp / gợi ý buổi nhẹ, nhắc khách kín đáo hoặc nói rõ,
+  khách không thấy ngày); chúc sinh nhật, tổng kết 7 ngày + tổng tạ đã nâng quy ra vật quen thuộc.
 - ✉️ Soạn tin Zalo · 🥗 Bảng thực phẩm (sửa số theo nhãn) · 📥 Chuyển dữ liệu từ Atlas.
 
 **Cổng khách** (tài khoản + mật khẩu do HLV cấp, mỗi khách chỉ thấy dữ liệu của mình và những mục HLV mở)

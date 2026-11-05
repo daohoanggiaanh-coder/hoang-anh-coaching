@@ -93,7 +93,8 @@ def trang(k: dict, vai: str, nguoi: str):
     hlv = vai == "hlv"
     g = ga.current(ma)
     cd = vo.cai_dat(ma)
-    lv = cd["trinh_do"] if cd["trinh_do"] is not None else (g or {}).get("trinh_do", 0)
+    from core import thong_tin as ttin
+    lv = ttin.trinh_do(k, cd["trinh_do"] if cd["trinh_do"] is not None else (g or {}).get("trinh_do", 0))
     td = vo.nhom_td(lv)
     goal = (g or {}).get("muc_tieu", "giam_mo")
     uu = cd["uu_tien"]
@@ -105,7 +106,7 @@ def trang(k: dict, vai: str, nguoi: str):
                                      placeholder="Chọn mục tiêu")
                 lv_m = b.selectbox("Trình độ tập", range(len(ga.LEVELS)), index=int(lv or 0), format_func=lambda i: ga.LEVELS[i])
                 if st.form_submit_button("💾 Lưu", type="primary"):
-                    if vo.luu_cai_dat(ma, {"uu_tien": uu_m, "trinh_do": lv_m}, nguoi):
+                    if vo.luu_cai_dat(ma, {"uu_tien": uu_m, "trinh_do": lv_m}, nguoi) and ttin.dong_bo(k, nguoi, trinh_do=lv_m):
                         st.toast("Đã lưu")
                         st.rerun()
     a, b = st.columns([2, 1])

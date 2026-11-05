@@ -120,6 +120,7 @@ else:
                               (st.Page(V.tien_do, title="Cân & số đo", icon="📈", url_path="can_so_do"), _tr["tien_do"]),
                               (st.Page(V.thanh_qua, title="Thành quả", icon="🏆", url_path="thanh_qua"), _tr["thanh_qua"])) if on]
     pages.append(st.Page(V.tai_khoan, title="Hồ sơ", icon="🪪", url_path="tai_khoan"))
+    st.session_state["_trang_khach"] = pages[1:]          # v2.3: nút đi tới các trang ở Tổng quan
 
 st.logo(str(ROOT / "assets" / "app" / "wordmark-dark.png"), size="large", icon_image=str(ROOT / "assets" / "app" / "icon-192.png"))
 def _the_nguoi(uri: str, nhan: str, ten: str, phu: str = "") -> str:

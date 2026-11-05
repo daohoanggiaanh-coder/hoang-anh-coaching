@@ -106,9 +106,13 @@ def lich():
                         + (" · HÔM NAY" if b["ngay"] == hom else "") + "</div>", unsafe_allow_html=True)
             truoc = b["ngay"]
         mau, nhan = MAU.get(b["trang_thai"], MAU["hen"])
+        from core import chu_ky as _ck
+        ckx = _ck.dieu_chinh(b["ma"], b["ngay"], k) if k else None
         st.markdown(f'<div class="hac-b"><span class="t">{E(store.gio_s(b["gio"]))}</span><span class="n">{E(k.get("ho_ten", ""))}</span>'
                     f'<span class="hac-chip" style="background:{mau}">{nhan}</span>'
-                    f'<span class="m">{E(b.get("dia_diem") or "")}' + (f" · {E(store.mo_ta_goi(k, H, hom))}" if k else "")
+                    + (f'<span class="hac-chip" style="background:#D46A92" title="{E(ckx["hlv"])}">🌸 ngày {ckx["ngay_thu"]}'
+                       f'{" (dự đoán)" if ckx["du_doan"] else ""}</span>' if ckx and ckx["nang"] else "")
+                    + f'<span class="m">{E(b.get("dia_diem") or "")}' + (f" · {E(store.mo_ta_goi(k, H, hom))}" if k else "")
                     + (" · hẹn thêm" if not b.get("co_dinh") else "") + "</span></div>", unsafe_allow_html=True)
         c1, c2, c3, c4 = st.columns(4)
         if b["trang_thai"] != "xong" and c1.button("✅ Đã tập", key=f"x_{b['id']}", use_container_width=True):
@@ -175,8 +179,14 @@ def khach():
     k0 = {} if cot == "__moi__" else by[cot]
     from views import goi_ui
     goi_ui.canh_bao(DS)
-    t1, t4, t3, t2 = st.tabs(["✏️ Thông tin, gói & lịch tập", "💳 Gói · công nợ · bảo lưu", "🪪 Hồ sơ đầy đủ & ảnh đại diện",
-                              "🔐 Tài khoản cổng khách"])
+    t1, t4, t3, t5, t2 = st.tabs(["✏️ Thông tin, gói & lịch tập", "💳 Gói · công nợ · bảo lưu", "🪪 Hồ sơ đầy đủ & ảnh đại diện",
+                                  "🌸 Chu kỳ (chỉ HLV)", "🔐 Tài khoản cổng khách"])
+    with t5:
+        if not k0:
+            st.info("Lưu khách trước.")
+        else:
+            from views import chu_ky_ui
+            chu_ky_ui.tab(k0, u["name"])
     with t4:
         if not k0:
             st.info("Lưu khách trước (tab Thông tin, gói & lịch tập).")
@@ -247,7 +257,13 @@ def khach():
             gt = a.selectbox("Giới tính", gt_l, index=gt_l.index(k0.get("gioi_tinh")) if k0.get("gioi_tinh") in gt_l else 0)
             cc = b.number_input("Chiều cao (cm)", 0.0, 230.0, float(k0.get("chieu_cao") or 0), step=0.5)
             cmt = c.number_input("Cân mục tiêu (kg)", 0.0, 250.0, float(k0.get("can_muc_tieu") or 0), step=0.5)
-            mt_ = d.text_input("Mục tiêu", value=k0.get("muc_tieu", ""), placeholder="VD giảm mỡ bụng, gọn eo")
+            mt_ = d.text_input("Mô tả mục tiêu", value=k0.get("muc_tieu", ""), placeholder="VD giảm mỡ bụng, gọn eo")
+            from core import thong_tin as ttin, ga_atlas as _ga
+            a, b = st.columns(2)
+            ml_ = a.selectbox("Mục tiêu chính (dùng chung cho giáo án, dinh dưỡng, lộ trình)", list(ttin.TEN),
+                              index=list(ttin.TEN).index(ttin.muc_tieu(k0)) if k0 else 0, format_func=ttin.TEN.get)
+            td_ = b.selectbox("Trình độ tập (dùng chung cho giáo án, volume)", list(range(5)), index=ttin.trinh_do(k0) if k0 else 0,
+                              format_func=lambda i: _ga.LEVELS[i])
             ct = st.text_input("Chấn thương / bệnh nền cần lưu ý", value=k0.get("chan_thuong", ""))
             gc = st.text_area("Ghi chú (chỉ HLV thấy)", value=k0.get("ghi_chu", ""), height=70)
             a, b = st.columns([3, 1])
@@ -268,7 +284,7 @@ def khach():
                     g_lo, g_so = gc_.get("loai", "buoi"), int(gc_.get("so") or 0)
                     gia = gia.strip() or f"{int(gc_.get('gia') or 0):,}".replace(",", ".")
                 k1 = {**k0, "goi_ten": g_chon if gc_ else "", "goi_loai": g_lo, "goi_so": g_so if g_lo != "buoi" else "",
-                      "gioi_tinh": gt, "chieu_cao": cc or "", "can_muc_tieu": cmt or "", "muc_tieu": mt_.strip(),
+                      "gioi_tinh": gt, "chieu_cao": cc or "", "can_muc_tieu": cmt or "", "muc_tieu": mt_.strip(), "muc_tieu_loai": ml_, "trinh_do": td_,
                       "ma": k0.get("ma") or store.ma_moi(DS), "ho_ten": ten.strip(), "sdt": sdt.strip(), "ten_zalo": tz.strip(),
                       "goi_khach": gk.strip(), "xung_toi": xt.strip(), "dia_diem": dd_.strip(), "goi_buoi": g_so if g_lo == "buoi" else "", "da_tap_truoc": truoc,
                       "gia": gia.strip(), "ngay_bat_dau": bd.isoformat(), "lich": sl, "trang_thai": tt, "ghi_chu": gc.strip(),

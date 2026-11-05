@@ -291,6 +291,18 @@ def ghi_buoi(k: dict, P_: dict, nguoi: str, vai: str = "hlv", chua_luu: bool = F
     if not hlv and S.get(f"_ga_flash_{km}"):
         st.success(S.pop(f"_ga_flash_{km}"))
         st.balloons()
+    if S.get(f"_pr_{km}"):                             # v2.4: kỷ lục mới → thẻ ảnh để lưu / chia sẻ
+        from core import wow as _wow
+        prs, ngay_pr = S.pop(f"_pr_{km}")
+        st.markdown(f"### 🏆 {len(prs)} kỷ lục mới!")
+        cs = st.columns(min(3, len(prs)))
+        for i_, p_ in enumerate(prs[:3]):
+            png = _wow.the_ky_luc_png(k.get("ho_ten", ""), p_, ngay_pr)
+            cs[i_].image(png, use_container_width=True)
+            cs[i_].download_button("⬇️ Lưu ảnh kỷ lục", png, f"ky_luc_{p_['bai'][:20]}.png", "image/png", key=f"dlpr_{km}_{i_}",
+                                   use_container_width=True)
+        if hlv:
+            st.caption("Gửi ảnh này cho khách qua Zalo — khách rất thích khoe kỷ lục 💪")
     mas = [b_["ma"] for b_ in P_["buoi"]]
     nx = ga.buoi_tiep(P_, hist)
     a, b = st.columns([2, 1])
@@ -322,7 +334,11 @@ def ghi_buoi(k: dict, P_: dict, nguoi: str, vai: str = "hlv", chua_luu: bool = F
     if ck and hlv:
         st.markdown(f'<div class="gx-tip" style="border-color:#E6A6C0;background:#FDF1F6">{E(ck["hlv"])} '
                     f'<span style="color:#8b8577">(chỉ HLV thấy)</span></div>', unsafe_allow_html=True)
-    mac_tt = "Tới tháng" if ck and ck["nang"] and hlv and "Tới tháng" in ops else "Khoẻ"
+    from core import wow as _wow
+    ngu = None if (ck and ck["nang"]) else _wow.ngu_it(ma, ngay)      # v2.4: check-in ngủ < 6 tiếng
+    if ngu and hlv:
+        st.markdown(f'<div class="gx-tip">{E(ngu["hlv"])}</div>', unsafe_allow_html=True)
+    mac_tt = "Tới tháng" if ck and ck["nang"] and hlv and "Tới tháng" in ops else "Mệt / thiếu ngủ" if ngu and hlv else "Khoẻ"
     tts = st.pills("🩺 Hôm nay " + ("khách" if hlv else "bạn") + " thấy thế nào?", ops, default=None if f"tt_{km}_{bm}" in S else mac_tt, key=f"tt_{km}_{bm}",
                    format_func=lambda x: f"{tt_.TINH_TRANG[x]['icon']} {x}") or "Khoẻ"
     tts_chon = tts
@@ -330,6 +346,10 @@ def ghi_buoi(k: dict, P_: dict, nguoi: str, vai: str = "hlv", chua_luu: bool = F
         st.markdown(f'<div class="gx-tip" style="border-color:#E6C46A;background:#FFF8E6">{E(ck["khach"])}</div>', unsafe_allow_html=True)
         if not st.toggle("Hôm nay mình thấy khoẻ — tập như bình thường", value=False, key=f"ckok_{km}_{bm}"):
             tts = "Tới tháng"                             # áp mức giảm của chu kỳ nhưng không hiện chữ trên nút chọn
+    elif ngu and not hlv and tts == "Khoẻ":
+        st.markdown(f'<div class="gx-tip" style="border-color:#E6C46A;background:#FFF8E6">{E(ngu["khach"])}</div>', unsafe_allow_html=True)
+        if not st.toggle("Hôm nay mình thấy khoẻ — tập như bình thường", value=False, key=f"nguok_{km}_{bm}"):
+            tts = "Mệt / thiếu ngủ"
     cf = tt_.get(tts)
     mu, mau_ = tt_.MUC[cf["muc"]]
     if hlv:                                            # gợi ý giảm tạ theo thể trạng: chỉ HLV thấy
@@ -469,10 +489,13 @@ def ghi_buoi(k: dict, P_: dict, nguoi: str, vai: str = "hlv", chua_luu: bool = F
             st.error("Chưa lưu được giáo án — kiểm tra kết nối rồi bấm lại.")
             return
         s_ = {"ngay": ngay, "ga_id": ga.KHOA.format(ma), "buoi": f"Buổi {bm_luu} · {bu['ten']}", "buoi_ma": bm_luu, "tuan": wk,
-              "tinh_trang": tts if hlv else tts_chon, **({"ck_dieu_chinh": True} if ck and tts != tts_chon else {}), "san_sang": S.get(f"ssd_{km}", ""), "bai": bai, "cardio": cardio, "cam_nhan": cam,
+              "tinh_trang": tts if hlv else tts_chon, **({"tu_dieu_chinh": tts} if tts != tts_chon else {}), "san_sang": S.get(f"ssd_{km}", ""), "bai": bai, "cardio": cardio, "cam_nhan": cam,
               "rpe": rpe, "ghi_chu_hlv": ghi_pt, "loi_nhan": loi, "thoi_luong": 60, "nguoi_ghi": vai,
               **({"ghi_chu": gkh.strip()} if gkh.strip() else {})}
+        prs = _wow.ky_luc_moi(bai, hist)
         bt.save(ma, s_, nguoi)
+        if prs:
+            S[f"_pr_{km}"] = (prs, ngay)
         if cd_phut:
             r_cd = {"ngay": str(ngay)[:10], "may": ct["may"], "phut": float(cd_phut), "doc": ct["doc"] if ct["may"] in cdm.CO_DOC else None,
                     "toc_do": ct["toc_do"] if ct["may"] in cdm.CO_DOC else None, "ghi_chu": f"Sau buổi {bm_luu}"}

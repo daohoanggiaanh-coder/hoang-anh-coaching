@@ -401,3 +401,24 @@ def test_chu_ky_va_thong_tin():
     assert ttin.SANG_DD[ttin.muc_tieu({"muc_tieu_loai": "suc_manh"})] == "giu"
     assert ttin.tu_dd("giu", {"muc_tieu_loai": "suc_manh"}) == "suc_manh"
     assert ttin.trinh_do({"kinh_nghiem": "1–3 năm"}) == 2 and ttin.trinh_do({"trinh_do": 3, "kinh_nghiem": "Dưới 6 tháng"}) == 3
+
+
+def test_wow_ky_luc_va_xung_ho():
+    from core import wow, xung_ho
+    hist = [{"ngay": None, "bai": [{"id": "bb_hip_thrust", "ten": "Hip", "hiep": [{"kg": 50, "lan": 10}]}]}]
+    moi = [{"id": "bb_hip_thrust", "ten": "Hip", "hiep": [{"kg": 60, "lan": 10}]}]
+    pr = wow.ky_luc_moi(moi, hist)
+    assert pr and pr[0]["kg"] == 60 and pr[0]["tang"] > 0
+    assert not wow.ky_luc_moi(hist[0]["bai"], [{"bai": moi}])
+    assert wow.the_ky_luc_png("A", pr[0], __import__("datetime").date(2026, 11, 5))[:4] == b"\x89PNG"
+    assert xung_ho.doi("Chào bạn, kế hoạch của bạn. Bạn giỏi lắm. bạn bè", "chị Ngân") == \
+        "Chào chị Ngân, kế hoạch của chị Ngân. Chị Ngân giỏi lắm. bạn bè"
+
+
+def test_telegram_lien_ket(monkeypatch):
+    from core import thong_bao as tb
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "t")
+    code = tb.ma_lien_ket("R001")
+    assert code.startswith("R001_") and code != tb.ma_lien_ket("R002")
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "khac")
+    assert tb.ma_lien_ket("R001") != code                       # đổi token → mã cũ hết hiệu lực

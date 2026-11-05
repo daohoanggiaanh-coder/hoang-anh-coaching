@@ -372,6 +372,19 @@ def tap():
         coach_ga.trang(u, k)
 
 
+def cham_soc():
+    u = _user()
+    ui.hero("CHĂM SÓC KHÁCH", "Những điều nhỏ khiến khách nhớ mãi",
+            "Tin tổng kết tuần · mốc thành tích & thư khen · thư tổng kết khoá · nhắc qua Telegram.")
+    from views import cham_soc_ui
+    DS = store.clients(ca_ngung=False)
+    with st.expander("📋 Tổng quan tất cả khách", expanded=True):
+        cham_soc_ui.tong_quan(DS)
+    k = _chon_khach(DS)
+    if k:
+        cham_soc_ui.trang(k, u)
+
+
 def volume():
     u = _user()
     ui.hero("VOLUME & BẢN ĐỒ CƠ", "Tuần này khách tập đủ volume chưa?",

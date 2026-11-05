@@ -26,8 +26,7 @@ def _k() -> dict:
 
 def _ten(k: dict) -> str:
     goi, _ = store.xung(k)
-    t = goi if goi != "bạn" else k["ho_ten"].split()[-1]
-    return t[:1].upper() + t[1:]
+    return goi if goi != "bạn" else k["ho_ten"].split()[-1]
 
 
 def trang_chu():
@@ -51,6 +50,7 @@ def trang_chu():
     wow_ui.di_nhanh()
     wow_ui.sinh_nhat(k, _ten(k))
     wow_ui.chu_ky(k)
+    wow_ui.moc_moi(k)
     from views import dong_luc_ui as DL
     from core import dong_luc as dl
     DL.lan_dau(k, k["ho_ten"])
@@ -223,6 +223,19 @@ def tai_khoan():
     ui.hero("HỒ SƠ & TÀI KHOẢN", k["ho_ten"], f"Tên đăng nhập: <b>{ui.E(u['username'])}</b>",
             avatar=hinh.the_avatar(hinh.avatar_khach(k), k["ho_ten"], 64))
     ho_so_ui.form(k, k["ho_ten"], "khach")
+    from core import thong_bao as tb
+    if tb.san_sang():
+        st.divider()
+        st.markdown("**🔔 Nhận nhắc trên điện thoại (Telegram)**")
+        if tb.chat_cua(k["ma"]):
+            st.success("Đã kết nối — bạn sẽ nhận nhắc lịch tập, cân buổi sáng và giữ chuỗi lửa qua Telegram.")
+        else:
+            st.caption("Bấm nút dưới → mở Telegram → bấm **Start**. Xong quay lại bấm “Tôi đã bấm Start”.")
+            a, b = st.columns(2)
+            a.link_button("📲 Mở Telegram để kết nối", tb.link(k["ma"]), use_container_width=True, type="primary")
+            if b.button("Tôi đã bấm Start", use_container_width=True):
+                tb.cap_nhat_lien_ket()
+                st.rerun()
     st.divider()
     with st.form("doi_mk"):
         st.markdown("**Đổi mật khẩu**")

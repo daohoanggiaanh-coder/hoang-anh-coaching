@@ -50,6 +50,9 @@ Streamlit Community Cloud + Google Sheets / Drive đứng tên Gmail cá nhân.
   (mục tiêu chính, trình độ, giới tính, chiều cao… nhập 1 lần ở hồ sơ → giáo án, dinh dưỡng, volume, lộ trình tự dùng);
   **🌸 Chu kỳ** cho khách nữ (HLV ghi ngày, web dự đoán kỳ tới, tự giảm tạ / bớt hiệp / gợi ý buổi nhẹ, nhắc khách kín đáo hoặc nói rõ,
   khách không thấy ngày); chúc sinh nhật, tổng kết 7 ngày + tổng tạ đã nâng quy ra vật quen thuộc.
+- 🆕 **v2.4**: khách dùng menu bên trái (điện thoại có thêm nút đi nhanh); **xưng hô cá nhân hoá** (mọi chữ "bạn" → cách HLV gọi khách);
+  **✨ Chăm sóc khách** (tin tổng kết tuần soạn sẵn, mốc thành tích + thư khen, thư tổng kết khoá PDF); **kỷ lục mới** → thẻ ảnh để khách lưu /
+  khoe; ngủ < 6 tiếng → buổi tự nhẹ hơn; **nhắc qua Telegram** (sáng 6h30 / tối 20h, GitHub Actions `.github/workflows/nhac.yml`).
 - ✉️ Soạn tin Zalo · 🥗 Bảng thực phẩm (sửa số theo nhãn) · 📥 Chuyển dữ liệu từ Atlas.
 
 **Cổng khách** (tài khoản + mật khẩu do HLV cấp, mỗi khách chỉ thấy dữ liệu của mình và những mục HLV mở)

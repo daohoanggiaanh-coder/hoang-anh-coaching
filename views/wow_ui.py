@@ -79,3 +79,23 @@ def tong_ket_tuan(k: dict):
         so_s = f"{so_vat:.1f}".replace(".", ",")
         st.markdown(f'<div class="hac-card" style="text-align:center;font-size:1.02rem">{vat[2]} Từ ngày bắt đầu, bạn đã nâng tổng cộng '
                     f'<b>{tong_s} kg</b> — nặng bằng khoảng <b>{so_s} {vat[1]}</b>! 💪</div>', unsafe_allow_html=True)
+
+
+def moc_moi(k: dict):
+    """Thẻ chúc mừng mốc thành tích mới (mỗi mốc chỉ hiện tới khi khách bấm cảm ơn)."""
+    from core import wow
+    ma = k["ma"]
+    da = set(wow.moc_trang_thai(ma)["khach_xem"])
+    moi = [m for m in wow.moc(k) if m["id"] not in da]
+    if not moi:
+        return
+    m = moi[-1]
+    st.markdown(f'<div class="hac-hero" style="text-align:center"><small>MỐC THÀNH TÍCH MỚI</small>'
+                f'<div class="t" style="font-size:2rem">{m["icon"]} {E(m["ten"])}</div><div class="s">{E(m["loi"])}</div></div>',
+                unsafe_allow_html=True)
+    if not S.get(f"_moc_bb_{m['id']}"):
+        st.balloons()
+        S[f"_moc_bb_{m['id']}"] = True
+    if st.button("💛 Cảm ơn HLV — xem tiếp", key=f"moc_ok_{m['id']}", use_container_width=True):
+        wow.danh_dau_moc(ma, {"khach_xem": [x["id"] for x in moi]}, k.get("ho_ten", ""))
+        st.rerun()

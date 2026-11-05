@@ -85,7 +85,8 @@ div[data-testid="stMetricValue"]{font-weight:800;letter-spacing:-.01em}
 html[data-hac-theme=dark] [data-testid="stTopNavLink"]{background:#211E19!important;border-color:#3A342A!important}
 html[data-hac-theme=dark] [data-testid="stTopNavLink"][aria-current="page"]{background:#C8A24A!important;border-color:#C8A24A!important}
 html[data-hac-theme=dark] [data-testid="stTopNavLink"][aria-current="page"] *{color:#14120F!important}
-/* nút đi tới trang (trang chủ khách) — 2 nút / hàng cả trên điện thoại */
+/* nút đi tới trang (trang chủ khách) — chỉ hiện trên điện thoại (máy tính đã có menu bên trái), 2 nút / hàng */
+@media (min-width:768px){.st-key-hac_di_toi{display:none!important}}
 .st-key-hac_di_toi [data-testid="stHorizontalBlock"]{flex-wrap:nowrap!important;gap:8px!important}
 .st-key-hac_di_toi [data-testid="stColumn"]{min-width:0!important;width:50%!important;flex:1 1 50%!important}
 .st-key-hac_di_toi [data-testid="stPageLink"] a{border:1.5px solid #E2D7BF;background:#FFFDF8;border-radius:14px;padding:12px 10px;

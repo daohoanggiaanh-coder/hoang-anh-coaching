@@ -86,6 +86,7 @@ if user["role"] == "coach":
     pages = {
         "Huấn luyện": [st.Page(V.lich, title="Lịch & nhắc tập", icon="📅", url_path="lich", default=True),
                        st.Page(V.cam_ket, title="Cam kết khách", icon="🔥", url_path="cam_ket"),
+                       st.Page(V.cham_soc, title="Chăm sóc khách", icon="✨", url_path="cham_soc"),
                        st.Page(V.ho_so, title="Hồ sơ HLV & thành quả", icon="🏆", url_path="ho_so"),
                        st.Page(V.khach, title="Khách & tài khoản", icon="👤", url_path="khach"),
                        st.Page(V.tap, title="Giáo án khách", icon="🏋️", url_path="tap"),
@@ -103,6 +104,9 @@ else:
     from views import client as V
     from core import goi as _goi, store as _st
     _k = _st.client(user.get("ma_kh", ""))
+    from core import xung_ho as _xh                    # v2.4: "bạn" → cách HLV gọi khách (chị Ngân, anh Đại…)
+    _xh.cai()
+    st.session_state["_xung_goi"] = _st.xung(_k)[0] if _k else ""
     _t = _goi.trang_thai(_k) if _k else {"vao": False, "ly_do": "Không tìm thấy hồ sơ."}
     if not _t["vao"]:                                    # v2.2: gói hết / bảo lưu / ngưng → khoá cả phiên đã ghi nhớ
         from views import goi_ui
@@ -119,7 +123,7 @@ else:
                               (st.Page(V.lo_trinh, title="Lộ trình", icon="🗺", url_path="lo_trinh"), _tr["lo_trinh"]),
                               (st.Page(V.tien_do, title="Cân & số đo", icon="📈", url_path="can_so_do"), _tr["tien_do"]),
                               (st.Page(V.thanh_qua, title="Thành quả", icon="🏆", url_path="thanh_qua"), _tr["thanh_qua"])) if on]
-    pages.append(st.Page(V.tai_khoan, title="Hồ sơ", icon="🪪", url_path="tai_khoan"))
+    pages.append(st.Page(V.tai_khoan, title="Hồ sơ", icon="👤", url_path="tai_khoan"))
     st.session_state["_trang_khach"] = pages[1:]          # v2.3: nút đi tới các trang ở Tổng quan
 
 st.logo(str(ROOT / "assets" / "app" / "wordmark-dark.png"), size="large", icon_image=str(ROOT / "assets" / "app" / "icon-192.png"))
@@ -148,7 +152,7 @@ with st.sidebar:                                        # v2.2: tên + ảnh đ�
             st.markdown(_the_nguoi(_h.avatar_khach(_kx) if _kx else "", "HỌC VIÊN", user["name"]), unsafe_allow_html=True)
     except Exception:  # noqa: BLE001 — ảnh lỗi thì chỉ hiện tên
         st.markdown(f"<div style='font-size:1.05rem;font-weight:800;margin:2px 0 10px'>{ui.E(user['name'])}</div>", unsafe_allow_html=True)
-nav = st.navigation(pages, position="top" if user["role"] == "client" else "sidebar")
+nav = st.navigation(pages, position="sidebar")            # v2.4: khách cũng dùng menu bên trái
 with st.sidebar:
     if st.button("Đăng xuất", use_container_width=True):
         auth.logout()

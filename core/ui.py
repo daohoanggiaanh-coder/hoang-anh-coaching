@@ -79,8 +79,8 @@ div[data-testid="stMetricValue"]{font-weight:800;letter-spacing:-.01em}
 [data-testid="stSidebarNavLink"]{border:1px solid rgba(200,162,74,.28)!important;background:#1D1A15!important;border-radius:11px!important;
   margin:3px 0!important;padding:7px 10px!important}
 [data-testid="stSidebarNavLink"]:hover{border-color:#C8A24A!important;background:#26221B!important}
-[data-testid="stSidebarNavLink"][aria-current="page"]{background:#E8C76A!important;border-color:#E8C76A!important;opacity:1!important}
-[data-testid="stSidebarNavLink"][aria-current="page"] *{color:#14120F!important;font-weight:800!important;opacity:1!important}
+[data-testid="stSidebarNavLink"][aria-current="page"]{background:#3A2F18!important;border:2px solid #E8C76A!important}
+[data-testid="stSidebarNavLink"][aria-current="page"] *{color:#F6D77E!important;font-weight:800!important}
 [data-testid="stSidebarNavLink"] span{font-weight:600}
 html[data-hac-theme=dark] [data-testid="stTopNavLink"]{background:#211E19!important;border-color:#3A342A!important}
 html[data-hac-theme=dark] [data-testid="stTopNavLink"][aria-current="page"]{background:#C8A24A!important;border-color:#C8A24A!important}

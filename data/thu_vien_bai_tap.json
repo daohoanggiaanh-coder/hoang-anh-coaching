@@ -68,7 +68,7 @@
      "id": "leg_press",
      "ten": "Leg Press (máy)",
      "loai": "C",
-     "dung_cu": "Tầng 1"
+     "dung_cu": "Máy"
     }
    ]
   },
@@ -103,13 +103,13 @@
      "id": "glute_trainer",
      "ten": "Glute Trainer (máy)",
      "loai": "M",
-     "dung_cu": "Tầng 1"
+     "dung_cu": "Máy"
     },
     {
      "id": "back_ext",
      "ten": "Hyperextension (máy)",
      "loai": "M",
-     "dung_cu": "Tầng 1"
+     "dung_cu": "Máy"
     },
     {
      "id": "b_stance_rdl",
@@ -173,7 +173,7 @@
      "id": "bb_bench",
      "ten": "Barbell Bench Press",
      "loai": "C",
-     "dung_cu": "Tầng 2"
+     "dung_cu": "Máy"
     },
     {
      "id": "db_bench",
@@ -185,7 +185,7 @@
      "id": "bb_incline",
      "ten": "Barbell Incline Bench Press",
      "loai": "C",
-     "dung_cu": "Tầng 2"
+     "dung_cu": "Máy"
     },
     {
      "id": "db_incline",
@@ -203,7 +203,7 @@
      "id": "chest_press",
      "ten": "Chest Press (máy)",
      "loai": "M",
-     "dung_cu": "Tầng 2"
+     "dung_cu": "Máy"
     }
    ]
   },
@@ -226,7 +226,7 @@
      "id": "cable_row",
      "ten": "Seated Cable Row",
      "loai": "M",
-     "dung_cu": "Tầng 2"
+     "dung_cu": "Máy"
     },
     {
      "id": "smith_inverted",
@@ -243,13 +243,13 @@
      "id": "lat_pulldown",
      "ten": "Lat Pulldown (máy)",
      "loai": "M",
-     "dung_cu": "Tầng 2"
+     "dung_cu": "Máy"
     },
     {
      "id": "assisted_pullup",
      "ten": "Assisted Pull Up (máy hỗ trợ)",
      "loai": "C",
-     "dung_cu": "Tầng 2"
+     "dung_cu": "Máy"
     },
     {
      "id": "pull_up",
@@ -278,7 +278,7 @@
      "id": "shoulder_press",
      "ten": "Shoulder Press (máy)",
      "loai": "M",
-     "dung_cu": "Tầng 2"
+     "dung_cu": "Máy"
     }
    ]
   },
@@ -289,19 +289,19 @@
      "id": "leg_curl",
      "ten": "Leg Curl (máy)",
      "loai": "I",
-     "dung_cu": "Tầng 1"
+     "dung_cu": "Máy"
     },
     {
      "id": "leg_ext",
      "ten": "Leg Extension (máy)",
      "loai": "I",
-     "dung_cu": "Tầng 1"
+     "dung_cu": "Máy"
     },
     {
      "id": "abduction",
      "ten": "Hip Abduction (máy)",
      "loai": "I",
-     "dung_cu": "Tầng 1"
+     "dung_cu": "Máy"
     },
     {
      "id": "cable_kickback",
@@ -330,7 +330,7 @@
      "id": "rear_delt",
      "ten": "Rear Delt Fly (máy Pec Deck)",
      "loai": "I",
-     "dung_cu": "Tầng 2"
+     "dung_cu": "Máy"
     },
     {
      "id": "cable_face_pull",
@@ -342,13 +342,13 @@
      "id": "pec_deck",
      "ten": "Pec Deck Fly (máy)",
      "loai": "I",
-     "dung_cu": "Tầng 2"
+     "dung_cu": "Máy"
     },
     {
      "id": "cable_crossover",
      "ten": "Cable Crossover",
      "loai": "I",
-     "dung_cu": "Tầng 2"
+     "dung_cu": "Máy"
     }
    ]
   },
@@ -394,7 +394,7 @@
      "id": "lying_leg_raise",
      "ten": "Lying Leg Raise (ghế Tầng 1)",
      "loai": "Core",
-     "dung_cu": "Tầng 1"
+     "dung_cu": "Máy"
     },
     {
      "id": "cable_crunch",

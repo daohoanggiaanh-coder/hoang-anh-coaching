@@ -97,11 +97,20 @@ if user["role"] == "coach":
                        st.Page(V.khach_thay, title="Khách thấy gì", icon="👁", url_path="khach_thay")],
         "Công cụ": [st.Page(V.soan_tin, title="Soạn tin Zalo", icon="✉️", url_path="soan_tin"),
                     st.Page(V.thuc_pham, title="Bảng thực phẩm", icon="🥗", url_path="thuc_pham"),
-                    st.Page(V.nhap_atlas, title="Chuyển dữ liệu từ Atlas", icon="📥", url_path="nhap_atlas")],
+                    st.Page(V.nhap_atlas, title="Nhập dữ liệu cũ", icon="📥", url_path="nhap_atlas")],
     }
 else:
     from views import client as V
-    from core import store as _st
+    from core import goi as _goi, store as _st
+    _k = _st.client(user.get("ma_kh", ""))
+    _t = _goi.trang_thai(_k) if _k else {"vao": False, "ly_do": "Không tìm thấy hồ sơ."}
+    if not _t["vao"]:                                    # v2.2: gói hết / bảo lưu / ngưng → khoá cả phiên đã ghi nhớ
+        from views import goi_ui
+        goi_ui.man_khoa(_k or {"ho_ten": user.get("name", "")}, _t)
+        if st.button("Đăng xuất"):
+            auth.logout()
+            st.rerun()
+        st.stop()
     _tr = _st.trang_khach(_st.quyen(_st.client(user.get("ma_kh", ""))))
     pages = [st.Page(V.trang_chu, title="Tổng quan", icon="🏠", url_path="tong_quan", default=True)]
     pages += [p for p, on in ((st.Page(V.tap, title="Tập luyện", icon="🏋️", url_path="tap_luyen"), _tr["tap"]),
@@ -113,10 +122,31 @@ else:
     pages.append(st.Page(V.tai_khoan, title="Hồ sơ", icon="🪪", url_path="tai_khoan"))
 
 st.logo(str(ROOT / "assets" / "app" / "wordmark-dark.png"), size="large", icon_image=str(ROOT / "assets" / "app" / "icon-192.png"))
-with st.sidebar:
-    st.markdown(f"<div style='font-size:.7rem;letter-spacing:.14em;color:#A8A091;font-weight:700'>"
-                f"{'HUẤN LUYỆN VIÊN' if user['role'] == 'coach' else 'HỌC VIÊN'}</div>"
-                f"<div style='font-size:1.05rem;font-weight:800;margin:2px 0 10px'>{ui.E(user['name'])}</div>", unsafe_allow_html=True)
+def _the_nguoi(uri: str, nhan: str, ten: str, phu: str = "") -> str:
+    from core import hinh as _h
+    return (f"<div style='display:flex;gap:10px;align-items:center;margin:2px 0 12px'>{_h.the_avatar(uri, ten, 44)}"
+            f"<div><div style='font-size:.66rem;letter-spacing:.14em;color:#A8A091;font-weight:700'>{nhan}</div>"
+            f"<div style='font-size:1rem;font-weight:800;line-height:1.2'>{ui.E(ten)}</div>"
+            + (f"<div style='font-size:.72rem;color:#A8A091'>{ui.E(phu)}</div>" if phu else "") + "</div></div>")
+
+
+with st.sidebar:                                        # v2.2: tên + ảnh đại diện nhỏ
+    try:
+        from core import hinh as _h, store as _s2
+        if user["role"] == "coach":
+            st.markdown(_the_nguoi(_h.avatar_hlv(), "HUẤN LUYỆN VIÊN", user["name"]), unsafe_allow_html=True)
+            _mk = st.session_state.get("hlv_kh_sel") or st.session_state.get("hlv_kh")
+            if st.session_state.get("k_pick") not in (None, "__moi__"):
+                _mk = st.session_state["k_pick"]
+            _kx = _s2.client(_mk) if _mk else None
+            if _kx:
+                st.markdown(_the_nguoi(_h.avatar_khach(_kx), "ĐANG XEM KHÁCH", _kx.get("ho_ten", ""),
+                                       _kx.get("trang_thai") or "Đang tập"), unsafe_allow_html=True)
+        else:
+            _kx = _s2.client(user.get("ma_kh", "")) or {}
+            st.markdown(_the_nguoi(_h.avatar_khach(_kx) if _kx else "", "HỌC VIÊN", user["name"]), unsafe_allow_html=True)
+    except Exception:  # noqa: BLE001 — ảnh lỗi thì chỉ hiện tên
+        st.markdown(f"<div style='font-size:1.05rem;font-weight:800;margin:2px 0 10px'>{ui.E(user['name'])}</div>", unsafe_allow_html=True)
 nav = st.navigation(pages, position="top" if user["role"] == "client" else "sidebar")
 with st.sidebar:
     if st.button("Đăng xuất", use_container_width=True):

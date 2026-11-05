@@ -96,7 +96,7 @@ def the_avatar(uri: str, ten: str, size: int = 56, vien: str = "#C8A24A") -> str
 
 
 # ------------------------------------------------------------------ hồ sơ HLV
-MAC_DINH_HLV = {"ten": "Hoàng Anh", "chuc_danh": "Huấn luyện viên cá nhân · Founder Atlas Fitness",
+MAC_DINH_HLV = {"ten": "Hoàng Anh", "chuc_danh": "Huấn luyện viên cá nhân · Hoàng Anh Coaching",
                 "gioi_thieu": "", "chung_chi": [], "zalo": "", "anh": "", "y": 30, "r": 70}
 
 

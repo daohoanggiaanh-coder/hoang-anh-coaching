@@ -42,8 +42,9 @@ def trang(k: dict, vai: str):
         f'<i class="{"n" if w == L["tuan"] and not L["chua_bd"] else "x" if w < L["tuan"] else ""}{" dl" if w in L["deload"] else ""}" '
         f'title="Tuần {w}{" · deload" if w in L["deload"] else ""}"></i>'
         for w in range(1, L["tong"] + 1)) + "</div>", unsafe_allow_html=True)
-    st.caption(f"Trình độ: {L['trinh_do']} · ưu tiên: " + (", ".join(vo.UU_TIEN[x][0] for x in L["uu_tien"]) or "chưa chọn")
-               + (f" · 🟪 tuần deload: {', '.join(str(w) for w in L['deload'])}" if L["deload"] else ""))
+    if vai == "hlv":
+        st.caption(f"Trình độ: {L['trinh_do']} · ưu tiên: " + (", ".join(vo.UU_TIEN[x][0] for x in L["uu_tien"]) or "chưa chọn")
+                   + (f" · 🟪 tuần deload: {', '.join(str(w) for w in L['deload'])}" if L["deload"] else ""))
     thieu = [x for x, ok in (("chưa có giáo án HLV", L["co_giao_an"]), ("chưa chọn mục tiêu hình thể (trang 💪 Volume)", L["uu_tien"]),
                              ("thiếu chiều cao / cân để tính macro", L["macro"])) if not ok]
     if thieu and vai == "hlv":
@@ -53,6 +54,21 @@ def trang(k: dict, vai: str):
         f'{" · ĐANG Ở ĐÂY" if i == d and not L["chua_bd"] else ""}</small><h4>{E(g["ten"])}</h4>'
         f'<p>{g["ngay_tu"]:%d/%m} → {g["ngay_den"]:%d/%m}</p><p style="margin-top:4px">{E(g["muc_tieu"])}</p></div>'
         for i, g in enumerate(G)) + "</div>", unsafe_allow_html=True)
+    if vai != "hlv":                                     # v2.2: khách chỉ xem bản tổng quan
+        g = G[d]
+        ui.sec(f"Giai đoạn {g['so']} · {g['ten']} — bạn cần làm")
+        tom = [("🏋️", f"Tập {g['tap'][0].split(' · ')[0]}, làm đúng giáo án trên web và ghi kg × lần mỗi hiệp"),
+               ("🏃", g["cardio"][0] + (" · " + g["cardio"][1] if len(g["cardio"]) > 1 else "")),
+               ("👣", f"Khoảng {g['buoc']:,} bước / ngày".replace(",", ".")),
+               ("🍽", "Ăn theo thực đơn web ≥ 80 % số bữa, " + g["an"][0][0].lower() + g["an"][0][1:]),
+               ("📏", g["do"][-1])]
+        if g.get("deload"):
+            tom.insert(1, ("🟪", f"Tuần {', '.join(str(w) for w in g['deload'])} là tuần tập nhẹ (deload) — HLV sẽ giảm số hiệp"))
+        st.markdown("".join(f'<div class="hac-b" style="flex-wrap:nowrap;align-items:flex-start"><span style="font-size:1.15rem;flex:none">{i}</span>'
+                            f'<span style="font-weight:600;flex:1">{E(x)}</span></div>'
+                            for i, x in tom), unsafe_allow_html=True)
+        ui.note("Lộ trình là khung định hướng — HLV theo dõi tiến độ của bạn mỗi tuần và chỉnh khi cần.")
+        return
     thu_tu = [d] + [i for i in range(len(G)) if i != d]          # giai đoạn hiện tại mở sẵn
     tabs = st.tabs([f"{'📍 Đang ở · ' if i == d else ''}GĐ {G[i]['so']} · {G[i]['ten']}" for i in thu_tu])
     for t, g in zip(tabs, [G[i] for i in thu_tu]):

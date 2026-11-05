@@ -10,7 +10,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-from core import anh as _anh, auth, config, db, dinh_duong as dd, store, tien_do as td, ui
+from core import anh as _anh, auth, config, db, dinh_duong as dd, goi, store, tien_do as td, ui
 from views import common as C
 
 E = html.escape
@@ -173,7 +173,15 @@ def khach():
                        format_func=lambda m: "➕ Thêm khách mới" if m == "__moi__" else f"{by[m]['ho_ten']} · {by[m].get('trang_thai') or 'Đang tập'}",
                        key="k_pick")
     k0 = {} if cot == "__moi__" else by[cot]
-    t1, t3, t2 = st.tabs(["✏️ Gói & lịch tập", "🪪 Hồ sơ đầy đủ & ảnh đại diện", "🔐 Tài khoản cổng khách"])
+    from views import goi_ui
+    goi_ui.canh_bao(DS)
+    t1, t4, t3, t2 = st.tabs(["✏️ Thông tin, gói & lịch tập", "💳 Gói · công nợ · bảo lưu", "🪪 Hồ sơ đầy đủ & ảnh đại diện",
+                              "🔐 Tài khoản cổng khách"])
+    with t4:
+        if not k0:
+            st.info("Lưu khách trước (tab Thông tin, gói & lịch tập).")
+        else:
+            goi_ui.tab(k0, u["name"])
     with t3:
         if not k0:
             st.info("Lưu khách trước (tab Gói & lịch tập), rồi điền hồ sơ đầy đủ.")
@@ -215,8 +223,8 @@ def khach():
             except ValueError:
                 bd0 = hom
             bd = b.date_input("Bắt đầu gói", value=bd0, format="DD/MM/YYYY")
-            if k0 and store.han_goi(k0):
-                c.markdown(f"<div style='padding-top:30px;color:#7A5B14;font-weight:700'>Hết gói {store.han_goi(k0):%d/%m/%Y}</div>",
+            if k0 and goi.ngay_ket_thuc(k0):
+                c.markdown(f"<div style='padding-top:30px;color:#7A5B14;font-weight:700'>Kết thúc {goi.ngay_ket_thuc(k0):%d/%m/%Y}</div>",
                            unsafe_allow_html=True)
             try:
                 ns0 = date.fromisoformat(str(k0.get("ngay_sinh"))[:10])
@@ -310,6 +318,10 @@ def khach():
         st.dataframe(pd.DataFrame([{"Khách": k["ho_ten"], "Hình thức": k.get("hinh_thuc") or "Trực tiếp",
                                     "Lịch": ", ".join(f"{store.THU[int(x['thu'])]} {store.gio_s(x['gio'])}" for x in store.lich_co_dinh(k)),
                                     "Đã tập": store.da_tap(k, H), "Gói": store.mo_ta_goi(k, H, hom),
+                                    "Bắt đầu": f"{goi.ngay_bat_dau(k):%d/%m/%Y}" if goi.ngay_bat_dau(k) else "",
+                                    "Kết thúc": f"{goi.ngay_ket_thuc(k):%d/%m/%Y}" if goi.ngay_ket_thuc(k) else "",
+                                    "Còn nợ": goi.vnd(goi.cong_no(k)["con_no"]) if goi.cong_no(k)["con_no"] else "—",
+                                    "Tình trạng gói": goi.trang_thai(k, hom, H)["ten"],
                                     "Tài khoản": ("🔒 " if TK[k["ma"]].get("khoa") else "✅ ") + TK[k["ma"]]["_khoa"] if k["ma"] in TK else "—",
                                     "Trạng thái": k.get("trang_thai") or "Đang tập"} for k in DS]), hide_index=True, use_container_width=True)
     _bang_goi(u)
@@ -335,8 +347,8 @@ def _bang_goi(u: dict):
 # =================================================================== GIÁO ÁN, DINH DƯỠNG
 def tap():
     u = _user()
-    ui.hero("GIÁO ÁN KHÁCH", "Giáo án tuần tự xếp theo mục tiêu — phong cách Atlas",
-            "Mục tiêu · trình độ · số buổi · dạng lịch · vùng chấn thương → 8 bài / buổi, theo lầu, superset, kết buổi. "
+    ui.hero("GIÁO ÁN KHÁCH", "Giáo án tuần tự xếp theo mục tiêu — phương pháp Hoàng Anh Coaching",
+            "Mục tiêu · trình độ · số buổi · dạng lịch · vùng chấn thương → 8 bài / buổi, Compound → Multi → Isolate → Core, superset, kết buổi. "
             "Khách thấy giáo án (liều tự tính theo tuần) trên cổng khách khi anh bấm Lưu.")
     k = _chon_khach(store.clients())
     if k:
@@ -663,7 +675,7 @@ def lo_trinh():
         fig.add_scatter(x=s_["ngay"], y=s_["can_nang"], mode="lines+markers", name="Thực tế", line=dict(color=ui.VANG, width=3))
         fig.update_xaxes(tickformat="%d/%m")
         st.plotly_chart(ui.layout(fig, 280, "kg"), use_container_width=True, config={"displayModeBar": False})
-        st.caption("Lộ trình an toàn theo khung tư vấn F1 của Atlas: giảm mỡ ~0,6 % cân / tuần, tăng cơ ~0,35 % / tuần, recomp ~0,2 % / tuần "
+        st.caption("Lộ trình an toàn theo khung của Hoàng Anh Coaching: giảm mỡ ~0,6 % cân / tuần, tăng cơ ~0,35 % / tuần, recomp ~0,2 % / tuần "
                    "(mức thực hành, không phải cam kết kết quả).")
 
 
@@ -717,7 +729,7 @@ def _quet_inbody(k: dict, u: dict):
     with st.container(border=True):
         st.markdown("**📷 Quét phiếu InBody** — chụp phiếu, web đọc số và điền sẵn bên dưới để anh kiểm tra")
         if not llm.is_online():
-            st.caption("Cần khoá AI: thêm `GEMINI_API_KEY` (miễn phí ở aistudio.google.com — chép y hệt Secrets của web Atlas) vào Secrets.")
+            st.caption("Cần khoá AI: thêm `GEMINI_API_KEY` (miễn phí ở aistudio.google.com) vào Secrets.")
             return
         a, b = st.columns([3, 1], vertical_alignment="bottom")
         f = a.file_uploader("Ảnh phiếu InBody", type=["jpg", "jpeg", "png", "webp"], key=f"ibf_{ma}_{S.get(f'ibv_{ma}', 0)}",

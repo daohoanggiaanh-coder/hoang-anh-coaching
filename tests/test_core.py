@@ -369,3 +369,22 @@ def test_volume():
     assert rows["mong"]["uu_tien"] and rows["mong"]["dat"] and rows["nguc"]["tt"] == "thieu" and rows["xo"]["tt"] == "chua"
     assert vo.moc("mong", "moi")[0] < vo.moc("mong", "cao")[2]
     assert any("thiếu" in x for x in vo.nhan_xet(list(vo.danh_gia({"mong": 3}, "tb", ["mong"], True)), ["mong"]))
+
+
+def test_goi_khoa_bao_luu():
+    from datetime import date
+    from core import goi
+    assert goi.tien("6.000.000") == 6_000_000 and goi.tien("2tr5") == 2_500_000 and goi.tien("6tr") == 6_000_000
+    k = {"ma": "X1", "ho_ten": "A", "goi_loai": "tuan", "goi_so": 4, "ngay_bat_dau": "2026-10-01", "gia": "2tr5",
+         "thanh_toan": [{"ngay": "2026-10-01", "so_tien": 1_000_000}], "trang_thai": "Đang tập"}
+    assert goi.ngay_ket_thuc(k) == date(2026, 10, 28)
+    assert goi.cong_no(k)["con_no"] == 1_500_000
+    assert goi.trang_thai(k, date(2026, 10, 20), {})["vao"]
+    assert not goi.trang_thai(k, date(2026, 10, 29), {})["vao"]
+    k["bao_luu"] = [{"tu": "2026-10-10", "den": "2026-10-16", "ly_do": "ốm"}]
+    assert goi.ngay_ket_thuc(k) == date(2026, 11, 4)
+    t = goi.trang_thai(k, date(2026, 10, 12), {})
+    assert t["ma"] == "bao_luu" and not t["vao"]
+    assert goi.trang_thai(k, date(2026, 10, 30), {})["vao"]
+    k["cho_vao"] = True
+    assert goi.trang_thai(k, date(2026, 12, 1), {})["vao"]

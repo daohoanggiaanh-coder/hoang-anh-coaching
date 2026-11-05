@@ -19,7 +19,8 @@ FIELDS = ["ma", "ho_ten", "sdt", "ten_zalo", "goi_khach", "xung_toi", "dia_diem"
           "quyen",                                                                              # v1.3: mục khách được thấy / dùng
           "anh_dai_dien", "avatar_y", "avatar_r",                                               # v1.8: ảnh đại diện
           "email", "nghe_nghiep", "khu_vuc", "kinh_nghiem", "mon_da_tap", "buoi_co_the",       # v1.9: hồ sơ đầy đủ
-          "khung_gio", "cong_viec", "giac_ngu", "ly_do", "benh_nen", "thuoc", "lh_ten", "lh_quan_he", "lh_sdt", "can_mong_muon"]                                                                              # v1.3: mục khách được thấy / dùng
+          "khung_gio", "cong_viec", "giac_ngu", "ly_do", "benh_nen", "thuoc", "lh_ten", "lh_quan_he", "lh_sdt", "can_mong_muon",
+          "ngay_ket_thuc", "thanh_toan", "bao_luu", "cho_vao"]                                  # v2.2: gói · công nợ · bảo lưu · khoá                                                                              # v1.3: mục khách được thấy / dùng
 LOAI_GOI = {"buoi": "buổi", "tuan": "tuần", "thang": "tháng"}
 # v1.3 — quyền cổng khách: id → (nhóm, nhãn, mô tả). Mặc định bật hết; HLV tắt từng mục cho từng khách.
 QUYEN = {
@@ -139,10 +140,12 @@ def buoi(ds: list[dict], tu: date, den: date, H: dict[str, dict] | None = None) 
         if (k.get("trang_thai") or "Đang tập") != "Đang tập":
             continue
         bd = _d(k.get("ngay_bat_dau")) or date.min
+        from core import goi as _goi
+        kt = _goi.ngay_ket_thuc(k) or date.max
         d = tu
         while d <= den:
             for s in lich_co_dinh(k):
-                if int(s["thu"]) == d.weekday() and d >= bd:
+                if int(s["thu"]) == d.weekday() and bd <= d <= kt and not _goi.ngay_bao_luu(k, d):
                     hid = hen_id(k["ma"], d, str(s.get("gio", "")))
                     out[hid] = {"id": hid, "ma": k["ma"], "ngay": d, "gio": str(s.get("gio", "")),
                                 "dia_diem": s.get("dia_diem") or k.get("dia_diem", ""), "trang_thai": "hen", "co_dinh": True}
@@ -194,17 +197,19 @@ def han_goi(k: dict) -> date | None:
 
 
 def con_ngay(k: dict, hom_nay: date | None = None) -> int | None:
-    h = han_goi(k)
+    from core import goi as _goi
+    h = _goi.ngay_ket_thuc(k)
     if not h:
         return None
-    return max((h - (hom_nay or db.now_vn().date())).days, 0)
+    return max((h - (hom_nay or db.now_vn().date())).days + 1, 0)
 
 
 def mo_ta_goi(k: dict, H: dict | None = None, hom_nay: date | None = None) -> str:
     """VD 'Online 12 tuần · còn 81 ngày (hết 21/01/2027)' hoặc 'Gói 12 buổi · còn 9 buổi'."""
     ten = str(k.get("goi_ten") or "").strip()
     if loai_goi(k) != "buoi":
-        h, c = han_goi(k), con_ngay(k, hom_nay)
+        from core import goi as _goi
+        h, c = _goi.ngay_ket_thuc(k), con_ngay(k, hom_nay)
         return (ten or f"Gói {k.get('goi_so')} {LOAI_GOI[loai_goi(k)]}") + (f" · còn {c} ngày (hết {h:%d/%m/%Y})" if h else "")
     c = con_lai(k, H)
     return (ten or (f"Gói {int(float(k.get('goi_buoi') or 0))} buổi" if k.get("goi_buoi") else "Chưa ghi gói")) + \

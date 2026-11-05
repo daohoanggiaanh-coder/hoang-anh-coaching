@@ -42,6 +42,10 @@ Streamlit Community Cloud + Google Sheets / Drive đứng tên Gmail cá nhân.
   đánh giá theo mục tiêu hình thể (tăng mông, ngực, vai, lưng chữ V, tay, đùi, giảm mỡ bụng…) + trình độ, mốc duy trì / tối thiểu / vùng tốt / trần,
   phần kiến thức cho HLV; khách xem ở tab Tập luyện. **Lộ trình** thêm: volume mục tiêu từng giai đoạn, tuần deload, giáo án + liều theo giai đoạn,
   mức tạ hiện tại, macro ngày tập / nghỉ, vi chất · nước · muối, ngủ & phục hồi, bổ sung.
+- 🆕 **v2.2**: tab **💳 Gói · công nợ · bảo lưu** (giá, các lần thanh toán → còn nợ, ngày bắt đầu / kết thúc, bảo lưu cộng ngày vào hạn);
+  gói hết hạn / hết buổi / đang bảo lưu / ngưng tập → **khách không đăng nhập được** (HLV mở tạm được); cảnh báo sắp hết gói, còn nợ;
+  tab và mục mở rộng dạng nút bấm dễ nhận ra; thanh bên có ảnh đại diện + tên; lộ trình bản tổng quan cho khách, bản chi tiết chỉ HLV;
+  bỏ xếp bài theo tầng máy, chữ "Atlas" → phương pháp Hoàng Anh Coaching.
 - ✉️ Soạn tin Zalo · 🥗 Bảng thực phẩm (sửa số theo nhãn) · 📥 Chuyển dữ liệu từ Atlas.
 
 **Cổng khách** (tài khoản + mật khẩu do HLV cấp, mỗi khách chỉ thấy dữ liệu của mình và những mục HLV mở)

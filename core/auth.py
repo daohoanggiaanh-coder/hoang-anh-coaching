@@ -114,6 +114,10 @@ def login(username: str, password: str) -> tuple[dict | None, str]:
         k = store.client(acc["ma_kh"])
         if k:
             _FAILS.pop(u, None)
+            from core import goi
+            t = goi.trang_thai(k)
+            if not t["vao"]:
+                return None, f"{t['ly_do']} Nhắn HLV Hoàng Anh để gia hạn / mở lại tài khoản."
             return {"role": "client", "name": k.get("ho_ten", ""), "username": u, "ma_kh": acc["ma_kh"]}, ""
     _FAILS.setdefault(u, []).append(time.time())
     return None, "Sai tên đăng nhập hoặc mật khẩu."

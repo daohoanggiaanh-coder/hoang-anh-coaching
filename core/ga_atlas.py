@@ -326,12 +326,8 @@ _KET_TRON = ["sled_push", "ball_slam", "sled_pull", "farmer_carry", "suitcase_ca
 
 
 def tang(eid: str) -> int | None:
-    """Tầng của bài ở Atlas: 1 = máy chân, ghế bụng, air bike · 2 = tạ tự do, Smith, cáp, máy thân trên · None = tập đâu cũng được."""
-    dc = str(ex(eid).get("dung_cu") or "")
-    if dc.startswith("Tầng 1") or dc == "Air bike":
-        return 1
-    if dc.startswith("Tầng 2") or any(w in dc for w in ("Tạ đơn", "Thanh đòn", "Smith", "Cáp", "Ghế", "Xà")):
-        return 2
+    """HAC v2.2: Hoàng Anh Coaching dạy ở nhiều nơi (phòng tập, nhà khách, online) → không xếp bài theo tầng máy.
+    Giữ hàm để code cũ chạy; luôn None → xep_tang chỉ còn xếp Compound → Multi → Isolate → Core + superset bụng."""
     return None
 
 
@@ -834,7 +830,6 @@ def bang_buoi(bu: dict, goal: str, week: int, level: int = 1) -> list[dict]:
     for j, it in enumerate(bu["bai"]):
         r = rx({**it, **({"circuit": True} if bu.get("circuit") else {})}, goal, week, level)
         out.append({"STT": j + 1, "Bài": it["ten"], "Dạng": dang(it.get("loai") or it["id"])[0],
-                    "Lầu": str(tang(it["id"]) or "—"),
                     "Superset": str(it.get("ss") or ""), "Hiệp × lần": r["lieu"], "RPE": r["rpe"].replace("RPE ", ""),
                     "Nghỉ": r["nghi"]})
     return out

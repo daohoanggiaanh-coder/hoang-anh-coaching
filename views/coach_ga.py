@@ -1,5 +1,5 @@
 # Hoàng Anh Coaching v1.1 (2026-10-31) — Giáo án HLV kiểu Atlas: giáo án tuần tự xếp theo mục tiêu, trình độ, số buổi,
-# dạng lịch, vùng chấn thương (8 bài / buổi, theo lầu, superset bụng, kết buổi strongman / HIIT); bảng sửa từng buổi;
+# dạng lịch, vùng chấn thương (8 bài / buổi, superset bụng, kết buổi strongman / HIIT); bảng sửa từng buổi;
 # đổi bài khi thiếu máy; ghi buổi với thể trạng đầu buổi + điểm sẵn sàng + gợi ý tạ. Chuyển từ Atlas Academy v3.64.
 from __future__ import annotations
 
@@ -176,7 +176,6 @@ def trang(user: dict, k: dict):
         cfg = {"STT": _cc(st.column_config.NumberColumn, "STT", min_value=1, max_value=30, step=1, width="small"),
                "Bài": st.column_config.SelectboxColumn("Bài tập", options=ten_ok, required=True, width="medium"),
                "Dạng": _cc(st.column_config.TextColumn, "Dạng", disabled=True, width="small"),
-               "Lầu": _cc(st.column_config.TextColumn, "Lầu", disabled=True, width="small", help="Tầng máy (phong cách Atlas)"),
                "Superset": _cc(st.column_config.TextColumn, "SS", max_chars=2, width="small"),
                "Hiệp × lần": _cc(st.column_config.TextColumn, "Hiệp × lần", width="small"),
                "RPE": _cc(st.column_config.TextColumn, "RPE", width="small"),
@@ -271,7 +270,7 @@ def trang(user: dict, k: dict):
 
 @st.fragment
 def ghi_buoi(k: dict, P_: dict, nguoi: str, vai: str = "hlv", chua_luu: bool = False, luu=None):
-    """Ghi buổi theo giáo án Atlas — dùng chung HLV và khách (khách: không có ghi chú nội bộ / lời nhắn / trừ buổi gói)."""
+    """Ghi buổi theo giáo án HLV — dùng chung HLV và khách (khách: không có ghi chú nội bộ / lời nhắn / trừ buổi gói)."""
     S = st.session_state
     st.markdown(CSS, unsafe_allow_html=True)
     ma = k["ma"]

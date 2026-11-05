@@ -60,6 +60,24 @@ h1,h2,h3,h4{letter-spacing:-.01em}
 .hac-foot{color:#a39d8f;font-size:.72rem;text-align:center;margin:36px 0 8px}
 div[data-testid="stMetricValue"]{font-weight:800;letter-spacing:-.01em}
 .hac-hero .t{letter-spacing:-.015em}
+/* ---------- v2.2: tab & mục mở rộng nhìn rõ là nút bấm (Streamlit 1.66: role=tablist / data-testid=stTab) ---------- */
+.stTabs [role="tablist"]{gap:6px!important;flex-wrap:wrap!important;border-bottom:none!important;box-shadow:none!important;padding:2px 0 8px;overflow:visible!important}
+.stTabs [data-testid="stTab"]{background:#F6F1E6!important;border:1.5px solid #E2D7BF!important;border-radius:12px!important;
+  padding:8px 14px!important;height:auto!important;margin:0!important;box-shadow:0 2px 0 rgba(122,91,20,.10)!important;transition:all .12s}
+.stTabs [data-testid="stTab"]::after,.stTabs [data-testid="stTab"]::before{display:none!important}
+.stTabs [data-testid="stTab"] p{font-weight:700!important;font-size:.9rem!important}
+.stTabs [data-testid="stTab"]:hover{border-color:#C8A24A!important;background:#FBF6EA!important}
+.stTabs [data-testid="stTab"][aria-selected="true"]{background:#1C1B19!important;border-color:#1C1B19!important;box-shadow:0 3px 10px rgba(0,0,0,.18)!important}
+.stTabs [data-testid="stTab"][aria-selected="true"] p{color:#E8C76A!important}
+[data-testid="stExpander"] details{border:1.5px solid #E2D7BF!important;border-radius:12px!important;background:#FFFDF8}
+[data-testid="stExpander"] summary{font-weight:700}
+[data-testid="stExpander"] summary:hover{background:#FBF6EA}
+html[data-hac-theme=dark] .stTabs [data-testid="stTab"]{background:#211E19!important;border-color:#3A342A!important}
+html[data-hac-theme=dark] .stTabs [data-testid="stTab"] p{color:#E9E2D0!important}
+html[data-hac-theme=dark] .stTabs [data-testid="stTab"][aria-selected="true"]{background:#C8A24A!important;border-color:#C8A24A!important}
+html[data-hac-theme=dark] .stTabs [data-testid="stTab"][aria-selected="true"] p{color:#14120F!important}
+html[data-hac-theme=dark] [data-testid="stExpander"] details{background:#1A1814;border-color:#3A342A!important}
+html[data-hac-theme=dark] [data-testid="stExpander"] summary:hover{background:#221F19}
 /* ---------- giao diện tối (html[data-hac-theme=dark] do pwa.py tự đặt theo nền của app) ---------- */
 html[data-hac-theme=dark] :is(.hac-tile,.hac-card,.hac-ex,.hac-meal,.hac-b,.dd-bua,.dd-bsc,.dd-wd:not(.t),.cd-d,.dl-m,.dl-b){
   background:#1A1814!important;border-color:#332E25!important;color:#EDE6D6;box-shadow:none}

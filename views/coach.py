@@ -372,6 +372,19 @@ def tap():
         coach_ga.trang(u, k)
 
 
+def tong_ket():
+    u = _user()
+    ui.hero("TỔNG KẾT NGÀY", "Hôm nay khách đã làm gì?", "Tập · cardio · bước chân · cân · check-in · ăn uống · nhiệm vụ — tất cả trong 1 chỗ.")
+    from views import tong_ket_ui
+    DS = store.clients(ca_ngung=False)
+    d = st.date_input("Ngày xem tất cả khách", db.now_vn().date(), max_value=db.now_vn().date(), format="DD/MM/YYYY", key="tk_all_d")
+    with st.expander("📋 Tất cả khách trong ngày", expanded=True):
+        tong_ket_ui.bang_tat_ca(DS, d)
+    k = _chon_khach(DS)
+    if k:
+        tong_ket_ui.trang(k, "hlv", u["name"])
+
+
 def cham_soc():
     u = _user()
     ui.hero("CHĂM SÓC KHÁCH", "Những điều nhỏ khiến khách nhớ mãi",

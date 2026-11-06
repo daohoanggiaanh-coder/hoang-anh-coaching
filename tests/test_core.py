@@ -422,3 +422,13 @@ def test_telegram_lien_ket(monkeypatch):
     assert code.startswith("R001_") and code != tb.ma_lien_ket("R002")
     monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "khac")
     assert tb.ma_lien_ket("R001") != code                       # đổi token → mã cũ hết hiệu lực
+
+
+def test_an_ai_offline_va_bua_them():
+    from core import an_ai, an_ngoai as an
+    r = an_ai.uoc_luong_offline("150g ức gà, 1 chén cơm trắng, 2 trứng gà", {"kcal": 500, "p": 40, "c": 50, "f": 15})
+    assert len(r["mon"]) == 3 and 500 < r["tong"]["kcal"] < 700 and r["do_tin_cay"] == "thap"
+    assert an_ai._sach({"mon": [{"ten": "Cơm", "kcal": "200", "p": 4, "c": 45, "f": 1}], "do_tin_cay": "xyz"})["do_tin_cay"] == "vua"
+    td = [{"bua": "sang", "kcal": 400, "p": 30, "c": 40, "f": 10, "thuc": {"kcal": 400, "p": 30, "c": 40, "f": 10}}]
+    t = an.tong_ngay(td, {"them_101010": {"loai": "ghi", "kcal": 200, "p": 10, "c": 20, "f": 5}}, {"kcal": 1500, "p": 100, "c": 150, "f": 50})
+    assert t["da"]["kcal"] == 200 and t["so_chua"] == 1

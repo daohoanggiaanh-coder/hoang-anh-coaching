@@ -86,6 +86,7 @@ if user["role"] == "coach":
     pages = {
         "Huấn luyện": [st.Page(V.lich, title="Lịch & nhắc tập", icon="📅", url_path="lich", default=True),
                        st.Page(V.cam_ket, title="Cam kết khách", icon="🔥", url_path="cam_ket"),
+                       st.Page(V.tong_ket, title="Tổng kết ngày", icon="📅", url_path="tong_ket"),
                        st.Page(V.cham_soc, title="Chăm sóc khách", icon="✨", url_path="cham_soc"),
                        st.Page(V.ho_so, title="Hồ sơ HLV & thành quả", icon="🏆", url_path="ho_so"),
                        st.Page(V.khach, title="Khách & tài khoản", icon="👤", url_path="khach"),
@@ -116,7 +117,8 @@ else:
             st.rerun()
         st.stop()
     _tr = _st.trang_khach(_st.quyen(_st.client(user.get("ma_kh", ""))))
-    pages = [st.Page(V.trang_chu, title="Tổng quan", icon="🏠", url_path="tong_quan", default=True)]
+    pages = [st.Page(V.trang_chu, title="Tổng quan", icon="🏠", url_path="tong_quan", default=True),
+             st.Page(V.tong_ket, title="Tổng kết ngày", icon="📅", url_path="tong_ket")]
     pages += [p for p, on in ((st.Page(V.tap, title="Tập luyện", icon="🏋️", url_path="tap_luyen"), _tr["tap"]),
                               (st.Page(V.cardio, title="Cardio", icon="🏃", url_path="cardio"), _tr["cardio"]),
                               (st.Page(V.an, title="Thực đơn", icon="🍽", url_path="thuc_don"), _tr["an"]),

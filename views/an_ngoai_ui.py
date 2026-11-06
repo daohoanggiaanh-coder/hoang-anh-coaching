@@ -6,7 +6,7 @@ from datetime import date
 
 import streamlit as st
 
-from core import an_ngoai as an, db, dinh_duong as dd, ui
+from core import an_ai, an_ngoai as an, anh as A, db, dinh_duong as dd, store, ui
 
 E = html.escape
 S = st.session_state
@@ -99,6 +99,11 @@ def nhat_ky(k: dict, vai: str, nguoi: str, h, kq: dict, F: dict, bo: set[str], t
             chon = st.segmented_control("Bữa này", ds_loai, default=loai, format_func=lambda z: an.LOAI[z], key=f"an_l_{kk}",
                                         label_visibility="collapsed") or loai
             v: dict | None = None
+            if chon == "ghi":
+                con_truoc = {x: t["con"][x] + (tt[x] if tt else 0) for x in ("kcal", "p", "c", "f")}
+                khung_ghi(k, ngay, bb["bua"], bb["ten"], lg if loai == "ghi" else {}, t["chia"].get(bb["bua"]) or bb["thuc"],
+                          con_truoc, nguoi, vai)
+                continue
             if chon == "dung":
                 v = {"loai": "dung", "ten": bb.get("mon_viet") or "Theo thực đơn"}
             elif chon == "chua":
@@ -133,6 +138,23 @@ def nhat_ky(k: dict, vai: str, nguoi: str, h, kq: dict, F: dict, bo: set[str], t
                     st.rerun()
                 else:
                     st.error("Chưa lưu được — thử lại sau ít phút.")
+    ui.sec("🍪 Bữa phụ · ăn vặt · ăn thêm")
+    for b_, v_ in an.bua_them(logs):
+        with st.container(border=True):
+            c1, c2 = st.columns([5, 1])
+            c1.markdown(f"**{E(v_.get('ten') or 'Ăn thêm')}** · {float(v_.get('kcal') or 0):.0f} kcal · Đ {float(v_.get('p') or 0):.0f} · "
+                        f"TB {float(v_.get('c') or 0):.0f} · B {float(v_.get('f') or 0):.0f} g" + (f" · 🕒 {v_.get('gio')}" if v_.get("gio") else ""))
+            if c2.button("🗑", key=f"an_xt_{ma}_{vai}_{b_}", help="Xoá"):
+                an.xoa(ma, ngay, b_, nguoi)
+                st.rerun()
+            if v_.get("loai") == "ghi":
+                hien_ghi(v_, k, ngay, b_, nguoi, vai)
+    kt = f"an_moi_{ma}_{vai}_{ngay}"
+    if kt not in S:
+        S[kt] = "them_" + db.now_vn().strftime("%H%M%S")
+    with st.expander("➕ Thêm bữa phụ / ăn vặt (chụp ảnh hoặc ghi món)"):
+        con_now = dict(t["con"])
+        khung_ghi(k, ngay, S[kt], "Bữa phụ", {}, {x: max(con_now[x], 0) * 0.3 for x in con_now}, con_now, nguoi, vai, them=True)
     ui.note("Mục tiêu từng bữa lấy theo thực đơn gợi ý. Khi một bữa ăn khác đi (ăn ngoài, ăn thêm), web <b>chia lại phần còn lại</b> "
             "cho các bữa chưa ăn — xem dòng ⏳ ở mỗi bữa. Macro món ăn ngoài là ước lượng (sai số ±20–30 %), dùng để định hướng, "
             "không cần chính xác tuyệt đối.")
@@ -204,3 +226,148 @@ def an_ngoai(k: dict, vai: str, nguoi: str, h, kq: dict, bo: set[str], tap_set: 
         st.caption("Món riêng: " + " · ".join(f"{r['ten']} (≈ {r['kcal']:.0f} kcal, Đ {r['p']:.0f} g)" for r in th["rieng"]))
     st.caption(an.data()["_ghi_chu"])
 
+
+
+# ------------------------------------------------------------------ v2.5: ghi bữa bằng ảnh / mô tả + AI
+def _bang_mon(mon: list[dict]) -> str:
+    if not mon:
+        return ""
+    return ('<table style="width:100%;font-size:.82rem;border-collapse:collapse;margin:4px 0">'
+            '<tr style="color:#8b8577;text-align:left"><th>Món</th><th>Lượng</th><th>kcal</th><th>Đạm</th><th>TB</th><th>Béo</th></tr>'
+            + "".join(f'<tr style="border-top:1px solid #EFE7D6"><td>{E(m["ten"])}</td><td>{E(m.get("luong", ""))}</td>'
+                      f'<td><b>{m["kcal"]:.0f}</b></td><td>{m["p"]:.0f}</td><td>{m["c"]:.0f}</td><td>{m["f"]:.0f}</td></tr>' for m in mon)
+            + "</table>")
+
+
+def _ket_qua_ai(r: dict):
+    st.markdown(_bang_mon(r.get("mon") or []), unsafe_allow_html=True)
+    st.markdown(f"**{'AI ước lượng' if r.get('nguon') == 'ai' else 'Ước lượng'}:** {r['tong']['kcal']:.0f} kcal · đạm {r['tong']['p']:.0f} g · tinh bột {r['tong']['c']:.0f} g · "
+                f"béo {r['tong']['f']:.0f} g · {an_ai.TIN_CAY.get(r.get('do_tin_cay'), '')}"
+                + (" · _(chưa có AI — ước lượng từ mô tả)_" if r.get("nguon") == "offline" else ""))
+    if r.get("nhan_xet"):
+        st.markdown(f"💬 {E(r['nhan_xet'])}")
+    for x in r.get("dieu_chinh") or []:
+        st.markdown(f"- 🔧 {E(x)}")
+    if r.get("bua_sau"):
+        st.markdown(f"➡️ **Bữa tiếp theo:** {E(r['bua_sau'])}")
+
+
+def hien_ghi(lg: dict, k: dict, ngay, bua: str, nguoi: str, vai: str):
+    """Bữa đã lưu bằng ảnh / mô tả: ảnh, mô tả, kết quả AI, nhận xét HLV."""
+    ids = [i for i in (lg.get("anh") or []) if i]
+    if ids:
+        imgs = db.get_images(ids)
+        cs = st.columns(min(len(ids), 3) + 1)
+        for i, x in enumerate(ids[:3]):
+            if imgs.get(x):
+                cs[i].image(A.shrink(imgs[x], 500), use_container_width=True)
+    if lg.get("mo_ta"):
+        st.caption("📝 " + lg["mo_ta"])
+    if lg.get("ai"):
+        _ket_qua_ai(lg["ai"])
+    if vai == "hlv":
+        nx = st.text_input("💬 Nhận xét của HLV (khách thấy)", lg.get("hlv_nx", ""), key=f"an_nx_{k['ma']}_{ngay}_{bua}")
+        if nx != lg.get("hlv_nx", "") and st.button("Lưu nhận xét", key=f"an_nxs_{k['ma']}_{ngay}_{bua}"):
+            an.ghi(k["ma"], ngay, bua, {**{x: v for x, v in lg.items() if not x.startswith("_")}, "hlv_nx": nx}, nguoi)
+            st.rerun()
+    elif lg.get("hlv_nx"):
+        st.info("💬 HLV: " + lg["hlv_nx"])
+
+
+def khung_ghi(k: dict, ngay, bua: str, ten_bua: str, lg: dict, muc_bua: dict, con_truoc: dict, nguoi: str, vai: str,
+              them: bool = False):
+    from core import thong_tin as ttin
+    ma = k["ma"]
+    kk = f"{ma}_{vai}_{ngay}_{bua}"
+    if lg:
+        hien_ghi(lg, k, ngay, bua, nguoi, vai)
+    with st.expander("✏️ " + ("Sửa lại bữa này" if lg else "Chụp ảnh / ghi món để AI tính"), expanded=not lg and not them):
+        fs = st.file_uploader("Ảnh bữa ăn (tối đa 3 — chụp thẳng từ trên xuống, thấy rõ cả đĩa)", type=["jpg", "jpeg", "png", "webp"],
+                              accept_multiple_files=True, key=f"an_up_{kk}")
+        mo_ta = st.text_area("Mô tả món (càng rõ lượng càng chính xác)", lg.get("mo_ta", ""), key=f"an_mt_{kk}", height=80,
+                             placeholder="VD: 1 chén cơm, 150g ức gà áp chảo, rau muống xào, 1 trái chuối")
+        if st.button("🤖 AI phân tích bữa này", key=f"an_ai_{kk}", type="primary", disabled=not (fs or mo_ta.strip())):
+            imgs = [A.shrink(f.getvalue(), 1024) for f in (fs or [])[:3]]
+            with st.spinner("AI đang xem bữa ăn…"):
+                r = an_ai.phan_tich(imgs, mo_ta, ten_bua, ttin.TEN.get(ttin.muc_tieu(k), ""), k.get("gioi_tinh") or "",
+                                    muc_bua, con_truoc, store.xung(k)[0])
+            S[f"an_kq_{kk}"] = (r, imgs)
+        if S.get(f"an_kq_{kk}"):
+            r, imgs = S[f"an_kq_{kk}"]
+            _ket_qua_ai(r)
+            st.caption("Số AI là ước lượng (±20–30 %). Biết chính xác hơn thì sửa trước khi lưu.")
+            c0, c1, c2, c3 = st.columns(4)
+            kc = c0.number_input("kcal", 0, 4000, int(r["tong"]["kcal"]), 10, key=f"an_ak_{kk}")
+            p = c1.number_input("Đạm g", 0, 400, int(r["tong"]["p"]), key=f"an_ap_{kk}")
+            c = c2.number_input("Tinh bột g", 0, 600, int(r["tong"]["c"]), key=f"an_ac_{kk}")
+            f = c3.number_input("Béo g", 0, 300, int(r["tong"]["f"]), key=f"an_af_{kk}")
+            if st.button("💾 Lưu bữa này", key=f"an_luu_{kk}", type="primary"):
+                ids = []
+                if imgs:
+                    up = db.upload_images({f"{i}": b for i, b in enumerate(imgs)}, prefix=f"an_{ma}_{ngay}_{bua}_") or {}
+                    ids = list(up.values())
+                ten = ", ".join(m["ten"] for m in r.get("mon", [])[:3]) or (mo_ta[:40] if mo_ta else "Bữa ăn")
+                v = {"loai": "ghi", "ten": ten, "mo_ta": mo_ta, "anh": ids or lg.get("anh") or [], "ai": r,
+                     "kcal": kc, "p": p, "c": c, "f": f, "gio": db.now_vn().strftime("%H:%M")}
+                if an.ghi(ma, ngay, bua, v, nguoi):
+                    S.pop(f"an_kq_{kk}", None)
+                    if them:
+                        S.pop(f"an_moi_{ma}_{vai}_{ngay}", None)
+                    st.toast("Đã lưu ✓")
+                    st.rerun()
+                st.error("Chưa lưu được — thử lại.")
+
+
+# ------------------------------------------------------------------ v2.5: báo cáo dinh dưỡng theo ngày
+def bao_cao(k: dict, vai: str, nguoi: str, h, kq: dict, bo: set[str], tap_set: set[int]):
+    import pandas as pd
+    st.markdown(CSS, unsafe_allow_html=True)
+    ma = k["ma"]
+    hom = db.now_vn().date()
+    from datetime import timedelta
+    tu = hom - timedelta(days=13)
+    LS = an.lich_su(ma, tu, hom)
+    rows = []
+    for i in range(14):
+        d = tu + timedelta(days=i)
+        la_tap = d.weekday() in tap_set
+        td_, m = _thuc_don(h, kq, ma, d, la_tap, bo)
+        t = an.tong_ngay(td_, LS.get(d, {}), m)
+        so_ghi = len([v for v in LS.get(d, {}).values() if v.get("loai") != "chua"])
+        rows.append({"ngay": d, "da": t["da"], "muc": t["muc"], "ghi": so_ghi, "bua": len(td_)})
+    df = pd.DataFrame([{"Ngày": f"{r['ngay']:%d/%m}", "kcal ăn": round(r["da"]["kcal"]) if r["ghi"] else None,
+                        "kcal mục tiêu": round(r["muc"]["kcal"]), "Đạm ăn": round(r["da"]["p"]) if r["ghi"] else None,
+                        "Đạm mục tiêu": round(r["muc"]["p"])} for r in rows])
+    co = [r for r in rows if r["ghi"]]
+    if co:
+        tb_k = sum(r["da"]["kcal"] for r in co) / len(co)
+        tb_m = sum(r["muc"]["kcal"] for r in co) / len(co)
+        tb_p = sum(r["da"]["p"] for r in co) / len(co)
+        ui.tiles([(f"{len(co)}/14", "ngày có ghi bữa", ""), (f"{tb_k:,.0f}".replace(",", "."), "kcal TB / ngày", f"mục tiêu {tb_m:,.0f}".replace(",", ".")),
+                  (f"{tb_p:.0f} g", "đạm TB / ngày", f"mục tiêu {co[-1]['muc']['p']:.0f} g"),
+                  (f"{sum(1 for r in co if abs(r['da']['kcal'] - r['muc']['kcal']) <= 0.1 * r['muc']['kcal'])}", "ngày đúng ±10 % kcal", "")])
+        st.line_chart(df.set_index("Ngày")[["kcal ăn", "kcal mục tiêu"]], height=220, color=["#C8A24A", "#8b8577"])
+        st.bar_chart(df.set_index("Ngày")[["Đạm ăn", "Đạm mục tiêu"]], height=200, stack=False, color=["#2E7D4F", "#CFC8B8"])
+    else:
+        st.info("14 ngày qua chưa ghi bữa nào — ghi ở tab 📝 Đã ăn · còn lại.")
+    ui.sec("Xem chi tiết 1 ngày")
+    d = st.date_input("Ngày", hom, min_value=tu, max_value=hom, format="DD/MM/YYYY", key=f"an_bc_d_{ma}_{vai}")
+    lg = LS.get(d, {})
+    td_, m = _thuc_don(h, kq, ma, d, d.weekday() in tap_set, bo)
+    t = an.tong_ngay(td_, lg, m)
+    st.markdown(bang_con(t), unsafe_allow_html=True)
+    ten = {b["bua"]: f"🕒 {b['gio']} · {b['ten']}" for b in td_}
+    if not lg:
+        st.caption("Ngày này chưa ghi bữa nào.")
+    for b, v in sorted(lg.items(), key=lambda x: (x[0] not in ten, x[0])):
+        if v.get("loai") == "chua":
+            continue
+        with st.container(border=True):
+            tt = an.thuc_te(next((x for x in td_ if x["bua"] == b), {"thuc": {"kcal": 0, "p": 0, "c": 0, "f": 0}}), v) or {}
+            st.markdown(f"**{E(ten.get(b, '🍪 Bữa phụ' + (' · ' + v['gio'] if v.get('gio') else '')))}** — {an.LOAI.get(v.get('loai'), '')}"
+                        + (f": {E(v.get('ten'))}" if v.get("ten") else "")
+                        + (f"  \n{tt.get('kcal', 0):.0f} kcal · Đ {tt.get('p', 0):.0f} · TB {tt.get('c', 0):.0f} · B {tt.get('f', 0):.0f} g" if tt else ""))
+            if v.get("loai") == "ghi":
+                hien_ghi(v, k, d, b, nguoi, vai)
+            elif v.get("ghi_chu"):
+                st.caption("📝 " + v["ghi_chu"])

@@ -273,6 +273,7 @@ def dinh_duong(k: dict, vai: str, nguoi: str, q: dict | None = None):
     tabs = [("hom", "🍽 Thực đơn hôm nay")]
     if hlv or q.get("nhat_ky_an"):
         tabs.append(("an", "📝 Đã ăn · còn lại"))
+        tabs.append(("bc", "📊 Báo cáo ăn uống"))
     tabs.append(("tuan", "📅 7 ngày"))
     if hlv or q.get("an_ngoai"):
         tabs.append(("ngoai", "🍜 Ăn ngoài"))
@@ -335,6 +336,9 @@ def dinh_duong(k: dict, vai: str, nguoi: str, q: dict | None = None):
     if "an" in T:
         with T["an"]:
             an_ui.nhat_ky(k, vai, nguoi, h, kq, F, bo, tap_set)
+    if "bc" in T:
+        with T["bc"]:
+            an_ui.bao_cao(k, vai, nguoi, h, kq, bo, tap_set)
     if "ngoai" in T:
         with T["ngoai"]:
             an_ui.an_ngoai(k, vai, nguoi, h, kq, bo, tap_set)

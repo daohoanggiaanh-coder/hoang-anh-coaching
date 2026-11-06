@@ -142,6 +142,13 @@ def cardio():
     cardio_ui.trang(k, "khach", k["ho_ten"], q)
 
 
+def tong_ket():
+    k = _k()
+    ui.hero("TỔNG KẾT NGÀY", "Một ngày của bạn", "Tập · cardio · bước chân · cân · check-in · ăn uống — xem lại ngày bất kỳ.")
+    from views import tong_ket_ui
+    tong_ket_ui.trang(k, "khach")
+
+
 def lo_trinh():
     k = _k()
     ui.hero("LỘ TRÌNH", "Lộ trình khoá tập của bạn", "Từng giai đoạn: tập tạ · cardio · bước chân · dinh dưỡng · mốc đo.")

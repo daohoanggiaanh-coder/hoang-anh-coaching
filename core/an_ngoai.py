@@ -12,7 +12,8 @@ from pathlib import Path
 from core import db
 
 HOP = {"tot": ("✅ Hợp mục tiêu", "#2E7D4F"), "sua": ("🟡 Được nếu gọi đúng", "#C8A24A"), "han_che": ("🔴 Hạn chế", "#B4442F")}
-LOAI = {"dung": "✅ Ăn đúng thực đơn", "ngoai": "🍜 Ăn ngoài", "tu_nhap": "✍️ Tự nhập", "chua": "⏳ Chưa ăn"}
+LOAI = {"dung": "✅ Đúng thực đơn", "ghi": "📷 Ảnh / mô tả (AI)", "ngoai": "🍜 Ăn ngoài", "tu_nhap": "✍️ Tự nhập số",
+        "chua": "⏳ Chưa ăn"}
 PHAN = {0.5: "½ phần", 0.75: "¾ phần", 1.0: "1 phần", 1.5: "1,5 phần", 2.0: "2 phần"}
 
 
@@ -108,6 +109,13 @@ def tong_ngay(ngay_td: list[dict], logs: dict[str, dict], m: dict) -> dict:
         else:
             for x in da:
                 da[x] += t[x]
+    ke = {b["bua"] for b in ngay_td}
+    for bua, lg in logs.items():                      # bữa phụ / ăn thêm ngoài thực đơn
+        if bua not in ke:
+            t = thuc_te({}, lg)
+            if t:
+                for x in da:
+                    da[x] += t[x]
     muc = {"kcal": float(m["kcal"]), "p": float(m["p"]), "c": float(m["c"]), "f": float(m["f"])}
     con = {x: muc[x] - da[x] for x in muc}
     # chia phần còn lại cho các bữa chưa ăn theo tỷ trọng bữa trong thực đơn gợi ý
@@ -137,3 +145,23 @@ def loi_khuyen(t: dict) -> list[str]:
     if con["c"] < 15 and con["kcal"] > 0:
         out.append("Tinh bột gần hết — bữa còn lại ít cơm / bún, thay bằng rau + đạm nạc.")
     return out or ["Đang đúng hướng — phần còn lại đã chia cho các bữa chưa ăn (dòng ⏳ ở mỗi bữa)."]
+
+
+def bua_them(logs: dict[str, dict]) -> list[tuple[str, dict]]:
+    return sorted(((b, v) for b, v in logs.items() if b.startswith("them_")), key=lambda x: x[0])
+
+
+def lich_su(ma: str, tu: date, den: date) -> dict[date, dict[str, dict]]:
+    """Nhật ký bữa theo ngày (cho báo cáo)."""
+    out: dict[date, dict[str, dict]] = {}
+    tien = f"an|{ma}|"
+    for kk, v in db.latest("DinhDuong", ma).items():
+        if not kk.startswith(tien) or v.get("xoa"):
+            continue
+        try:
+            d = date.fromisoformat(kk[len(tien):len(tien) + 10])
+        except ValueError:
+            continue
+        if tu <= d <= den:
+            out.setdefault(d, {})[kk[len(tien) + 11:]] = v
+    return out

@@ -123,6 +123,10 @@ def trang(user: dict, k: dict):
 
     # ============================================================== giáo án tuần
     with t2:
+        if store.lich_co_dinh(k) and plan:
+            from views import lich_ga_ui
+            with st.expander("📅 Lịch tập sắp tới — ngày nào buổi nào (theo lịch cố định + thứ tự giáo án)"):
+                lich_ga_ui.bang(k, 21)
         base = S.get(DKEY) or plan
         with st.container(border=True):
             st.markdown("**Thông số giáo án** · đổi ô nào giáo án tự xếp lại ngay")
@@ -136,8 +140,20 @@ def trang(user: dict, k: dict):
             goal = a.selectbox("Mục tiêu", gks, index=gks.index(g0) if g0 in gks else 0, format_func=ga.GOALS.get, key=f"g_{ma}")
             lv = b.select_slider("Trình độ", list(range(5)), value=base["trinh_do"] if base else ttin.trinh_do(k),
                                  format_func=lambda i: ga.LEVELS[i], key=f"lv_{ma}")
-            pw = c.select_slider("Số buổi / tuần", [2, 3, 4, 5, 6], value=min(max(base["buoi_tuan"], 2), 6) if base else
-                                 min(max(len(store.lich_co_dinh(k)) or 3, 2), 6), key=f"pw_{ma}")
+            n_lich = len(store.lich_co_dinh(k))
+            if n_lich:                                  # v2.6: theo lịch cố định — không hỏi lại
+                pw = min(max(n_lich, 2), 6)
+                if base and int(base.get("buoi_tuan") or 0) != pw and not S.get(f"pw_theo_lich_{ma}"):
+                    pw = min(max(int(base["buoi_tuan"]), 2), 6)
+                    st.warning(f"Giáo án đang lưu {pw} buổi / tuần, lịch cố định có {n_lich} buổi.")
+                    if st.button(f"Xếp lại giáo án theo lịch ({n_lich} buổi)", key=f"pwl_{ma}"):
+                        S[f"pw_theo_lich_{ma}"] = True
+                        st.rerun()
+                c.markdown(f"**Số buổi / tuần:** {pw}  \n<span style='font-size:.75rem;color:#8b8577'>theo lịch cố định "
+                           f"({', '.join(store.THU[int(x['thu'])] for x in store.lich_co_dinh(k))})</span>", unsafe_allow_html=True)
+            else:
+                pw = c.select_slider("Số buổi / tuần", [2, 3, 4, 5, 6], value=min(max(base["buoi_tuan"], 2), 6) if base else 3,
+                                     key=f"pw_{ma}")
             if pw == 6:
                 c.caption("6 buổi: nên xen buổi nặng / nhẹ và giữ ≥ 1 ngày nghỉ hẳn; người mới thường hồi phục tốt hơn với 3–4 buổi.")
             a, b = st.columns([1.3, 1])

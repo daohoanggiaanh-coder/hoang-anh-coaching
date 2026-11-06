@@ -56,6 +56,9 @@ Streamlit Community Cloud + Google Sheets / Drive đứng tên Gmail cá nhân.
 - 🆕 **v2.5**: ghi bữa bằng **ảnh / mô tả + AI** ước lượng kcal · macro, nhận xét theo mục tiêu, gợi ý điều chỉnh & bữa tiếp theo
   (chưa có khoá AI → ước lượng từ mô tả); bữa phụ / ăn vặt; HLV nhận xét từng bữa; tab **📊 Báo cáo ăn uống** (14 ngày, biểu đồ kcal · đạm,
   chi tiết từng ngày); trang **📅 Tổng kết ngày** (tập · cardio · bước · cân · số đo · check-in · ăn uống · nhiệm vụ) cho khách và HLV.
+- 🆕 **v2.6**: lịch cố định dạng **tick ngày (T2 → CN) + giờ** — là nguồn duy nhất của số buổi / tuần, ngày tập (thực đơn, giáo án, nhắc lịch);
+  **lịch tập sắp tới theo giáo án** (buổi nối tiếp theo thứ tự: Push → Pull → Leg → Push 2…); nhập **BMR trên phiếu InBody** để khớp InBody,
+  giải thích vì sao khác số InBody ở tab Cách tính; lưu khách xong vẫn ở lại khách đó.
 - ✉️ Soạn tin Zalo · 🥗 Bảng thực phẩm (sửa số theo nhãn) · 📥 Chuyển dữ liệu từ Atlas.
 
 **Cổng khách** (tài khoản + mật khẩu do HLV cấp, mỗi khách chỉ thấy dữ liệu của mình và những mục HLV mở)

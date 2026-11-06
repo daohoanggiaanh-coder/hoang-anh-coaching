@@ -173,6 +173,9 @@ def khach():
     hom = db.now_vn().date()
     by = {k["ma"]: k for k in DS}
     ui.hero("KHÁCH & TÀI KHOẢN", f"{len(DS)} khách", "Hồ sơ, lịch cố định, gói buổi — và tài khoản đăng nhập cổng khách.")
+    if S.get("_k_pick_next") is not None:              # v2.6: lưu xong vẫn ở lại khách vừa sửa
+        nx_ = S.pop("_k_pick_next")
+        S["k_pick"] = nx_ if nx_ in by else "__moi__"
     cot = st.selectbox("Chọn khách để sửa", ["__moi__"] + [k["ma"] for k in DS],
                        format_func=lambda m: "➕ Thêm khách mới" if m == "__moi__" else f"{by[m]['ho_ten']} · {by[m].get('trang_thai') or 'Đang tập'}",
                        key="k_pick")
@@ -187,6 +190,10 @@ def khach():
         else:
             from views import chu_ky_ui
             chu_ky_ui.tab(k0, u["name"])
+    with t1:
+        if k0 and store.lich_co_dinh(k0):
+            from views import lich_ga_ui
+            lich_ga_ui.bang(k0)
     with t4:
         if not k0:
             st.info("Lưu khách trước (tab Thông tin, gói & lịch tập).")
@@ -245,12 +252,21 @@ def khach():
             dd_ = b.text_input("Nơi tập", value=k0.get("dia_diem", ""), placeholder="VD nhà khách, công viên, online qua Zalo video")
             tt = c.selectbox("Trạng thái", store.TRANG_THAI, index=store.TRANG_THAI.index(k0.get("trang_thai") or "Đang tập")
                              if (k0.get("trang_thai") or "Đang tập") in store.TRANG_THAI else 0)
-            st.markdown("**Lịch tập cố định** — mỗi dòng 1 buổi trong tuần")
-            lich_df = st.data_editor(pd.DataFrame([{"Thứ": store.THU[int(x["thu"])], "Giờ": x.get("gio", ""), "Nơi tập (nếu khác)": x.get("dia_diem", "")}
-                                                   for x in lich0] or [{"Thứ": None, "Giờ": "", "Nơi tập (nếu khác)": ""}]),
-                                     num_rows="dynamic", hide_index=True, use_container_width=True,
-                                     column_config={"Thứ": st.column_config.SelectboxColumn("Thứ", options=store.THU),
-                                                    "Giờ": st.column_config.TextColumn("Giờ", help="VD 18:00")})
+            st.markdown("**📅 Lịch tập cố định** — tick ngày tập, ghi giờ. Đây là nguồn chung cho số buổi / tuần, ngày tập của thực đơn, "
+                        "giáo án (buổi xếp theo thứ tự giáo án: Push → Pull → Leg → Push 2…), nhắc lịch.")
+            L0 = {int(x["thu"]): x for x in lich0}
+            gio_md = st.text_input("Giờ mặc định (dùng cho ngày tick mà để trống giờ)", value=next((x.get("gio", "") for x in lich0), ""),
+                                   placeholder="VD 18:30")
+            lich_in = []
+            hang = st.columns(7)
+            for i_ in range(7):
+                with hang[i_]:
+                    on_ = st.checkbox(store.THU[i_], value=i_ in L0, key=f"lt_on_{k0.get('ma', 'moi')}_{i_}")
+                    g_ = st.text_input("Giờ", value=L0.get(i_, {}).get("gio", ""), key=f"lt_g_{k0.get('ma', 'moi')}_{i_}",
+                                       placeholder="giờ", label_visibility="collapsed")
+                    n_ = st.text_input("Nơi", value=L0.get(i_, {}).get("dia_diem", ""), key=f"lt_n_{k0.get('ma', 'moi')}_{i_}",
+                                       placeholder="nơi (nếu khác)", label_visibility="collapsed")
+                lich_in.append((on_, g_, n_))
             st.markdown("**Hồ sơ đầu khoá** — dùng cho báo cáo, thực đơn (BMI, mức mỡ, năng lượng)")
             a, b, c, d = st.columns(4)
             gt_l = ["", "Nam", "Nữ"]
@@ -274,11 +290,12 @@ def khach():
                 st.error("Nhập họ tên.")
             else:
                 sl = []
-                for r in lich_df.to_dict("records"):
-                    th, g = r.get("Thứ"), _gio_chuan(r.get("Giờ"))
-                    if th in store.THU and g:
-                        sl.append({"thu": store.THU.index(th), "gio": g,
-                                   **({"dia_diem": r["Nơi tập (nếu khác)"]} if str(r.get("Nơi tập (nếu khác)") or "").strip() else {})})
+                for i_, (on_, g_, n_) in enumerate(lich_in):
+                    g = _gio_chuan(g_) or _gio_chuan(gio_md)
+                    if on_ and g:
+                        sl.append({"thu": i_, "gio": g, **({"dia_diem": n_.strip()} if str(n_ or "").strip() else {})})
+                    elif on_:
+                        st.warning(f"{store.THU[i_]}: chưa có giờ — ghi giờ hoặc giờ mặc định.")
                 gc_ = next((g for g in GOI if g["ten"] == g_chon), None)
                 if gc_:
                     g_lo, g_so = gc_.get("loai", "buoi"), int(gc_.get("so") or 0)
@@ -295,7 +312,7 @@ def khach():
                         if acc:
                             auth.save_account(k1["ma"], acc["_khoa"], None, u["name"], khoa=True, cu=acc)
                     st.toast("Đã xoá" if xoa else "Đã lưu")
-                    S.pop("k_pick", None)
+                    S["_k_pick_next"] = "__moi__" if xoa else k1["ma"]
                     st.rerun()
                 st.error("Chưa lưu được — kiểm tra kết nối rồi thử lại.")
     with t2:

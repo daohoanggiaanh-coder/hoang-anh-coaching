@@ -102,6 +102,7 @@ class HoSo:
     muc_dam: str = "cao"                 # v1.4: vua 1,6 · cao 2,0 (mặc định) · rat_cao 2,2 g/kg cân nặng
     kieu_td: str = "viet"                # v1.4: viet = món Việt (phở, cơm phần…) · tach = món tách (meal-prep)
     ngay_tap: list[int] | None = None    # thứ có tập (0 = Thứ 2) — lấy từ lịch cố định nếu có
+    bmr_inbody: int | None = None        # v2.6: BMR in trên phiếu InBody — có thì dùng thay công thức
 
     @staticmethod
     def tu_dict(d: dict) -> "HoSo":
@@ -114,6 +115,7 @@ class HoSo:
         h.pbf = float(h.pbf) if h.pbf not in (None, "", 0, 0.0) else None
         h.cardio_phut_tuan = int(h.cardio_phut_tuan or 0)
         h.kcal_tay = int(h.kcal_tay) if h.kcal_tay else None
+        h.bmr_inbody = int(float(h.bmr_inbody)) if h.bmr_inbody else None
         h.dam_g_kg = float(h.dam_g_kg) if h.dam_g_kg else None
         if isinstance(h.che_do, str):
             h.che_do = [h.che_do]
@@ -130,7 +132,7 @@ def tinh(h: HoSo) -> dict:
     bmr_m = 10 * h.kg + 6.25 * h.cao - 5 * h.tuoi + s
     lbm = h.kg * (1 - h.pbf / 100) if h.pbf else None
     bmr_k = 370 + 21.6 * lbm if lbm else None
-    bmr = bmr_k if bmr_k else bmr_m
+    bmr = h.bmr_inbody if h.bmr_inbody else (bmr_k if bmr_k else bmr_m)
     he_so = VAN_DONG.get(h.van_dong, VAN_DONG["nhe"])[1]
     nghi = bmr * he_so
     met = CUONG_DO.get(h.cuong_do, CUONG_DO["vua"])[1]
@@ -194,7 +196,7 @@ def tinh(h: HoSo) -> dict:
     nuoc = 35 * h.kg / 1000
     toc = (delta * 7 / KCAL_KG) if h.muc_tieu != "giu" else 0.0
     return {
-        "bmr_m": round(bmr_m), "bmr_k": round(bmr_k) if bmr_k else None, "bmr": round(bmr), "lbm": round(lbm, 1) if lbm else None,
+        "bmr_m": round(bmr_m), "bmr_k": round(bmr_k) if bmr_k else None, "bmr": round(bmr), "bmr_inbody": h.bmr_inbody, "lbm": round(lbm, 1) if lbm else None,
         "he_so": he_so, "neat": round(bmr * he_so - bmr), "e_buoi": round(e_buoi), "e_cardio": round(e_cardio_ngay),
         "tdee_nghi": round(nghi), "tdee_tap": round(tap), "tdee_tb": round(tdee_tb), "delta": round(delta), "muc_tb": round(muc_tb),
         "tap": m_tap, "nghi": m_nghi, "dam": round(dam), "cach_dam": cach_dam, "dam_g_kg": round(dam / h.kg, 2),

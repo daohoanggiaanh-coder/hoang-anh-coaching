@@ -118,6 +118,10 @@ def trang_chu():
 def tap():
     k = _k()
     ui.hero("TẬP LUYỆN", "Giáo án & số tạ", "Xem bài HLV soạn, ghi kg × lần từng hiệp, hoặc tự tạo plan khi tập một mình.")
+    if store.lich_co_dinh(k):
+        from views import lich_ga_ui
+        with st.expander("📅 Lịch tập 2 tuần tới (buổi nào ngày nào)"):
+            lich_ga_ui.bang(k, 14, "Lịch tập sắp tới")
     C.tap_luyen(k, "khach", k["ho_ten"], store.quyen(k))
 
 

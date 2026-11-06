@@ -62,9 +62,9 @@ def ho_so_dd(k: dict) -> dict:
     if pbf and not hs.get("bo_pbf"):
         hs["pbf"] = pbf
     lich = store.lich_co_dinh(k)
-    if lich and not hs.get("ngay_tap"):
+    if lich:                                            # v2.6: lịch cố định (trang Khách) là nguồn duy nhất của ngày tập / số buổi
         hs["ngay_tap"] = sorted({int(x["thu"]) for x in lich})
-        hs.setdefault("buoi_tuan", len(hs["ngay_tap"]))
+        hs["buoi_tuan"] = len(hs["ngay_tap"])
     return hs
 
 
@@ -89,14 +89,27 @@ def form_dd(k: dict, hs: dict, vai: str, nguoi: str):
             a, b, c, d = st.columns(4)
             vd = a.selectbox("Ngoài giờ tập", list(dd.VAN_DONG), format_func=lambda x: dd.VAN_DONG[x][0],
                              index=list(dd.VAN_DONG).index(hs.get("van_dong", "nhe")) if hs.get("van_dong") in dd.VAN_DONG else 1)
-            bt = b.number_input("Buổi tập / tuần", 0, 7, int(hs.get("buoi_tuan") or 3))
+            lich_k = store.lich_co_dinh(k)
+            if lich_k:
+                bt = int(hs.get("buoi_tuan") or len(lich_k))
+                b.markdown(f"**Buổi tập / tuần:** {bt}  \n<span style='font-size:.75rem;color:#8b8577'>theo lịch cố định ở trang Khách</span>",
+                           unsafe_allow_html=True)
+            else:
+                bt = b.number_input("Buổi tập / tuần", 0, 7, int(hs.get("buoi_tuan") or 3))
             pb = c.number_input("Phút / buổi", 20, 150, int(hs.get("phut_buoi") or 60), step=5)
             cd = d.selectbox("Cường độ", list(dd.CUONG_DO), format_func=lambda x: dd.CUONG_DO[x][0],
                              index=list(dd.CUONG_DO).index(hs.get("cuong_do", "vua")) if hs.get("cuong_do") in dd.CUONG_DO else 0)
-            a, b = st.columns([1, 3])
+            a, b, c = st.columns([1, 1, 2])
             cardio = a.number_input("Cardio thêm (phút / tuần)", 0, 900, int(hs.get("cardio_phut_tuan") or 0), step=15)
-            ngay_tap = b.multiselect("Thứ có tập (để tính ngày tập / ngày nghỉ)", list(range(7)), default=[int(x) for x in hs.get("ngay_tap") or []],
-                                     format_func=lambda i: store.THU[i])
+            bmr_ib = b.number_input("BMR trên phiếu InBody (kcal)", 0, 4000, int(hs.get("bmr_inbody") or 0), step=10,
+                                    help="Có thì web dùng BMR này thay cho công thức — khớp với InBody hơn. 0 = tự tính.")
+            if lich_k:
+                ngay_tap = [int(x) for x in hs.get("ngay_tap") or []]
+                c.markdown("**Thứ có tập:** " + ", ".join(store.THU[i] for i in ngay_tap) +
+                           "  \n<span style='font-size:.75rem;color:#8b8577'>sửa ở trang Khách → Lịch tập cố định</span>", unsafe_allow_html=True)
+            else:
+                ngay_tap = c.multiselect("Thứ có tập (để tính ngày tập / ngày nghỉ)", list(range(7)), default=[int(x) for x in hs.get("ngay_tap") or []],
+                                         format_func=lambda i: store.THU[i])
             ui.sec("Mục tiêu & đạm")
             a, b, c = st.columns(3)
             mt = a.selectbox("Mục tiêu", list(dd.MUC_TIEU), format_func=dd.MUC_TIEU.get,
@@ -131,7 +144,7 @@ def form_dd(k: dict, hs: dict, vai: str, nguoi: str):
             if hlv:
                 moi.update({"gioi_tinh": gt, "tuoi": tuoi, "cao": cao, "kg": kg, "pbf": pbf or None, "bo_pbf": not pbf,
                             "van_dong": vd, "buoi_tuan": bt, "phut_buoi": pb, "cuong_do": cd, "cardio_phut_tuan": cardio,
-                            "ngay_tap": ngay_tap, "muc_tieu": mt, "toc_do": tdo, "kcal_tay": kct or None, "dam_g_kg": dgk or None,
+                            "ngay_tap": ngay_tap, "muc_tieu": mt, "toc_do": tdo, "kcal_tay": kct or None, "dam_g_kg": dgk or None, "bmr_inbody": bmr_ib or None,
                             "muc_dam": mdam, "bo_sung": bs})
             if luu_hs_dd(k["ma"], moi, nguoi):
                 if hlv:
@@ -400,7 +413,7 @@ def dinh_duong(k: dict, vai: str, nguoi: str, q: dict | None = None):
             st.markdown(f"""
 | Bước | Cách tính | Kết quả |
 |---|---|---|
-| Năng lượng nền (BMR) | Mifflin-St Jeor (1990){' · Katch-McArdle theo khối nạc ' + str(kq['lbm']) + ' kg (dùng số này)' if kq['bmr_k'] else ''} | {kq['bmr_m']} kcal{f" · {kq['bmr_k']} kcal" if kq['bmr_k'] else ''} |
+| Năng lượng nền (BMR) | {'**BMR trên phiếu InBody (HLV nhập — dùng số này)** · ' if kq.get('bmr_inbody') else ''}Mifflin-St Jeor (1990){' · Katch-McArdle theo khối nạc ' + str(kq['lbm']) + ' kg' + ('' if kq.get('bmr_inbody') else ' (dùng số này)') if kq['bmr_k'] else ''} | {str(kq['bmr_inbody']) + ' kcal (InBody) · ' if kq.get('bmr_inbody') else ''}{kq['bmr_m']} kcal{f" · {kq['bmr_k']} kcal" if kq['bmr_k'] else ''} |
 | Vận động ngoài giờ | BMR × {kq['he_so']:g} (hệ số thực hành, đã gồm tiêu hoá thức ăn) | {kq['tdee_nghi'] - kq['e_cardio']} kcal |
 | Buổi tập | (MET − 1) × {h.kg:g} kg × {h.phut_buoi} phút — Compendium of Physical Activities 2011 | +{kq['e_buoi']} kcal ngày tập |
 | Cardio thêm | (6 − 1) × kg × giờ / 7 ngày | +{kq['e_cardio']} kcal / ngày |
@@ -413,6 +426,10 @@ def dinh_duong(k: dict, vai: str, nguoi: str, q: dict | None = None):
 | Rau + trái cây | ≥ 400 g / ngày (WHO) — mỗi ngày đổi loại trái cây | ≥ 400 g |
 | Nước | 35 ml / kg + 0,5 L mỗi giờ tập (ước lượng) | {kq['nuoc_nghi']:g}–{kq['nuoc_tap']:g} L |
 """)
+            ui.note("<b>Vì sao khác số trên app InBody?</b> InBody tính BMR theo khối nạc đo được rồi nhân hệ số vận động do app tự chọn; "
+                    "web này cộng riêng năng lượng buổi tập theo số phút + cường độ, rồi <b>trừ thâm hụt</b> theo tốc độ giảm mỡ "
+                    "(tối đa 25 % TDEE). So sánh đúng là so TDEE với TDEE (dòng TDEE ở bảng trên), không so với số kcal sau thâm hụt. "
+                    "Muốn khớp InBody: nhập <b>BMR trên phiếu InBody</b> ở Thông số tính thực đơn, hoặc ghi đè kcal TB / ngày.")
             ui.note("Mọi công thức trên cho ra <b>ước tính ban đầu</b>, sai số thường vài trăm kcal mỗi ngày. Cách chỉnh: theo dõi "
                     "<b>cân trung bình 7 ngày</b> trong 2–3 tuần — nếu không đổi theo hướng mong muốn thì HLV chỉnh ±100–200 kcal. "
                     "Bảng thực phẩm lấy theo USDA FoodData Central (món Việt dùng loại gần nhất), sai số ±10–15 %. "

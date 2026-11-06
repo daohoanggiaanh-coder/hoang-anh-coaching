@@ -432,3 +432,11 @@ def test_an_ai_offline_va_bua_them():
     td = [{"bua": "sang", "kcal": 400, "p": 30, "c": 40, "f": 10, "thuc": {"kcal": 400, "p": 30, "c": 40, "f": 10}}]
     t = an.tong_ngay(td, {"them_101010": {"loai": "ghi", "kcal": 200, "p": 10, "c": 20, "f": 5}}, {"kcal": 1500, "p": 100, "c": 150, "f": 50})
     assert t["da"]["kcal"] == 200 and t["so_chua"] == 1
+
+
+def test_bmr_inbody():
+    from core import dinh_duong as dd
+    h = dd.HoSo.tu_dict({"gioi_tinh": "Nam", "tuoi": 30, "cao": 175, "kg": 75, "bmr_inbody": "1700"})
+    assert dd.tinh(h)["bmr"] == 1700
+    h2 = dd.HoSo.tu_dict({"gioi_tinh": "Nam", "tuoi": 30, "cao": 175, "kg": 75})
+    assert dd.tinh(h2)["bmr"] != 1700

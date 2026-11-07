@@ -20,7 +20,7 @@ FIELDS = ["ma", "ho_ten", "sdt", "ten_zalo", "goi_khach", "xung_toi", "dia_diem"
           "anh_dai_dien", "avatar_y", "avatar_r",                                               # v1.8: ảnh đại diện
           "email", "nghe_nghiep", "khu_vuc", "kinh_nghiem", "mon_da_tap", "buoi_co_the",       # v1.9: hồ sơ đầy đủ
           "khung_gio", "cong_viec", "giac_ngu", "ly_do", "benh_nen", "thuoc", "lh_ten", "lh_quan_he", "lh_sdt", "can_mong_muon",
-          "ngay_ket_thuc", "thanh_toan", "bao_luu", "cho_vao", "trinh_do"]                                  # v2.2: gói · công nợ · bảo lưu · khoá                                                                              # v1.3: mục khách được thấy / dùng
+          "ngay_ket_thuc", "thanh_toan", "bao_luu", "cho_vao", "trinh_do", "giao_dien"]                                  # v2.2: gói · công nợ · bảo lưu · khoá                                                                              # v1.3: mục khách được thấy / dùng
 LOAI_GOI = {"buoi": "buổi", "tuan": "tuần", "thang": "tháng"}
 # v1.3 — quyền cổng khách: id → (nhóm, nhãn, mô tả). Mặc định bật hết; HLV tắt từng mục cho từng khách.
 QUYEN = {
@@ -55,7 +55,19 @@ def quyen(k: dict | None) -> dict[str, bool]:
         except ValueError:
             q = {}
     q = q if isinstance(q, dict) else {}
-    return {x: bool(q.get(x, True)) for x in QUYEN}
+    out = {x: bool(q.get(x, True)) for x in QUYEN}
+    if co_ban(k):                                       # v2.7: giao diện cơ bản — ẩn mục nâng cao
+        for x in AN_CO_BAN:
+            out[x] = False
+    return out
+
+
+GIAO_DIEN = {"co_ban": "🅰️ Cơ bản — chữ to, ít mục, dễ dùng", "chi_tiet": "✨ Chi tiết — đầy đủ biểu đồ, số liệu"}
+AN_CO_BAN = ("tu_tao_plan", "volume", "so_ta", "chi_so_dd", "bo_sung", "di_cho", "an_ngoai", "thanh_qua", "lo_trinh", "doi_mon")
+
+
+def co_ban(k: dict | None) -> bool:
+    return str((k or {}).get("giao_dien") or "") == "co_ban"
 
 
 def trang_khach(q: dict[str, bool]) -> dict[str, bool]:

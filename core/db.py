@@ -74,19 +74,59 @@ def _fetch(bang: str) -> list[dict] | None:
     return list(data.get("rows") or [])
 
 
+_DANG_TAI: set[str] = set()
+
+
+def _tai_nen(bang: str) -> None:
+    """v2.7: làm mới bảng ở luồng nền — trang vẫn dùng bản cũ (≤ vài chục giây) nên không phải chờ mạng."""
+    try:
+        got = _fetch(bang)
+        if got is not None:
+            with _LOCK:
+                cu = _CACHE.get(bang)
+                # giữ dòng vừa ghi mà bảng tải về chưa kịp có (Apps Script ghi chậm vài giây)
+                if cu:
+                    da = {(r.get("thoi_gian"), r.get("khoa")) for r in got}
+                    got = got + [r for r in cu[1][-20:] if (r.get("thoi_gian"), r.get("khoa")) not in da and r.get("_moi")]
+                _CACHE[bang] = (_time.time(), got)
+    finally:
+        _DANG_TAI.discard(bang)
+
+
 def rows(bang: str, max_age: float = TTL) -> list[dict]:
-    """Mọi dòng thô của 1 bảng (đã đệm)."""
+    """Mọi dòng thô của 1 bảng (đã đệm). Hết hạn đệm → trả bản cũ ngay + tải lại ở nền (stale-while-revalidate)."""
     assert bang in BANG, bang
     with _LOCK:
         hit = _CACHE.get(bang)
     if hit and _time.time() - hit[0] < max_age:
-        return list(hit[1])
+        return hit[1]
+    if hit and _url() and _time.time() - hit[0] < 600:
+        if bang not in _DANG_TAI:
+            _DANG_TAI.add(bang)
+            threading.Thread(target=_tai_nen, args=(bang,), daemon=True).start()
+        return hit[1]
     got = _fetch(bang)
     if got is None:
         got = hit[1] if hit else []
     with _LOCK:
         _CACHE[bang] = (_time.time(), got)
-    return list(got)
+    return got
+
+
+def tai_truoc(bangs: tuple[str, ...] = BANG) -> None:
+    """Tải song song các bảng chưa có trong đệm (lần mở web đầu tiên nhanh hơn ~ số bảng lần)."""
+    if not _url():
+        return
+    can = [b for b in bangs if b not in _CACHE]
+    if not can:
+        return
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=min(8, len(can))) as ex:
+        kq = dict(zip(can, ex.map(_fetch, can)))
+    with _LOCK:
+        for b, got in kq.items():
+            if got is not None and b not in _CACHE:
+                _CACHE[b] = (_time.time(), got)
 
 
 def clear(bang: str | None = None):
@@ -118,7 +158,7 @@ def append(bang: str, khoa: str, du_lieu: dict, nguoi: str = "", ma_kh: str = ""
         with _LOCK:
             hit = _CACHE.get(bang)
             if hit:
-                _CACHE[bang] = (hit[0], hit[1] + [row])
+                _CACHE[bang] = (hit[0], hit[1] + [{**row, "_moi": 1}])
     return ok
 
 
@@ -134,10 +174,28 @@ def _parse(r: dict) -> dict | None:
             "_nguoi": str(r.get("nguoi") or ""), "_ma_kh": str(r.get("ma_kh") or "")}
 
 
+_MEMO: dict[tuple, tuple[list, int, dict]] = {}
+
+
 def latest(bang: str, ma_kh: str | None = None, ca_xoa: bool = False) -> dict[str, dict]:
-    """{khoa: bản mới nhất}. ma_kh: chỉ lấy dòng của đúng khách (lọc ở máy chủ — dùng cho trang khách)."""
+    """{khoa: bản mới nhất}. ma_kh: chỉ lấy dòng của đúng khách (lọc ở máy chủ — dùng cho trang khách).
+    v2.7: nhớ kết quả theo (bảng, khách) — chỉ tính lại khi bảng đổi (1 trang gọi hàm này hàng chục lần)."""
+    rs = rows(bang)
+    key = (bang, ma_kh, ca_xoa)
+    m = _MEMO.get(key)
+    if m and m[0] is rs and m[1] == len(rs):
+        out = m[2]
+    else:
+        out = _latest(rs, ma_kh, ca_xoa)
+        if len(_MEMO) > 400:
+            _MEMO.clear()
+        _MEMO[key] = (rs, len(rs), out)
+    return {k: dict(v) for k, v in out.items()}          # bản sao nông: trang có sửa dict cũng không làm hỏng bộ nhớ đệm
+
+
+def _latest(rs: list[dict], ma_kh: str | None, ca_xoa: bool) -> dict[str, dict]:
     out: dict[str, dict] = {}
-    for r in rows(bang):
+    for r in rs:
         if ma_kh is not None and str(r.get("ma_kh") or "") != str(ma_kh):
             continue
         d = _parse(r)

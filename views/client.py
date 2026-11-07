@@ -6,6 +6,8 @@ from datetime import timedelta
 import pandas as pd
 import streamlit as st
 
+S = st.session_state
+
 from core import auth, db, giao_an as ga, store, tien_do as td, ui
 from views import common as C
 
@@ -53,8 +55,10 @@ def trang_chu():
     wow_ui.moc_moi(k)
     from views import dong_luc_ui as DL
     from core import dong_luc as dl
-    DL.lan_dau(k, k["ho_ten"])
     t = dl.tong_hop(k, hom, q)
+    if store.co_ban(k):                                 # v2.7: giao diện cơ bản — chỉ việc hôm nay, chữ to
+        _hom_nay_co_ban(k, q, t, hom)
+        return
     DL.the_chinh(k, t)
     if q["can"] and not any(x["id"] == "can" and x["xong"] for x in t["nv"]):
         C.nhap_can(k, k["ho_ten"], td.can_ngay(ma), "home")
@@ -144,6 +148,46 @@ def cardio():
         return
     from views import cardio_ui
     cardio_ui.trang(k, "khach", k["ho_ten"], q)
+
+
+def _trang(url: str):
+    return next((p for p in S.get("_trang_khach") or [] if p.url_path == url), None)
+
+
+def _hom_nay_co_ban(k: dict, q: dict, t: dict, hom):
+    from core import hinh, lich_tap
+    from views import dong_luc_ui as DL
+    ma = k["ma"]
+    ui.sec("Việc hôm nay")
+    lt = [x for x in lich_tap.sap_toi(k, 7) if x["ngay"] == hom]
+    with st.container(border=True):
+        if lt:
+            x = lt[0]
+            st.markdown(f"### 🏋️ Hôm nay tập lúc **{store.gio_s(x['gio'])}**" + (f"  \nBuổi {x['buoi']} · {ui.E(x['ten'])}" if x.get("buoi") else ""))
+        else:
+            nx = next((x for x in lich_tap.sap_toi(k, 14) if x["ngay"] > hom), None)
+            st.markdown("### 😌 Hôm nay nghỉ tập" + (f"  \nBuổi tới: **{store.THU[nx['ngay'].weekday()]} {nx['ngay']:%d/%m} lúc "
+                                                      f"{store.gio_s(nx['gio'])}**" if nx else ""))
+        if _trang("tap_luyen") and q["ghi_buoi"]:
+            st.page_link(_trang("tap_luyen"), label="Mở bài tập & ghi buổi tập", icon="✍️", use_container_width=True)
+    with st.container(border=True):
+        CAN = td.can_ngay(ma)
+        da = CAN[CAN["ngay"] == hom] if not CAN.empty else CAN
+        if len(da):
+            st.markdown(f"### ⚖️ Đã cân sáng nay: **{float(da['kg'].iloc[-1]):g} kg** ✅")
+        elif q["can"]:
+            st.markdown("### ⚖️ Cân sáng nay")
+            C.nhap_can(k, k["ho_ten"], CAN, "home")
+    with st.container(border=True):
+        st.markdown("### 🍽 Ăn uống hôm nay")
+        if _trang("thuc_don"):
+            st.page_link(_trang("thuc_don"), label="Xem thực đơn hôm nay", icon="🍽", use_container_width=True)
+    DL.check_in(k, k["ho_ten"], t)
+    hs = hinh.ho_so_hlv()
+    st.markdown(f'<div class="hac-note" style="display:flex;gap:12px;align-items:center;font-size:1.05rem">'
+                f'{hinh.the_avatar(hinh.avatar_hlv(hs), hs["ten"], 48)}<div><b>HLV {ui.E(hs["ten"])}:</b> {ui.E(t["loi"])}</div></div>',
+                unsafe_allow_html=True)
+    st.caption("Muốn xem biểu đồ, huy hiệu, chi tiết hơn: chọn Giao diện → Chi tiết trong menu.")
 
 
 def tong_ket():

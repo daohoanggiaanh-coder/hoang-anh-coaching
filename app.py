@@ -80,6 +80,7 @@ user = auth.current_user()
 if not user:
     man_dang_nhap()
     st.stop()
+db.tai_truoc()                                          # v2.7: lần đầu mở web — tải song song mọi bảng (nhanh hơn tải lần lượt)
 
 if user["role"] == "coach":
     from views import coach as V
@@ -117,8 +118,15 @@ else:
             st.rerun()
         st.stop()
     _tr = _st.trang_khach(_st.quyen(_st.client(user.get("ma_kh", ""))))
-    pages = [st.Page(V.trang_chu, title="Tổng quan", icon="🏠", url_path="tong_quan", default=True),
-             st.Page(V.tong_ket, title="Tổng kết ngày", icon="📅", url_path="tong_ket")]
+    _cb = _st.co_ban(_k)
+    pages = [st.Page(V.trang_chu, title="Hôm nay" if _cb else "Tổng quan", icon="🏠", url_path="tong_quan", default=True)]
+    if not _cb:
+        pages.append(st.Page(V.tong_ket, title="Tổng kết ngày", icon="📅", url_path="tong_ket"))
+    if _cb:                                              # v2.7: giao diện cơ bản — chữ to, nút to
+        st.markdown("<style>html{font-size:19px}.stButton button,[data-testid='stPageLink'] a{min-height:3.1rem;font-size:1.05rem}"
+                    "[data-testid='stSidebarNavLink'] span{font-size:1.08rem}[data-testid='stHeaderActionElements']{display:none}"
+                    "[data-testid='stPageLink'] a{border:1.5px solid #C8A24A;border-radius:12px;background:#FFF8E6;justify-content:center}"
+                    "[data-testid='stPageLink'] p{font-weight:800}</style>", unsafe_allow_html=True)
     pages += [p for p, on in ((st.Page(V.tap, title="Tập luyện", icon="🏋️", url_path="tap_luyen"), _tr["tap"]),
                               (st.Page(V.cardio, title="Cardio", icon="🏃", url_path="cardio"), _tr["cardio"]),
                               (st.Page(V.an, title="Thực đơn", icon="🍽", url_path="thuc_don"), _tr["an"]),
@@ -152,6 +160,18 @@ with st.sidebar:                                        # v2.2: tên + ảnh đ�
         else:
             _kx = _s2.client(user.get("ma_kh", "")) or {}
             st.markdown(_the_nguoi(_h.avatar_khach(_kx) if _kx else "", "HỌC VIÊN", user["name"]), unsafe_allow_html=True)
+            if _kx:
+                _gd0 = "co_ban" if _s2.co_ban(_kx) else "chi_tiet"
+                st.session_state["gd_khach"] = _gd0          # luôn theo hồ sơ (đổi ở hướng dẫn / HLV đổi cũng khớp)
+
+                def _doi_gd(_kx=_kx):
+                    _s2.save_client({**_kx, "giao_dien": st.session_state["gd_khach"]}, user["name"])
+                st.radio("Giao diện", list(_s2.GIAO_DIEN), key="gd_khach", on_change=_doi_gd,
+                         format_func=lambda x: _s2.GIAO_DIEN[x].split(" — ")[0])
+                if st.button("❓ Xem hướng dẫn", use_container_width=True):
+                    st.session_state.update({"ob_dang": True, "ob_i": 0})
+                    st.session_state.pop("ob_xong", None)
+                    st.rerun()
     except Exception:  # noqa: BLE001 — ảnh lỗi thì chỉ hiện tên
         st.markdown(f"<div style='font-size:1.05rem;font-weight:800;margin:2px 0 10px'>{ui.E(user['name'])}</div>", unsafe_allow_html=True)
 nav = st.navigation(pages, position="sidebar")            # v2.4: khách cũng dùng menu bên trái
@@ -166,5 +186,8 @@ if _dich and _dich != nav.url_path:
     _to = next((x for x in _all if x.url_path == _dich), None)
     if _to:
         st.switch_page(_to)
+if user["role"] == "client" and _k and not st.session_state.get("_xem_nhu"):
+    from views import dong_luc_ui as _dlu                # hướng dẫn lần đầu (1 lần / khách) — hiện ở bất kỳ trang nào
+    _dlu.lan_dau(_k, user["name"])
 nav.run()
 ui.footer()

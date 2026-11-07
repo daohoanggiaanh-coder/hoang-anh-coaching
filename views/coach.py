@@ -280,6 +280,8 @@ def khach():
                               index=list(ttin.TEN).index(ttin.muc_tieu(k0)) if k0 else 0, format_func=ttin.TEN.get)
             td_ = b.selectbox("Trình độ tập (dùng chung cho giáo án, volume)", list(range(5)), index=ttin.trinh_do(k0) if k0 else 0,
                               format_func=lambda i: _ga.LEVELS[i])
+            gd_ = st.radio("Giao diện cổng khách", list(store.GIAO_DIEN), horizontal=True, format_func=store.GIAO_DIEN.get,
+                           index=0 if store.co_ban(k0) else 1, help="Cơ bản: chữ to, ít mục — hợp khách lớn tuổi. Khách tự đổi được trong menu.")
             ct = st.text_input("Chấn thương / bệnh nền cần lưu ý", value=k0.get("chan_thuong", ""))
             gc = st.text_area("Ghi chú (chỉ HLV thấy)", value=k0.get("ghi_chu", ""), height=70)
             a, b = st.columns([3, 1])
@@ -301,7 +303,7 @@ def khach():
                     g_lo, g_so = gc_.get("loai", "buoi"), int(gc_.get("so") or 0)
                     gia = gia.strip() or f"{int(gc_.get('gia') or 0):,}".replace(",", ".")
                 k1 = {**k0, "goi_ten": g_chon if gc_ else "", "goi_loai": g_lo, "goi_so": g_so if g_lo != "buoi" else "",
-                      "gioi_tinh": gt, "chieu_cao": cc or "", "can_muc_tieu": cmt or "", "muc_tieu": mt_.strip(), "muc_tieu_loai": ml_, "trinh_do": td_,
+                      "gioi_tinh": gt, "chieu_cao": cc or "", "can_muc_tieu": cmt or "", "muc_tieu": mt_.strip(), "muc_tieu_loai": ml_, "trinh_do": td_, "giao_dien": gd_,
                       "ma": k0.get("ma") or store.ma_moi(DS), "ho_ten": ten.strip(), "sdt": sdt.strip(), "ten_zalo": tz.strip(),
                       "goi_khach": gk.strip(), "xung_toi": xt.strip(), "dia_diem": dd_.strip(), "goi_buoi": g_so if g_lo == "buoi" else "", "da_tap_truoc": truoc,
                       "gia": gia.strip(), "ngay_bat_dau": bd.isoformat(), "lich": sl, "trang_thai": tt, "ghi_chu": gc.strip(),

@@ -59,6 +59,9 @@ Streamlit Community Cloud + Google Sheets / Drive đứng tên Gmail cá nhân.
 - 🆕 **v2.6**: lịch cố định dạng **tick ngày (T2 → CN) + giờ** — là nguồn duy nhất của số buổi / tuần, ngày tập (thực đơn, giáo án, nhắc lịch);
   **lịch tập sắp tới theo giáo án** (buổi nối tiếp theo thứ tự: Push → Pull → Leg → Push 2…); nhập **BMR trên phiếu InBody** để khớp InBody,
   giải thích vì sao khác số InBody ở tab Cách tính; lưu khách xong vẫn ở lại khách đó.
+- 🆕 **v2.7**: **giao diện Cơ bản** (chữ to, ít mục, trang "Hôm nay" chỉ việc cần làm — hợp khách lớn tuổi) / **Chi tiết**; khách tự đổi
+  trong menu, HLV đặt ở trang Khách; **hướng dẫn lần đầu** mới (chữ to, chọn giao diện, chỉ chỗ bấm) hiện 1 lần, xem lại bằng ❓;
+  **tăng tốc**: tải song song các bảng lần đầu, làm mới dữ liệu ở nền (không bắt chờ mạng), nhớ kết quả đọc dữ liệu.
 - ✉️ Soạn tin Zalo · 🥗 Bảng thực phẩm (sửa số theo nhãn) · 📥 Chuyển dữ liệu từ Atlas.
 
 **Cổng khách** (tài khoản + mật khẩu do HLV cấp, mỗi khách chỉ thấy dữ liệu của mình và những mục HLV mở)

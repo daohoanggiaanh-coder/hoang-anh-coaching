@@ -153,56 +153,78 @@ def huong_dan_cai():
     st.caption("Mở app → nếu đã chọn 'Ghi nhớ đăng nhập' thì vào thẳng, không cần gõ lại mật khẩu.")
 
 
-# ------------------------------------------------------------------ hướng dẫn lần đầu (chỉ 1 lần)
-BUOC = [
-    ("👋", "Chào mừng bạn!", "Đây là app riêng giữa bạn và HLV Hoàng Anh. Mọi thứ — giáo án, thực đơn, cardio, tiến độ — đều tính riêng "
-     "cho cơ thể và mục tiêu của bạn. <b>Bạn báo cáo đều → HLV chỉnh đúng → bạn đạt mục tiêu nhanh hơn.</b>"),
-    ("🔥", "Mỗi ngày: giữ lửa", "Trang <b>Tổng quan</b> có vài nhiệm vụ nhỏ: cân buổi sáng, check-in ăn · ngủ · nước, ghi buổi tập, cardio. "
-     "Làm từ <b>2/3</b> số việc là giữ được lửa 🔥. Mỗi 7 ngày liền được 1 <b>khiên</b> 🛡️ đỡ cho ngày lỡ. Điểm tích luỹ lên cấp "
-     "🌱 → ⚔️ → 🛡️ → 🔩 → 💎 → 👑 và mở huy hiệu."),
-    ("🏋️", "Tập luyện", "Mục <b>Tập luyện</b>: xem giáo án HLV soạn, bấm <b>🖼 Cách tập đúng</b> dưới mỗi bài để xem ảnh và lỗi hay sai. "
-     "Tập xong ghi <b>kg × lần</b> từng hiệp — web nhớ lần trước và gợi ý tăng tạ."),
-    ("🍽", "Thực đơn & cardio", "<b>Thực đơn</b> ghi sẵn gram từng món theo kiểu ăn Việt; muốn đổi món cứ bấm đổi, web tự tính lại. "
-     "<b>Cardio</b>: làm đủ phút mỗi ngày; hôm nào thiếu, web tự chia đều phần thiếu cho các ngày còn lại."),
-    ("📲", "Cài app lên điện thoại", None),
-]
+# ------------------------------------------------------------------ hướng dẫn lần đầu (chỉ 1 lần) — v2.7: chữ to, có chọn giao diện
+def _buoc(cb: bool) -> list[tuple]:
+    menu = ("Trên <b>điện thoại</b>: bấm nút <b>»</b> ở <b>góc trên bên trái</b> để mở menu. Trên máy tính: menu luôn ở bên trái.")
+    ds = [
+        ("👋", "Chào mừng bạn!", "Đây là app riêng giữa bạn và HLV Hoàng Anh. Giáo án, thực đơn, tiến độ đều tính riêng cho bạn. "
+         "Hướng dẫn này chỉ hiện <b>1 lần</b> — xem lại bất cứ lúc nào bằng nút <b>❓ Xem hướng dẫn</b> trong menu."),
+        ("🅰️", "Chọn kiểu giao diện", "GIAO_DIEN"),
+        ("☰", "Mở menu", menu + "<br><br>Trong menu có: <b>🏠 Hôm nay · 🏋️ Tập luyện · 🍽 Thực đơn · 📈 Cân & số đo · 👤 Hồ sơ</b>."),
+        ("⚖️", "Mỗi sáng: cân", "Sáng ngủ dậy, đi vệ sinh xong, <b>chưa ăn uống</b> → đứng lên cân → mở app → ô <b>Cân sáng nay</b> "
+         "ở trang <b>🏠</b> → gõ số → bấm <b>Lưu</b>. Chỉ mất 10 giây."),
+        ("🏋️", "Ngày tập", "Vào <b>🏋️ Tập luyện</b> → xem bài hôm nay. Dưới mỗi bài có nút <b>🖼 Cách tập đúng</b> (ảnh + lỗi hay sai). "
+         "Tập xong mỗi hiệp: gõ <b>số kg</b> và <b>số lần</b> → cuối buổi bấm <b>Lưu buổi tập</b>."),
+        ("🍽", "Ăn uống", "Vào <b>🍽 Thực đơn</b> → thấy món và số gram cho từng bữa hôm nay. Ăn khác thực đơn? Bấm "
+         "<b>📝 Đã ăn · còn lại</b> → <b>📷 Ảnh / mô tả</b> → chụp đĩa ăn → web tự tính và nhắc bữa sau."),
+    ]
+    if not cb:
+        ds.append(("🔥", "Giữ lửa mỗi ngày", "Trang <b>Tổng quan</b> có vài việc nhỏ (cân, check-in, ghi buổi, cardio). Làm từ 2/3 số việc là "
+                   "giữ được chuỗi 🔥, tích điểm lên cấp và mở huy hiệu."))
+    ds.append(("📲", "Cài app lên điện thoại", None))
+    return ds
 
 
-@st.dialog("Hướng dẫn nhanh", width="large")
+@st.dialog("Hướng dẫn sử dụng", width="large")
 def _dialog(k: dict, nguoi: str):
-    i = S.get("ob_i", 0)
+    cb = store.co_ban(k) if "giao_dien_tam" not in S else S["giao_dien_tam"] == "co_ban"
+    BUOC = _buoc(cb)
+    i = min(S.get("ob_i", 0), len(BUOC) - 1)
     ic, tieu, nd = BUOC[i]
-    st.markdown(f"<div style='text-align:center;font-size:3rem'>{ic}</div>"
-                f"<h3 style='text-align:center;margin:0 0 8px'>{tieu}</h3>", unsafe_allow_html=True)
-    if nd:
-        st.markdown(f"<div style='font-size:1rem;line-height:1.6'>{nd}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='text-align:center;font-size:3.4rem'>{ic}</div>"
+                f"<h2 style='text-align:center;margin:0 0 10px'>{tieu}</h2>", unsafe_allow_html=True)
+    if nd == "GIAO_DIEN":
+        st.markdown("<div style='font-size:1.15rem;line-height:1.7'>Bạn thích kiểu nào? <b>Đổi lại lúc nào cũng được</b> "
+                    "(ô <b>Giao diện</b> trong menu).</div>", unsafe_allow_html=True)
+        c1, c2 = st.columns(2)
+        for col, ma_gd in ((c1, "co_ban"), (c2, "chi_tiet")):
+            chon = (S.get("giao_dien_tam") or ("co_ban" if store.co_ban(k) else "chi_tiet")) == ma_gd
+            if col.button(("✅ " if chon else "") + store.GIAO_DIEN[ma_gd], use_container_width=True,
+                          type="primary" if chon else "secondary", key=f"ob_gd_{ma_gd}"):
+                S["giao_dien_tam"] = ma_gd
+                store.save_client({**k, "giao_dien": ma_gd}, nguoi)
+                st.rerun()
+    elif nd:
+        st.markdown(f"<div style='font-size:1.15rem;line-height:1.75'>{nd}</div>", unsafe_allow_html=True)
     else:
         st.markdown("Để mở nhanh như app (không cần tìm link Zalo mỗi lần):")
         huong_dan_cai()
-    st.progress((i + 1) / len(BUOC), text=f"{i + 1} / {len(BUOC)}")
+    st.progress((i + 1) / len(BUOC), text=f"Bước {i + 1} / {len(BUOC)}")
     a, b = st.columns(2)
-    if i > 0 and a.button("← Trước", use_container_width=True):
+    if i > 0 and a.button("← Quay lại", use_container_width=True):
         S["ob_i"] = i - 1
         st.rerun()
     if i < len(BUOC) - 1:
-        if b.button("Tiếp →", type="primary", use_container_width=True):
+        if b.button("Tiếp theo →", type="primary", use_container_width=True):
             S["ob_i"] = i + 1
             st.rerun()
     elif b.button("Bắt đầu thôi 🚀", type="primary", use_container_width=True):
         S["ob_xong"] = True
         S.pop("ob_i", None)
+        S.pop("ob_dang", None)
         st.rerun()
 
 
 def lan_dau(k: dict, nguoi: str):
-    """Hiện 1 lần duy nhất cho mỗi khách (lưu trên máy chủ — đổi điện thoại cũng không hiện lại). Xem lại ở trang Tài khoản."""
+    """Hiện 1 lần duy nhất cho mỗi khách (lưu trên máy chủ — đổi điện thoại cũng không hiện lại). v2.7: bản mới (onboard2)
+    hiện lại 1 lần cho cả khách cũ vì có thêm chọn giao diện."""
     if S.get("_xem_nhu") or S.get("ob_xong"):
         return
     ma = k["ma"]
-    if not S.get("ob_dang") and dl.da_xem(ma).get("onboard"):
+    if not S.get("ob_dang") and dl.da_xem(ma).get("onboard2"):
         return
     if not S.get("ob_dang"):
-        dl.danh_dau_xem(ma, "onboard", nguoi)        # đánh dấu ngay khi hiện — lỡ đóng cũng không hiện lại
+        dl.danh_dau_xem(ma, "onboard2", nguoi)       # đánh dấu ngay khi hiện — lỡ đóng cũng không hiện lại
         S["ob_dang"] = True
     _dialog(k, nguoi)
 

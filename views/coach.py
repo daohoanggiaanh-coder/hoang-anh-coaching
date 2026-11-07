@@ -64,7 +64,8 @@ def _chon_khach(DS: list[dict], key: str = "hlv_kh") -> dict | None:
     mac = S.get("hlv_kh") if S.get("hlv_kh") in lua else lua[0]
     ma = st.selectbox("Khách", lua, index=lua.index(mac), key=f"{key}_sel",
                       format_func=lambda m: f"{by[m]['ho_ten']} · {by[m].get('trang_thai') or 'Đang tập'}"
-                                            + (f" · {by[m]['hinh_thuc']}" if by[m].get("hinh_thuc") else ""))
+                                            + (f" · {by[m]['hinh_thuc']}" if by[m].get("hinh_thuc") else "")
+                                            + (f" · 🏢 {store.phong(by[m])}" if store.phong(by[m]) else ""))
     S["hlv_kh"] = ma
     return by[ma]
 
@@ -112,6 +113,7 @@ def lich():
                     f'<span class="hac-chip" style="background:{mau}">{nhan}</span>'
                     + (f'<span class="hac-chip" style="background:#D46A92" title="{E(ckx["hlv"])}">🌸 ngày {ckx["ngay_thu"]}'
                        f'{" (dự đoán)" if ckx["du_doan"] else ""}</span>' if ckx and ckx["nang"] else "")
+                    + (f'<span class="hac-chip" style="background:#3E5C76">🏢 {E(store.phong(k))}</span>' if k and store.phong(k) else "")
                     + f'<span class="m">{E(b.get("dia_diem") or "")}' + (f" · {E(store.mo_ta_goi(k, H, hom))}" if k else "")
                     + (" · hẹn thêm" if not b.get("co_dinh") else "") + "</span></div>", unsafe_allow_html=True)
         c1, c2, c3, c4 = st.columns(4)
@@ -147,7 +149,7 @@ def lich():
             st.rerun()
     if dang:
         st.divider()
-        st.markdown("**📨 Nhắc lịch tuần này cho cả nhóm**")
+        ui.sec("📨 Nhắc lịch tuần này cho cả nhóm")
         for k in dang:
             with st.expander(f"{k['ho_ten']} · Zalo {k.get('ten_zalo') or '—'}"):
                 _soan(k, store.tin_tuan(k, [b for b in B if tuan0 <= b["ngay"] <= tuan0 + timedelta(days=6)], hom, H), f"w_{k['ma']}", u)
@@ -247,9 +249,14 @@ def khach():
                 ns0 = date.fromisoformat(str(k0.get("ngay_sinh"))[:10])
             except ValueError:
                 ns0 = None
-            a, b, c = st.columns([1, 2, 1])
+            a, p_, b, c = st.columns([1, 1.2, 1.4, 1])
             ns = a.date_input("Ngày sinh", value=ns0, format="DD/MM/YYYY", min_value=date(1940, 1, 1), max_value=hom)
-            dd_ = b.text_input("Nơi tập", value=k0.get("dia_diem", ""), placeholder="VD nhà khách, công viên, online qua Zalo video")
+            P_ = store.ds_phong(DS)
+            pt0 = str(k0.get("phong_tap") or "")
+            pt_ = p_.selectbox("🏢 Phòng tập", ["— chưa chọn —"] + P_ + ["➕ Phòng khác…"],
+                               index=(P_.index(pt0) + 1) if pt0 in P_ else 0,
+                               help="Khách đang tập ở phòng nào — hiện ở danh sách khách, lịch, thanh bên. Chọn ➕ rồi ghi tên ở ô bên cạnh.")
+            dd_ = b.text_input("Nơi tập / tên phòng khác", value=k0.get("dia_diem", ""), placeholder="VD chi nhánh, nhà khách, online Zalo")
             tt = c.selectbox("Trạng thái", store.TRANG_THAI, index=store.TRANG_THAI.index(k0.get("trang_thai") or "Đang tập")
                              if (k0.get("trang_thai") or "Đang tập") in store.TRANG_THAI else 0)
             st.markdown("**📅 Lịch tập cố định** — tick ngày tập, ghi giờ. Đây là nguồn chung cho số buổi / tuần, ngày tập của thực đơn, "
@@ -305,7 +312,7 @@ def khach():
                 k1 = {**k0, "goi_ten": g_chon if gc_ else "", "goi_loai": g_lo, "goi_so": g_so if g_lo != "buoi" else "",
                       "gioi_tinh": gt, "chieu_cao": cc or "", "can_muc_tieu": cmt or "", "muc_tieu": mt_.strip(), "muc_tieu_loai": ml_, "trinh_do": td_, "giao_dien": gd_,
                       "ma": k0.get("ma") or store.ma_moi(DS), "ho_ten": ten.strip(), "sdt": sdt.strip(), "ten_zalo": tz.strip(),
-                      "goi_khach": gk.strip(), "xung_toi": xt.strip(), "dia_diem": dd_.strip(), "goi_buoi": g_so if g_lo == "buoi" else "", "da_tap_truoc": truoc,
+                      "goi_khach": gk.strip(), "xung_toi": xt.strip(), "dia_diem": dd_.strip(), "phong_tap": (dd_.strip() if pt_.startswith("➕") else ("" if pt_.startswith("—") else pt_)), "goi_buoi": g_so if g_lo == "buoi" else "", "da_tap_truoc": truoc,
                       "gia": gia.strip(), "ngay_bat_dau": bd.isoformat(), "lich": sl, "trang_thai": tt, "ghi_chu": gc.strip(),
                       "ngay_sinh": ns.isoformat() if ns else "", "hinh_thuc": ht, "chan_thuong": ct.strip(), "xoa": bool(xoa)}
                 if store.save_client(k1, u["name"]):
@@ -350,7 +357,10 @@ def khach():
     if DS:
         ui.sec("Danh sách")
         TK = {v.get("ma_kh"): v for v in auth.accounts().values()}
-        st.dataframe(pd.DataFrame([{"Khách": k["ho_ten"], "Hình thức": k.get("hinh_thuc") or "Trực tiếp",
+        PH = sorted({store.phong(k) or "Chưa ghi phòng" for k in DS})
+        loc = st.pills("Lọc theo phòng tập", PH, selection_mode="multi", key="ds_loc_phong") if len(PH) > 1 else []
+        DSL = [k for k in DS if not loc or (store.phong(k) or "Chưa ghi phòng") in loc]
+        st.dataframe(pd.DataFrame([{"Khách": k["ho_ten"], "🏢 Phòng": store.phong(k) or "—", "Hình thức": k.get("hinh_thuc") or "Trực tiếp",
                                     "Lịch": ", ".join(f"{store.THU[int(x['thu'])]} {store.gio_s(x['gio'])}" for x in store.lich_co_dinh(k)),
                                     "Đã tập": store.da_tap(k, H), "Gói": store.mo_ta_goi(k, H, hom),
                                     "Bắt đầu": f"{goi.ngay_bat_dau(k):%d/%m/%Y}" if goi.ngay_bat_dau(k) else "",
@@ -358,7 +368,7 @@ def khach():
                                     "Còn nợ": goi.vnd(goi.cong_no(k)["con_no"]) if goi.cong_no(k)["con_no"] else "—",
                                     "Tình trạng gói": goi.trang_thai(k, hom, H)["ten"],
                                     "Tài khoản": ("🔒 " if TK[k["ma"]].get("khoa") else "✅ ") + TK[k["ma"]]["_khoa"] if k["ma"] in TK else "—",
-                                    "Trạng thái": k.get("trang_thai") or "Đang tập"} for k in DS]), hide_index=True, use_container_width=True)
+                                    "Trạng thái": k.get("trang_thai") or "Đang tập"} for k in DSL]), hide_index=True, use_container_width=True)
     _bang_goi(u)
 
 
@@ -914,8 +924,72 @@ def chuyen_atlas(rows: list[dict], nguoi: str, de: bool, lay_anh=None) -> dict[s
 
 
 def nhap_atlas():
-    _user()
-    ui.hero("CHUYỂN DỮ LIỆU", "Từ mục 🔒 Khách riêng của Atlas Academy", "Chỉ lấy dữ liệu khách riêng (loai rieng_*), không đụng dữ liệu Atlas.")
+    u = _user()
+    ui.hero("CHUYỂN DỮ LIỆU", "Chép khách từ Atlas Academy sang Hoàng Anh Coaching",
+            "Chỉ CHÉP — không sửa, không xoá gì bên Atlas. Chạy lại không bị trùng khách.")
+    t1, t2 = st.tabs(["👥 Khách anh đang dạy ở Atlas", "🔒 Mục Khách riêng (cũ)"])
+    with t1:
+        _chep_khach_atlas(u)
+    with t2:
+        _nhap_rieng()
+
+
+def _chep_khach_atlas(u: dict):
+    from core import nhap_kh_atlas as NA
+    if not NA.co_cau_hinh():
+        ui.note("⚠️ Web chưa có quyền đọc Atlas. Vào <b>share.streamlit.io › app hoang-anh-coaching › Settings › Secrets</b>, "
+                "thêm 2 dòng <code>ATLAS_SHEETS_WEBAPP_URL</code> và <code>ATLAS_SHEETS_TOKEN</code> — chép y hệt 2 dòng "
+                "<code>SHEETS_WEBAPP_URL</code> / <code>SHEETS_TOKEN</code> trong Secrets của web Atlas — rồi Save và tải lại trang này.")
+        return
+    a, b = st.columns([1.3, 1])
+    ten_pt = a.text_input("Tên PT bên Atlas (lọc khách anh dạy)", value=S.get("na_pt", "Hoàng Anh"), key="na_pt")
+    phong = b.selectbox("🏢 Gắn phòng tập cho khách chép sang", store.ds_phong(store.clients()), key="na_phong")
+    if st.button("🔎 Đọc danh sách khách từ Atlas", type="primary"):
+        with st.spinner("Đang đọc hồ sơ khách của Atlas…"):
+            try:
+                S["na_rows"] = NA.khach_atlas(NA.doc(NA.SHEETS["kh"]))
+            except Exception as e:  # noqa: BLE001
+                st.error(f"Không đọc được Atlas: {e}")
+                S.pop("na_rows", None)
+    R = S.get("na_rows")
+    if R is None:
+        st.caption("Bấm nút trên để xem danh sách khách — chưa có gì được chép cho tới khi anh bấm 📥 Chép.")
+        return
+    da_co = {str(k.get("ma_atlas")) for k in store.clients() if k.get("ma_atlas")}
+    cua_anh = [r for r in R if NA.cung_pt(r.get("pt"), ten_pt)]
+    tat_ca = st.toggle(f"Hiện cả khách của PT khác ({len(R) - len(cua_anh)})", value=False, key="na_all")
+    ds = R if tat_ca else cua_anh
+    if not ds:
+        st.warning(f"Không thấy khách nào có PT khớp “{ten_pt}”. Kiểm tra lại tên PT, hoặc bật hiện cả khách PT khác.")
+        return
+    df = pd.DataFrame([{"Chép": (str(r.get("ma_kh")) not in da_co) and (str(r.get("trang_thai") or "Đang tập") == "Đang tập"),
+                        "Khách": NA._s(r.get("ho_ten")), "Mã Atlas": NA._s(r.get("ma_kh")), "PT": NA._s(r.get("pt")),
+                        "Gói": f"{NA._s(r.get('loai_goi'))} {NA._s(r.get('so_buoi_goi'))}".strip(),
+                        "Trạng thái": NA._s(r.get("trang_thai")) or "Đang tập",
+                        "Đã có bên HAC": "✅ đã chép" if str(r.get("ma_kh")) in da_co else ""} for r in ds])
+    ed = st.data_editor(df, hide_index=True, use_container_width=True, disabled=[c for c in df.columns if c != "Chép"],
+                        column_config={"Chép": st.column_config.CheckboxColumn(alignment="center"),
+                                       **{c: st.column_config.Column(alignment="left" if c in ("Khách", "Gói") else "center")
+                                          for c in df.columns if c != "Chép"}}, key="na_ed")
+    c1, c2, c3 = st.columns(3)
+    sd = c1.checkbox("Chép số đo / InBody", value=True)
+    bt = c2.checkbox("Chép buổi đã tập (kg × lần)", value=True)
+    lc = c3.checkbox("Chép lịch tập cố định", value=True)
+    chon = [r for r, x in zip(ds, ed["Chép"]) if x]
+    st.caption(f"Đã tick {len(chon)} khách. Khách đã chép trước đó sẽ được cập nhật lại (không tạo khách trùng).")
+    if st.button(f"📥 Chép {len(chon)} khách sang web này", type="primary", disabled=not chon):
+        with st.spinner("Đang chép… (khách nhiều buổi có thể mất 1–2 phút)"):
+            try:
+                dem = NA.chep(chon, phong, u["name"], sd, bt, lc)
+            except Exception as e:  # noqa: BLE001
+                st.error(f"Chép dở dang: {e} — bấm chép lại được, không bị trùng.")
+                return
+        st.success("Đã chép: " + " · ".join(f"{v} {k}" for k, v in dem.items()))
+        ui.note("Kiểm tra từng khách ở trang <b>👤 Khách & tài khoản</b> (gói, ngày kết thúc, buổi đã tập, lịch). "
+                "Khách chưa có tài khoản đăng nhập — cấp ở tab 🔐 Tài khoản.")
+
+
+def _nhap_rieng():
     st.markdown("""
 **Cách 1 — đọc thẳng từ Atlas (có cả ảnh):** thêm vào Secrets của web này 2 dòng
 `ATLAS_SHEETS_WEBAPP_URL` và `ATLAS_SHEETS_TOKEN` (chép y hệt Secrets của web Atlas), rồi bấm nút bên dưới.

@@ -100,7 +100,7 @@ if user["role"] == "coach":
                        st.Page(V.khach_thay, title="Khách thấy gì", icon="👁", url_path="khach_thay")],
         "Công cụ": [st.Page(V.soan_tin, title="Soạn tin Zalo", icon="✉️", url_path="soan_tin"),
                     st.Page(V.thuc_pham, title="Bảng thực phẩm", icon="🥗", url_path="thuc_pham"),
-                    st.Page(V.nhap_atlas, title="Nhập dữ liệu cũ", icon="📥", url_path="nhap_atlas")],
+                    st.Page(V.nhap_atlas, title="Chép khách từ Atlas", icon="📥", url_path="nhap_atlas")],
     }
 else:
     from views import client as V

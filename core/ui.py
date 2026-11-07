@@ -33,7 +33,19 @@ h1,h2,h3,h4{letter-spacing:-.01em}
 .hac-tile b{display:block;font-size:1.45rem;color:#1C1B19;line-height:1.15}
 .hac-tile small{color:#8b8577;font-size:.72rem;letter-spacing:.04em}
 .hac-tile i{font-style:normal;font-size:.72rem;color:#2E7D4F;font-weight:700}
-.hac-sec{font-weight:800;color:#7A5B14;letter-spacing:.12em;font-size:.76rem;margin:20px 0 8px;text-transform:uppercase}
+.hac-sec{font-weight:800;color:#7A5B14;letter-spacing:.12em;font-size:.76rem;margin:20px 0 8px;text-transform:uppercase;text-align:center}
+/* v2.8: căn giữa thống nhất — tiêu đề, ô số, chỉ số, hàng tab; tên + đoạn văn dài giữ bên trái */
+.hac-tile{text-align:center}
+[data-testid="stMetric"]{text-align:center}[data-testid="stMetric"] > div{justify-content:center;width:100%}
+[data-testid="stMetricLabel"],[data-testid="stMetricValue"],[data-testid="stMetricDelta"]{justify-content:center;display:flex}
+.stMainBlockContainer [data-testid="stMarkdownContainer"] :is(h1,h2,h3,h4,h5){text-align:center}
+.stTabs [role="tablist"]{justify-content:center}
+.stMainBlockContainer [data-testid="stElementContainer"]:has(> [data-testid="stButtonGroup"]){align-self:center;width:auto!important;max-width:100%}
+[data-testid="stButtonGroup"]{display:flex;flex-direction:column;align-items:center}
+[data-testid="stButtonGroup"] [data-testid="stWidgetLabel"]{justify-content:center;width:100%}
+.hac-d{text-align:center}
+.tk-o{justify-content:center;text-align:center;flex-direction:column;align-items:center}
+.gd-c,.gd-vol div,.an-con div{text-align:center}
 .hac-card{background:#fff;border:1px solid #E6DCC6;border-radius:16px;padding:14px 16px;margin:8px 0}
 .hac-card h4{margin:0 0 4px;font-size:1.02rem}
 .hac-ex{background:#fff;border:1px solid #E6DCC6;border-left:4px solid #C8A24A;border-radius:14px;padding:10px 14px;margin:8px 0}
@@ -60,6 +72,7 @@ h1,h2,h3,h4{letter-spacing:-.01em}
 .hac-foot{color:#a39d8f;font-size:.72rem;text-align:center;margin:36px 0 8px}
 div[data-testid="stMetricValue"]{font-weight:800;letter-spacing:-.01em}
 .hac-hero .t{letter-spacing:-.015em}
+.hac-hero{text-align:center}.hac-hero>div[style*="flex"]{justify-content:center;text-align:left}
 /* ---------- v2.2: tab & mục mở rộng nhìn rõ là nút bấm (Streamlit 1.66: role=tablist / data-testid=stTab) ---------- */
 .stTabs [role="tablist"]{gap:6px!important;flex-wrap:wrap!important;border-bottom:none!important;box-shadow:none!important;padding:2px 0 8px;overflow:visible!important}
 .stTabs [data-testid="stTab"]{background:#F6F1E6!important;border:1.5px solid #E2D7BF!important;border-radius:12px!important;
@@ -127,6 +140,43 @@ html[data-hac-theme=dark] .hac-foot{color:#6f685c}
 
 def setup():
     st.markdown(CSS, unsafe_allow_html=True)
+    can_giua_bang()
+
+
+_TEN_COT = ("gói","tình trạng gói","tài khoản","khách", "họ tên", "tên", "bài", "món", "nhóm cơ", "mục tiêu", "giai đoạn", "ghi chú", "nội dung", "lý do", "thực phẩm",
+            "cơ", "mô tả", "lịch")
+
+
+def _cot_ten(c) -> bool:
+    c = str(c).lower()
+    return any(c == x or c.startswith(x + " ") or c.startswith(x) and len(c) <= len(x) + 3 for x in _TEN_COT)
+
+
+def can_giua_bang():
+    """v2.8: mọi st.dataframe căn giữa, trừ cột tên / chữ dài (căn trái) — không phải sửa từng bảng."""
+    from streamlit.delta_generator import DeltaGenerator
+    goc = DeltaGenerator.dataframe
+    if getattr(goc, "_hac_cg", False):
+        return
+
+    def df(self, data=None, *a, column_config=None, **kw):
+        try:
+            cols = list(getattr(data, "columns", []))
+            cfg = dict(column_config or {})
+            for c in cols:
+                al = "left" if _cot_ten(c) else "center"
+                v = cfg.get(c)
+                if v is None:
+                    cfg[c] = st.column_config.Column(alignment=al)
+                elif isinstance(v, dict) and not v.get("alignment"):
+                    cfg[c] = {**v, "alignment": al}
+            column_config = cfg or None
+        except Exception:  # noqa: BLE001 — lỗi gì thì vẫn hiện bảng như cũ
+            pass
+        return goc(self, data, *a, column_config=column_config, **kw)
+    df._hac_cg = True
+    DeltaGenerator.dataframe = df
+    st.dataframe = lambda *a, **kw: df(st._main, *a, **kw)
 
 
 def hero(kicker: str, title: str, sub: str = "", avatar: str = ""):

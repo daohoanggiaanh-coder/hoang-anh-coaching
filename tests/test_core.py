@@ -440,3 +440,24 @@ def test_bmr_inbody():
     assert dd.tinh(h)["bmr"] == 1700
     h2 = dd.HoSo.tu_dict({"gioi_tinh": "Nam", "tuoi": 30, "cao": 175, "kg": 75})
     assert dd.tinh(h2)["bmr"] != 1700
+
+
+def test_nhap_kh_atlas():
+    from core import nhap_kh_atlas as NA
+    assert NA.cung_pt("Đào Hoàng Anh", "Hoàng Anh") and not NA.cung_pt("Nguyễn Văn B", "Hoàng Anh")
+    R = NA.khach_atlas([{"ma_kh": "KH1", "ho_ten": "A", "thoi_gian": "1"}, {"ma_kh": "KH1", "ho_ten": "A2", "thoi_gian": "2"},
+                        {"ma_kh": "KH2", "ho_ten": "B", "xoa": "1", "thoi_gian": "1"}])
+    assert [r["ho_ten"] for r in R] == ["A2"]
+    L = NA.lich_atlas([{"ma_kh": "KH1", "loai": "mau", "tu_ngay": "2026-01-01", "lich": '[{"thu": 0, "gio": "06:00"}]'},
+                       {"ma_kh": "KH1", "loai": "mau", "tu_ngay": "2026-05-01", "lich": '[{"thu": 2, "gio": "18:30:00"}]'}])
+    assert L["KH1"] == [{"thu": 2, "gio": "18:30"}]
+    B = NA.buoi_atlas([{"ma_kh": "KH1", "id": "g1", "ngay": "2026-10-01"}, {"ma_kh": "KH1", "id": "g2", "ngay": "2026-10-02"},
+                       {"ma_kh": "", "huy_id": "g2", "ngay": "", "xoa": "1"}])
+    assert [r["id"] for r in B["KH1"]] == ["g1"]
+    a = {"ma_kh": "KH1", "ho_ten": "Chị Ngân", "gioi_tinh": "Nữ", "so_buoi_goi": "24", "buoi_da_tap_truoc": "3",
+         "moc_buoi_web": "1", "trang_thai": "Đã kết thúc", "ngay_het_han": "2026-12-31", "sdt": "'0901"}
+    k = NA.chuyen_khach(a, [{"ma": "R004"}], "Atlas", 5, L["KH1"])
+    assert k["ma"] == "R005" and k["da_tap_truoc"] == 7 and k["trang_thai"] == "Ngưng tập"
+    assert k["phong_tap"] == "Atlas" and k["ma_atlas"] == "KH1" and k["sdt"] == "0901" and k["ngay_ket_thuc"] == "2026-12-31"
+    k2 = NA.chuyen_khach(a, [{"ma": "R004", "ma_atlas": "KH1"}], "Atlas", 5, None)
+    assert k2["ma"] == "R004"

@@ -20,7 +20,9 @@ FIELDS = ["ma", "ho_ten", "sdt", "ten_zalo", "goi_khach", "xung_toi", "dia_diem"
           "anh_dai_dien", "avatar_y", "avatar_r",                                               # v1.8: ảnh đại diện
           "email", "nghe_nghiep", "khu_vuc", "kinh_nghiem", "mon_da_tap", "buoi_co_the",       # v1.9: hồ sơ đầy đủ
           "khung_gio", "cong_viec", "giac_ngu", "ly_do", "benh_nen", "thuoc", "lh_ten", "lh_quan_he", "lh_sdt", "can_mong_muon",
-          "ngay_ket_thuc", "thanh_toan", "bao_luu", "cho_vao", "trinh_do", "giao_dien"]                                  # v2.2: gói · công nợ · bảo lưu · khoá                                                                              # v1.3: mục khách được thấy / dùng
+          "ngay_ket_thuc", "thanh_toan", "bao_luu", "cho_vao", "trinh_do", "giao_dien",
+          "phong_tap", "ma_atlas"]                                  # v2.2: gói · công nợ · bảo lưu · khoá                                                                              # v1.3: mục khách được thấy / dùng
+PHONG_TAP = ["Atlas", "Tại nhà khách", "Online", "Công viên / ngoài trời"]   # v2.8: phòng khách đang tập
 LOAI_GOI = {"buoi": "buổi", "tuan": "tuần", "thang": "tháng"}
 # v1.3 — quyền cổng khách: id → (nhóm, nhãn, mô tả). Mặc định bật hết; HLV tắt từng mục cho từng khách.
 QUYEN = {
@@ -88,6 +90,16 @@ def clients(ca_ngung: bool = True) -> list[dict]:
 def client(ma: str) -> dict | None:
     v = db.latest("KhachHang").get(str(ma))
     return {**v, "ma": v.get("ma") or ma} if v else None
+
+
+def ds_phong(ds: list[dict] | None = None) -> list[str]:
+    """Phòng có sẵn + các phòng đã ghi cho khách (v2.8)."""
+    them = sorted({str(k.get("phong_tap") or "").strip() for k in (ds or [])} - set(PHONG_TAP) - {""})
+    return PHONG_TAP + them
+
+
+def phong(k: dict) -> str:
+    return str(k.get("phong_tap") or "").strip()
 
 
 def ma_moi(ds: list[dict]) -> str:

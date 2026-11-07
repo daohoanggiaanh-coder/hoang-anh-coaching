@@ -60,17 +60,66 @@ def _chon_khach(DS: list[dict], key: str = "hlv_kh") -> dict | None:
         st.info("Chưa có khách — thêm ở trang **👤 Khách & tài khoản**.")
         return None
     by = {k["ma"]: k for k in DS}
-    lua = [k["ma"] for k in DS]
+    lua = [k["ma"] for k in sorted(DS, key=lambda k: ((k.get("trang_thai") or "Đang tập") != "Đang tập", store.thu_tu_phong(store.phong(k)),
+                                                     str(k.get("ho_ten", ""))))]
     mac = S.get("hlv_kh") if S.get("hlv_kh") in lua else lua[0]
     ma = st.selectbox("Khách", lua, index=lua.index(mac), key=f"{key}_sel",
-                      format_func=lambda m: f"{by[m]['ho_ten']} · {by[m].get('trang_thai') or 'Đang tập'}"
+                      format_func=lambda m: (f"🏢 {store.phong(by[m])} · " if store.phong(by[m]) else "") + f"{by[m]['ho_ten']} · {by[m].get('trang_thai') or 'Đang tập'}"
                                             + (f" · {by[m]['hinh_thuc']}" if by[m].get("hinh_thuc") else "")
-                                            + (f" · 🏢 {store.phong(by[m])}" if store.phong(by[m]) else ""))
+                                            )
     S["hlv_kh"] = ma
     return by[ma]
 
 
 # =================================================================== LỊCH
+def _phong_tong(dang: list[dict], B: list[dict], tuan0: date):
+    """Số khách đang tập + số buổi tuần này theo từng phòng tập."""
+    if not dang:
+        return
+    nhom: dict[str, list[dict]] = {}
+    for k in dang:
+        nhom.setdefault(store.phong(k) or "Chưa ghi phòng", []).append(k)
+    for p in store.PHONG_TAP:                               # luôn hiện đủ Atlas · Gold Gym · Online
+        nhom.setdefault(p, [])
+    tuan = [b for b in B if tuan0 <= b["ngay"] <= tuan0 + timedelta(days=6) and b["trang_thai"] != "huy"]
+    by = {k["ma"]: k for k in dang}
+    ui.sec("🏢 Khách theo phòng tập")
+    ui.tiles([(len(v), p, f"{len([b for b in tuan if b['ma'] in {x['ma'] for x in v}])} buổi tuần này")
+              for p, v in sorted(nhom.items(), key=lambda x: store.thu_tu_phong("" if x[0] == "Chưa ghi phòng" else x[0]))])
+    with st.expander("Xem tên khách từng phòng"):
+        for p, v in sorted(nhom.items(), key=lambda x: store.thu_tu_phong("" if x[0] == "Chưa ghi phòng" else x[0])):
+            st.markdown(f"**🏢 {E(p)}** ({len(v)}): " + (", ".join(E(x["ho_ten"]) for x in sorted(v, key=lambda x: x["ho_ten"])) or "—"))
+        if "Chưa ghi phòng" in nhom:
+            st.caption("Ghi phòng cho khách ở trang 👤 Khách & tài khoản › ô 🏢 Phòng tập.")
+    _ = by
+
+
+def _inbody_nhac(dang: list[dict], T: dict, B: list[dict], hom: date):
+    from core import inbody
+    can = sorted([(T[k["ma"]], k) for k in dang if T.get(k["ma"]) and T[k["ma"]]["con"] <= 1], key=lambda x: x[0]["con"])
+    if not can:
+        return
+    ui.sec(f"📏 Cần đo InBody ({len(can)})")
+    BD = {k["ma"]: inbody.buoi_do(k, t, B, hom) for t, k in can}
+    can.sort(key=lambda x: (BD[x[1]["ma"]] is None, BD[x[1]["ma"]]["ngay"] if BD[x[1]["ma"]] else hom, x[0]["con"]))
+    for i, (t, k) in enumerate(can):
+        if i == 4:
+            st.caption(f"…và {len(can) - 4} khách nữa — bấm “Xem tất cả” bên dưới.")
+            if not st.toggle("Xem tất cả khách cần đo", key="ib_all"):
+                break
+        bd = BD[k["ma"]]
+        noi = (f" · đo buổi <b>{store.THU[bd['ngay'].weekday()]} {bd['ngay']:%d/%m} {E(store.gio_s(bd['gio']))}</b>" if bd
+               else " · chưa có buổi hẹn")
+        c1, c2 = st.columns([4, 1], vertical_alignment="center")
+        c1.markdown(f'<div class="hac-b"><span class="n">{E(k["ho_ten"])}</span>'
+                    + (f'<span class="hac-chip" style="background:{store.mau_phong(store.phong(k))}">🏢 {E(store.phong(k))}</span>' if store.phong(k) else "")
+                    + f'<span class="m">{E(inbody.mo_ta(t))}{noi}</span></div>', unsafe_allow_html=True)
+        if c2.button("📏 Nhập số đo", key=f"ib_{k['ma']}", use_container_width=True):
+            S["hlv_kh"] = k["ma"]
+            S["_dich"] = "tien_do"
+            st.rerun()
+
+
 def lich():
     u = _user()
     DS = store.clients()
@@ -85,6 +134,10 @@ def lich():
             f"{len([b for b in homnay if b['trang_thai'] != 'huy'])} buổi hôm nay · "
             f"{len([b for b in B if tuan0 <= b['ngay'] <= tuan0 + timedelta(days=6) and b['trang_thai'] != 'huy'])} buổi tuần này")
     _hang_cho(u)
+    from core import inbody
+    T = {k["ma"]: inbody.trang_thai(k, hom) for k in dang}
+    _phong_tong(dang, B, tuan0)
+    _inbody_nhac(dang, T, B, hom)
     xem = st.segmented_control("Xem", ["Hôm nay", "Ngày mai", "Tuần này", "Tuần sau", "Chưa đánh dấu"], default="Hôm nay",
                                key="l_xem") or "Hôm nay"
     if xem == "Hôm nay":
@@ -97,6 +150,11 @@ def lich():
         L = [b for b in B if tuan0 + timedelta(days=7) <= b["ngay"] <= tuan0 + timedelta(days=13)]
     else:
         L = [b for b in B if b["ngay"] < hom and b["trang_thai"] == "hen"]
+    PH = sorted({store.phong(by.get(b["ma"], {})) or "Chưa ghi phòng" for b in L})
+    if len(PH) > 1:
+        lp = st.pills("Lọc phòng", PH, selection_mode="multi", key="l_phong")
+        if lp:
+            L = [b for b in L if (store.phong(by.get(b["ma"], {})) or "Chưa ghi phòng") in lp]
     if not L:
         st.caption("Không có buổi nào.")
     truoc = None
@@ -113,7 +171,9 @@ def lich():
                     f'<span class="hac-chip" style="background:{mau}">{nhan}</span>'
                     + (f'<span class="hac-chip" style="background:#D46A92" title="{E(ckx["hlv"])}">🌸 ngày {ckx["ngay_thu"]}'
                        f'{" (dự đoán)" if ckx["du_doan"] else ""}</span>' if ckx and ckx["nang"] else "")
-                    + (f'<span class="hac-chip" style="background:#3E5C76">🏢 {E(store.phong(k))}</span>' if k and store.phong(k) else "")
+                    + (f'<span class="hac-chip" style="background:{store.mau_phong(store.phong(k))}">🏢 {E(store.phong(k))}</span>' if k and store.phong(k) else "")
+                    + ('<span class="hac-chip" style="background:#2F7D5B">📏 Đo InBody</span>'
+                       if T.get(b["ma"]) and b["ngay"] >= hom and T[b["ma"]]["han"] <= b["ngay"] and b["trang_thai"] != "huy" else "")
                     + f'<span class="m">{E(b.get("dia_diem") or "")}' + (f" · {E(store.mo_ta_goi(k, H, hom))}" if k else "")
                     + (" · hẹn thêm" if not b.get("co_dinh") else "") + "</span></div>", unsafe_allow_html=True)
         c1, c2, c3, c4 = st.columns(4)
@@ -259,6 +319,11 @@ def khach():
             dd_ = b.text_input("Nơi tập / tên phòng khác", value=k0.get("dia_diem", ""), placeholder="VD chi nhánh, nhà khách, online Zalo")
             tt = c.selectbox("Trạng thái", store.TRANG_THAI, index=store.TRANG_THAI.index(k0.get("trang_thai") or "Đang tập")
                              if (k0.get("trang_thai") or "Đang tập") in store.TRANG_THAI else 0)
+            from core import inbody as _ib
+            _ky0 = _ib.ky(k0) if k0 else 7
+            _kys = list(_ib.KY)
+            ib_ = st.columns([1, 2])[0].selectbox("📏 Nhắc đo InBody", _kys, index=_kys.index(_ky0) if _ky0 in _kys else 0, format_func=lambda x: _ib.KY[x],
+                               help="Web tự nhắc ở trang Lịch (và tin Telegram buổi sáng) khi tới hạn — đo ngay buổi tập gần nhất.")
             st.markdown("**📅 Lịch tập cố định** — tick ngày tập, ghi giờ. Đây là nguồn chung cho số buổi / tuần, ngày tập của thực đơn, "
                         "giáo án (buổi xếp theo thứ tự giáo án: Push → Pull → Leg → Push 2…), nhắc lịch.")
             L0 = {int(x["thu"]): x for x in lich0}
@@ -312,7 +377,7 @@ def khach():
                 k1 = {**k0, "goi_ten": g_chon if gc_ else "", "goi_loai": g_lo, "goi_so": g_so if g_lo != "buoi" else "",
                       "gioi_tinh": gt, "chieu_cao": cc or "", "can_muc_tieu": cmt or "", "muc_tieu": mt_.strip(), "muc_tieu_loai": ml_, "trinh_do": td_, "giao_dien": gd_,
                       "ma": k0.get("ma") or store.ma_moi(DS), "ho_ten": ten.strip(), "sdt": sdt.strip(), "ten_zalo": tz.strip(),
-                      "goi_khach": gk.strip(), "xung_toi": xt.strip(), "dia_diem": dd_.strip(), "phong_tap": (dd_.strip() if pt_.startswith("➕") else ("" if pt_.startswith("—") else pt_)), "goi_buoi": g_so if g_lo == "buoi" else "", "da_tap_truoc": truoc,
+                      "goi_khach": gk.strip(), "xung_toi": xt.strip(), "dia_diem": dd_.strip(), "inbody_ky": ib_, "phong_tap": (dd_.strip() if pt_.startswith("➕") else ("" if pt_.startswith("—") else pt_)), "goi_buoi": g_so if g_lo == "buoi" else "", "da_tap_truoc": truoc,
                       "gia": gia.strip(), "ngay_bat_dau": bd.isoformat(), "lich": sl, "trang_thai": tt, "ghi_chu": gc.strip(),
                       "ngay_sinh": ns.isoformat() if ns else "", "hinh_thuc": ht, "chan_thuong": ct.strip(), "xoa": bool(xoa)}
                 if store.save_client(k1, u["name"]):
@@ -936,15 +1001,25 @@ def nhap_atlas():
 
 def _chep_khach_atlas(u: dict):
     from core import nhap_kh_atlas as NA
-    if not NA.co_cau_hinh():
+    f = st.file_uploader("Cách nhanh: tải file Google Sheets của Atlas (Tệp › Tải xuống › .xlsx) hoặc file .json",
+                         type=["xlsx", "json"], key="na_file")
+    if f is not None:
+        try:
+            S["na_nguon"] = NA.doc_file(f.name, f.getvalue())
+            S["na_rows"] = NA.khach_atlas(S["na_nguon"][NA.SHEETS["kh"]])
+        except Exception as e:  # noqa: BLE001
+            st.error(f"Không đọc được file: {e}")
+    NA.NGUON = S.get("na_nguon") if f is not None else None
+    if f is None and not NA.co_cau_hinh():
         ui.note("⚠️ Web chưa có quyền đọc Atlas. Vào <b>share.streamlit.io › app hoang-anh-coaching › Settings › Secrets</b>, "
                 "thêm 2 dòng <code>ATLAS_SHEETS_WEBAPP_URL</code> và <code>ATLAS_SHEETS_TOKEN</code> — chép y hệt 2 dòng "
-                "<code>SHEETS_WEBAPP_URL</code> / <code>SHEETS_TOKEN</code> trong Secrets của web Atlas — rồi Save và tải lại trang này.")
+                "<code>SHEETS_WEBAPP_URL</code> / <code>SHEETS_TOKEN</code> trong Secrets của web Atlas — rồi Save và tải lại trang này. "
+                "Hoặc dùng cách nhanh ở trên: tải file Sheets Atlas về rồi thả vào ô tải file.")
         return
     a, b = st.columns([1.3, 1])
     ten_pt = a.text_input("Tên PT bên Atlas (lọc khách anh dạy)", value=S.get("na_pt", "Hoàng Anh"), key="na_pt")
     phong = b.selectbox("🏢 Gắn phòng tập cho khách chép sang", store.ds_phong(store.clients()), key="na_phong")
-    if st.button("🔎 Đọc danh sách khách từ Atlas", type="primary"):
+    if f is None and st.button("🔎 Đọc danh sách khách từ Atlas", type="primary"):
         with st.spinner("Đang đọc hồ sơ khách của Atlas…"):
             try:
                 S["na_rows"] = NA.khach_atlas(NA.doc(NA.SHEETS["kh"]))
@@ -962,7 +1037,7 @@ def _chep_khach_atlas(u: dict):
     if not ds:
         st.warning(f"Không thấy khách nào có PT khớp “{ten_pt}”. Kiểm tra lại tên PT, hoặc bật hiện cả khách PT khác.")
         return
-    df = pd.DataFrame([{"Chép": (str(r.get("ma_kh")) not in da_co) and (str(r.get("trang_thai") or "Đang tập") == "Đang tập"),
+    df = pd.DataFrame([{"Chép": (str(r.get("ma_kh")) not in da_co) and (str(r.get("trang_thai") or "Đang tập") in ("Đang tập", "Tạm dừng")),
                         "Khách": NA._s(r.get("ho_ten")), "Mã Atlas": NA._s(r.get("ma_kh")), "PT": NA._s(r.get("pt")),
                         "Gói": f"{NA._s(r.get('loai_goi'))} {NA._s(r.get('so_buoi_goi'))}".strip(),
                         "Trạng thái": NA._s(r.get("trang_thai")) or "Đang tập",
@@ -1037,7 +1112,67 @@ def _nhap_rieng():
 def khach_thay():
     u = _user()
     DS = store.clients(ca_ngung=False)
-    ui.hero("CỔNG KHÁCH", "Khách thấy gì?", "Bật / tắt từng mục cho từng khách, rồi xem đúng màn hình khách đang thấy.")
+    ui.hero("CỔNG KHÁCH", "Khách thấy gì?", "Chia sẻ lộ trình cho nhiều khách một lúc, hoặc bật / tắt từng mục cho từng khách.")
+    t1, t2 = st.tabs(["🔗 Chia sẻ lộ trình (nhiều khách)", "👁 Từng khách"])
+    with t1:
+        _chia_se(u, DS)
+    with t2:
+        _khach_thay_1(u, DS)
+
+
+SHARE = ("lo_trinh", "lich", "can", "so_do")
+
+
+def _chia_se(u: dict, DS: list[dict]):
+    """Cấp tài khoản + bật mục Lộ trình / Lịch / Cân / Số đo cho nhiều khách cùng lúc.
+    Mặc định tick khách gói Toàn diện ở Atlas và Gold Gym."""
+    if not DS:
+        st.info("Chưa có khách đang tập.")
+        return
+    TK = {v.get("ma_kh"): v for v in auth.accounts().values()}
+    st.caption("Khách được chia sẻ sẽ đăng nhập cổng khách và thấy: 🗺 Lộ trình theo giai đoạn (bản tổng quan — bản chi tiết chỉ anh thấy), "
+               "lịch hẹn & gói, cân và số đo. Khách chưa có tài khoản → web tạo tài khoản + mật khẩu và soạn sẵn tin Zalo.")
+    DSs = sorted(DS, key=lambda k: (store.thu_tu_phong(store.phong(k)), str(k.get("ho_ten", ""))))
+    def da_chia(k):
+        q = store.quyen(k)
+        return k["ma"] in TK and not TK[k["ma"]].get("khoa") and all(q[x] for x in SHARE)
+    df = pd.DataFrame([{"Chia sẻ": da_chia(k) or (store.toan_dien(k) and store.phong(k) in ("Atlas", "Gold Gym")),
+                        "Khách": k["ho_ten"], "🏢 Phòng": store.phong(k) or "—", "Gói": k.get("goi_ten") or "—",
+                        "Toàn diện": "⭐" if store.toan_dien(k) else "",
+                        "Tài khoản": ("🔒 " if TK[k["ma"]].get("khoa") else "✅ ") + TK[k["ma"]]["_khoa"] if k["ma"] in TK else "chưa có",
+                        "Đang thấy lộ trình": "✅" if da_chia(k) else ""} for k in DSs])
+    ed = st.data_editor(df, hide_index=True, use_container_width=True, disabled=[c for c in df.columns if c != "Chia sẻ"],
+                        column_config={"Chia sẻ": st.column_config.CheckboxColumn(alignment="center"),
+                                       **{c: st.column_config.Column(alignment="left" if c in ("Khách", "Gói") else "center")
+                                          for c in df.columns if c != "Chia sẻ"}}, key="cs_ed")
+    chon = [k for k, x in zip(DSs, ed["Chia sẻ"]) if x and not da_chia(k)]
+    if st.button(f"🔗 Chia sẻ cho {len(chon)} khách", type="primary", disabled=not chon):
+        moi = []
+        for k in chon:
+            q = {**store.quyen(k), **{x: True for x in SHARE}}
+            store.save_client({**k, "quyen": q}, u["name"])
+            acc = TK.get(k["ma"])
+            if not acc:
+                un = auth.norm_user(k["ho_ten"].split()[-1] + k["ma"][1:])
+                pw = auth.tao_mat_khau()
+                ok, _ = auth.save_account(k["ma"], un, pw, u["name"], False, None)
+                if not ok:                                   # trùng tên đăng nhập → thêm mã khách
+                    un = auth.norm_user(un + k["ma"].lower())
+                    ok, _ = auth.save_account(k["ma"], un, pw, u["name"], False, None)
+                if ok:
+                    moi.append((k, un, pw))
+            elif acc.get("khoa"):
+                auth.save_account(k["ma"], acc["_khoa"], None, u["name"], khoa=False, cu=acc)
+        S["cs_moi"] = moi
+        st.rerun()
+    for k, un, pw in S.get("cs_moi", []):
+        with st.expander(f"✉️ Tin gửi {k['ho_ten']} (tài khoản mới — mật khẩu chỉ hiện lần này)", expanded=True):
+            _soan(k, store.tin_tai_khoan(k, config.get("APP_URL") or "https://hoang-anh-coaching.streamlit.app", un, pw), f"cs_{k['ma']}", u)
+    ui.note("Muốn thu hồi: bỏ tick không có tác dụng với khách đã chia sẻ — vào tab 👁 Từng khách để tắt mục Lộ trình, "
+            "hoặc khoá tài khoản ở trang 👤 Khách & tài khoản.")
+
+
+def _khach_thay_1(u: dict, DS: list[dict]):
     k = _chon_khach(DS, "kt")
     if not k:
         return

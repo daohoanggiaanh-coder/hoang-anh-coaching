@@ -461,3 +461,19 @@ def test_nhap_kh_atlas():
     assert k["phong_tap"] == "Atlas" and k["ma_atlas"] == "KH1" and k["sdt"] == "0901" and k["ngay_ket_thuc"] == "2026-12-31"
     k2 = NA.chuyen_khach(a, [{"ma": "R004", "ma_atlas": "KH1"}], "Atlas", 5, None)
     assert k2["ma"] == "R004"
+
+
+def test_inbody_han(monkeypatch):
+    from datetime import date
+    from core import inbody
+    monkeypatch.setattr(inbody, "lan_cuoi", lambda ma: date(2026, 11, 1))
+    t = inbody.trang_thai({"ma": "R1"}, date(2026, 11, 7))
+    assert t["han"] == date(2026, 11, 8) and t["con"] == 1 and not t["can"]
+    assert inbody.trang_thai({"ma": "R1", "inbody_ky": 0}, date(2026, 11, 7)) is None
+    t2 = inbody.trang_thai({"ma": "R1", "inbody_ky": "14"}, date(2026, 11, 20))
+    assert t2["con"] == -5 and t2["can"]
+    monkeypatch.setattr(inbody, "lan_cuoi", lambda ma: None)
+    assert inbody.trang_thai({"ma": "R1"}, date(2026, 11, 7))["can"]
+    B = [{"ma": "R1", "ngay": date(2026, 11, 6), "trang_thai": "xong", "gio": "6"},
+         {"ma": "R1", "ngay": date(2026, 11, 9), "trang_thai": "hen", "gio": "6"}]
+    assert inbody.buoi_do({"ma": "R1"}, {"han": date(2026, 11, 7)}, B, date(2026, 11, 7))["ngay"] == date(2026, 11, 9)

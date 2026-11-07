@@ -24,7 +24,25 @@ def co_cau_hinh() -> bool:
     return bool(os.environ.get("HAC_FAKE_ATLAS")) or bool(config.get("ATLAS_SHEETS_WEBAPP_URL") and config.get("ATLAS_SHEETS_TOKEN"))
 
 
+NGUON: dict[str, list[dict]] | None = None     # dữ liệu từ file tải lên (xlsx / json) — thay cho đọc qua Apps Script
+
+
+def doc_file(name: str, data: bytes) -> dict[str, list[dict]]:
+    """File Google Sheets của Atlas tải về dạng .xlsx (mọi sheet) hoặc .json {sheet: [dòng]}."""
+    import io
+    if name.lower().endswith(".json"):
+        d = json.loads(data.decode("utf-8"))
+    else:
+        x = pd.read_excel(io.BytesIO(data), sheet_name=None, dtype=str)
+        d = {k: v.fillna("").to_dict("records") for k, v in x.items() if k in SHEETS.values()}
+    if not d.get(SHEETS["kh"]):
+        raise ValueError("File không có sheet KhachHang của Atlas")
+    return d
+
+
 def doc(sheet: str) -> list[dict]:
+    if NGUON is not None:
+        return NGUON.get(sheet, [])
     import os
     if os.environ.get("HAC_FAKE_ATLAS"):            # chỉ dùng khi chạy thử trên máy (không có trên web)
         return json.load(open(os.environ["HAC_FAKE_ATLAS"], encoding="utf-8")).get(sheet, [])
@@ -124,7 +142,7 @@ def chuyen_khach(a: dict, hac: list[dict], phong: str, so_buoi_web: int, lich: l
          "ngay_sinh": ns, "nghe_nghiep": _s(a.get("nghe_nghiep")), "muc_tieu": _s(a.get("muc_tieu")),
          "muc_tieu_loai": _s(a.get("muc_tieu_loai")), "chan_thuong": _s(a.get("chan_thuong")) or _s(a.get("suc_khoe")),
          "benh_nen": _s(a.get("suc_khoe")), "khung_gio": _s(a.get("khung_gio")),
-         "goi_ten": _s(a.get("loai_goi")) and f"{_s(a.get('loai_goi'))} · {int(nb) if nb else ''} buổi",
+         "goi_ten": " · ".join(x for x in [_s(a.get("loai_goi")), f"{int(nb)} buổi" if nb else ""] if x),
          "goi_loai": "buoi", "goi_so": int(nb) if nb else "", "goi_buoi": int(nb) if nb else "",
          "gia": int(_n(a.get("gia_goi")) or 0) or "", "da_tap_truoc": da,
          "ngay_bat_dau": _ngay(a.get("ngay_bat_dau")), "ngay_ket_thuc": _ngay(a.get("ngay_het_han")),
@@ -153,6 +171,15 @@ def chep(chon: list[dict], phong: str, nguoi: str, so_do: bool = True, buoi: boo
         hac = store.clients()
         mk = _s(a.get("ma_kh"))
         k = chuyen_khach(a, hac, phong, len(B.get(mk, [])), L.get(mk))
+        av = _s(a.get("anh_dai_dien"))
+        if len(av) > 500 and not k.get("anh_dai_dien"):          # Atlas lưu ảnh đại diện dạng base64 trong ô
+            try:
+                import base64
+                up = db.upload_images({"x": base64.b64decode(av)}, f"HAC_{k['ma']}_av_")
+                if up:
+                    k["anh_dai_dien"] = up["x"]
+            except Exception:  # noqa: BLE001
+                pass
         if not store.save_client(k, nguoi):
             continue
         dem["khách"] += 1

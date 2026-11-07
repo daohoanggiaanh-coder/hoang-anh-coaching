@@ -161,7 +161,17 @@ def tom_tat_hlv(hom: date) -> str:
     for b in B:
         k = by.get(b["ma"], {})
         ck = chu_ky.dieu_chinh(b["ma"], hom, k) if k else None
-        dong.append(f"• {store.gio_s(b['gio'])} {k.get('ho_ten', '')}" + (f" 🌸 ngày {ck['ngay_thu']}" if ck and ck["nang"] else ""))
+        dong.append(f"• {store.gio_s(b['gio'])} {k.get('ho_ten', '')}" + (f" · {store.phong(k)}" if k and store.phong(k) else "")
+                    + (f" 🌸 ngày {ck['ngay_thu']}" if ck and ck["nang"] else ""))
+    from core import inbody
+    ib = []
+    for b in B:
+        k = by.get(b["ma"])
+        t = inbody.trang_thai(k, hom) if k and b["trang_thai"] != "huy" else None
+        if t and t["han"] <= hom:
+            ib.append(f"{k['ho_ten']} ({inbody.mo_ta(t)})")
+    if ib:
+        dong.append("📏 Đo InBody buổi hôm nay: " + "; ".join(ib))
     sap, no = [], []
     for k in DS:
         t = goi.trang_thai(k, hom, H)

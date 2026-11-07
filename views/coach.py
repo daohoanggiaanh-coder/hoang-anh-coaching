@@ -1224,3 +1224,8 @@ def _khach_thay_1(u: dict, DS: list[dict]):
                 next(f for x, _, f in ds if x == chon)()
         finally:
             S.pop("_xem_nhu", None)
+
+
+def tien_do_all():
+    from views import tien_do_all_ui
+    tien_do_all_ui.trang(_user())

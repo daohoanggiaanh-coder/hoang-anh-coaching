@@ -453,8 +453,11 @@ def bua_an(b: dict, F: dict, che_do: list[str], seed: int, chon: dict | None = N
         x = chon.get(vt) if chon.get(vt) in ds else ds[(seed >> (i * 5)) % len(ds)]
         if x not in mon:
             mon.append(x)
+    co_trai = any(F[x]["nhom"] == "trai_cay" for x in mon)
     for nhom, g in MAU_BUA[mau]["kem"]:
         if mv and nhom == "rau":
+            continue
+        if nhom == "trai_cay" and co_trai:                              # v3.3: bữa đã có trái cây làm tinh bột → không thêm trái thứ 2
             continue
         if it_tb and nhom == "trai_cay" and mau != "trua":              # ngày ít tinh bột: chỉ giữ trái cây bữa trưa
             continue

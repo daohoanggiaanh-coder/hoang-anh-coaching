@@ -173,15 +173,14 @@ def an_ngoai(k: dict, vai: str, nguoi: str, h, kq: dict, bo: set[str], tap_set: 
     muc_bua = t["chia"].get(ke["bua"]) if ke else None
     with st.expander("📏 Nguyên tắc ăn ngoài & áng chừng bằng bàn tay", expanded=False):
         st.markdown("\n".join(f"- {x}" for x in an.data()["nguyen_tac"]))
-        st.markdown("""
-| Nhóm | Áng chừng mỗi bữa | Tương đương (ước lượng) |
-|---|---|---|
-| Đạm (thịt, cá, trứng, đậu hũ) | Nữ 1 lòng bàn tay · Nam 2 lòng bàn tay | ≈ 100–120 g chín ≈ 20–30 g đạm / lòng bàn tay |
-| Tinh bột (cơm, bún, bánh) | Nữ 1 nắm tay · Nam 1–2 nắm tay | 1 nắm tay ≈ 1 chén cơm nhỏ ≈ 30–40 g tinh bột |
-| Rau | 1–2 nắm tay trở lên | ăn thoải mái |
-| Béo (dầu, bơ, hạt, sốt) | Nữ 1 ngón cái · Nam 1–2 ngón cái | 1 ngón cái ≈ 7–12 g béo |
-""")
-        st.caption("Phương pháp áng chừng bằng bàn tay (hand-portion) là cách ước lượng thực hành, sai số lớn hơn cân — đủ dùng khi ăn ngoài. "
+        from views import ban_tay_ui as _bt
+        if muc_bua:
+            st.markdown(f"**Bữa tới của bạn ≈** {_bt.dong_ban_tay(muc_bua, 0)} · thêm 1–2 nắm tay rau")
+            st.markdown(_bt.the_ban_tay(an.so_phan(muc_bua, 180)), unsafe_allow_html=True)
+        else:
+            st.markdown(_bt.the_ban_tay(), unsafe_allow_html=True)
+        st.markdown("\n".join(f"- {x}" for x in _bt.HUONG_DAN_AN_NGOAI))
+        st.caption("Áng chừng bằng bàn tay (theo hướng dẫn phổ biến của Precision Nutrition) — sai số lớn hơn cân, đủ dùng khi ăn ngoài. "
                    "Lòng bàn tay = cỡ và độ dày lòng bàn tay của chính bạn, không tính ngón.")
     ui.sec("Gợi ý cho bữa tới" + (f" · {ke['ten']}" if ke else ""))
     if muc_bua:

@@ -165,3 +165,93 @@ def lich_su(ma: str, tu: date, den: date) -> dict[date, dict[str, dict]]:
         if tu <= d <= den:
             out.setdefault(d, {})[kk[len(tien) + 11:]] = v
     return out
+
+
+# ------------------------------------------------------------------ v3.3: món / combo ăn ngoài tương đương 1 bữa trong thực đơn
+def _combo_key(m: dict) -> tuple:
+    return (round(m.get("kcal", 0) / 25), round(m.get("p", 0) / 3), round(m.get("c", 0) / 5), round(m.get("f", 0) / 3))
+
+
+_CACHE: dict = {}
+
+
+SUA = {"sua_tuoi_kd", "sua_chua_kd", "sua_chua_hl", "sua_dau_nanh_kd"}
+BOT_TB = {"Bún · phở · hủ tiếu", "Cơm"}                     # món có thể để lại bớt bánh / cơm
+
+
+def _bien_the(m: dict) -> list[dict]:
+    """Món chính + bản 'để lại ⅓ bánh / cơm' (bớt 30 % tinh bột) — cách thực tế nhất để khỏi dư calo khi ăn ngoài."""
+    out = [m]
+    if m["nhom"] in BOT_TB and m["kcal"] >= 400:
+        bot = 0.3 * m["c"]
+        out.append({**m, "id": m["id"] + "_bot", "goc": m["id"], "ten": m["ten"] + (" (để lại ⅓ cơm)" if m["nhom"] == "Cơm" else " (để lại ⅓ bánh / bún)"),
+                    "c": round(m["c"] - bot, 1), "kcal": round(m["kcal"] - bot * 4)})
+    return out
+
+
+def tuong_duong(muc: dict, n: int = 3, chinh: bool = False) -> list[dict]:
+    """Món hoặc combo ăn ngoài có kcal gần mục tiêu bữa (−20 % … +15 %) và đủ đạm (≥ 80 %), xếp theo độ khớp macro.
+    chinh=True (bữa chính): ưu tiên có 1 món ăn chính (phở, cơm, bún…) + tối đa 2 món kèm."""
+    key = (_combo_key(muc), chinh)
+    if key in _CACHE:
+        return _CACHE[key]
+    from itertools import combinations
+    M = [m for m in data()["mon"] if m["hop"] != "han_che" and m["nhom"] != "Đồ uống · tráng miệng"]
+    lon = [v for m in M if m["kcal"] >= 250 for v in _bien_the(m)]
+    nho = [m for m in M if m["kcal"] < 250]
+    K, P, C, F = (max(float(muc.get(x, 0)), 1) for x in ("kcal", "p", "c", "f"))
+    co_lon = [[a] for a in lon] + [[a, b] for a in lon for b in nho] + [[a, *x] for a in lon for x in combinations(nho, 2)]
+    chi_nho = [[m] for m in nho] + [list(x) for x in combinations(nho, 2)] + [list(x) for x in combinations(nho, 3)]
+
+    def tinh(cands):
+        out = []
+        for ds in cands:
+            if sum(m["id"] in SUA for m in ds) > 1:
+                continue
+            t = {x: sum(float(m[x]) for m in ds) for x in ("kcal", "p", "c", "f")}
+            if not (0.8 * K <= t["kcal"] <= 1.15 * K) or t["p"] < 0.8 * P:
+                continue
+            sc = 2 * ((t["kcal"] - K) / K) ** 2 + 2 * (min(t["p"] - P, 0) / P) ** 2 + 0.6 * ((t["c"] - C) / max(C, 20)) ** 2 \
+                + 0.6 * ((t["f"] - F) / max(F, 8)) ** 2 + 0.05 * (len(ds) - 1) + (0.15 if any(m["hop"] == "sua" for m in ds) else 0)
+            out.append((sc, ds, t))
+        return sorted(out, key=lambda x: x[0])
+
+    kq = tinh(co_lon) if chinh else tinh(co_lon + chi_nho)
+    if chinh and len(kq) < n:
+        kq += tinh(chi_nho)
+    chon, dau, dung = [], set(), {}
+    for sc, ds, t in kq:
+        goc = ds[0].get("goc", ds[0]["id"])
+        if goc in dau or any(dung.get(m["id"], 0) >= 2 for m in ds):     # đa dạng: không lặp món chính, món kèm tối đa 2 lần
+            continue
+        dau.add(goc)
+        for m in ds:
+            dung[m["id"]] = dung.get(m["id"], 0) + 1
+        chon.append({"mon": ds, "ten": " + ".join(m["ten"] for m in ds), "thuc": t,
+                     "goi": "; ".join(m["goi"] for m in ds if m.get("goi"))})
+        if len(chon) >= n:
+            break
+    _CACHE[key] = chon
+    return chon
+
+
+# ------------------------------------------------------------------ v3.3: quy tắc bàn tay (hand-portion)
+# Theo cách áng chừng phổ biến của Precision Nutrition: 1 lòng bàn tay đạm ≈ 20–30 g đạm · 1 vốc tay tinh bột ≈ 20–30 g
+# tinh bột · 1 ngón cái béo ≈ 7–12 g béo · 1 nắm tay rau ≈ 1 chén rau. Web dùng số giữa (25 / 25 / 10) để quy đổi.
+BAN_TAY = {"p": 25.0, "c": 25.0, "f": 10.0}
+
+
+def _nua(x: float) -> float:
+    return max(round(x * 2) / 2, 0.5) if x >= 0.25 else 0.0
+
+
+def so_phan(m: dict, rau_g: float = 0) -> dict:
+    return {"p": _nua(m.get("p", 0) / BAN_TAY["p"]), "c": _nua(m.get("c", 0) / BAN_TAY["c"]),
+            "f": _nua(m.get("f", 0) / BAN_TAY["f"]), "rau": _nua(rau_g / 90) if rau_g else 0.0}
+
+
+def so_s(x: float) -> str:
+    if not x:
+        return "0"
+    n, du = int(x), x - int(x)
+    return (str(n) if n else "") + ("½" if du else "") if (n or du) else "0"

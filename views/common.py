@@ -202,6 +202,9 @@ DD_CSS = """<style>
 .dd-cl{display:flex;gap:10px;padding:6px 0;border-top:1px dashed #E6DCC6;text-align:left}.dd-cl .i{font-size:1.05rem}
 .dd-cl b{display:block;font-size:.9rem}.dd-cl small{display:block;font-size:.78rem;opacity:.8;line-height:1.35}
 html[data-hac-theme=dark] .dd-clw{background:#1A1814;border-color:#3A342A}html[data-hac-theme=dark] .dd-cl{border-color:#3A342A}
+.dd-an{font-size:.8rem;padding:6px 12px 10px;border-top:1px dashed #E6DCC6;text-align:left;line-height:1.45}
+.dd-an ul{margin:2px 0 4px 18px;padding:0}.dd-an li{margin:1px 0}.dd-an small{opacity:.65;font-size:.7rem}
+html[data-hac-theme=dark] .dd-an{border-color:#3A342A}
 </style>"""
 
 
@@ -236,8 +239,21 @@ def _bang_bua(b: dict, F: dict) -> str:
             f'<span class="kc">{t["kcal"]:.0f} kcal</span></div>{dong}'
             f'<div class="dd-bf"><span>Đạm <b>{t["p"]:.0f} g</b></span><span>Tinh bột <b>{t["c"]:.0f} g</b></span>'
             f'<span>Béo <b>{t["f"]:.0f} g</b></span><span>Xơ <b>{t["xo"]:.0f} g</b></span></div>'
-            f'<div style="font-size:.72rem;opacity:.7;padding:2px 12px 8px">🎯 Mục tiêu bữa này · ăn ngoài thì chọn món ≈ {t["kcal"]:.0f} kcal, '
-            f'≥ {t["p"]:.0f} g đạm</div></div>')
+            + _an_ngoai_bua(b, t, F) + "</div>")
+
+
+def _an_ngoai_bua(b: dict, t: dict, F: dict) -> str:
+    """v3.3: áng chừng bàn tay + món / combo ăn ngoài có calo & macro tương đương bữa này."""
+    from core import an_ngoai as an
+    from views import ban_tay_ui as bt
+    rau = sum(g for x, g in b["mon"].items() if F[x]["nhom"] == "rau")
+    combo = an.tuong_duong(t, 3, chinh=not b["bua"].startswith("phu"))
+    ds = "".join(f'<li><b>{E(c["ten"])}</b> — ≈ {c["thuc"]["kcal"]:.0f} kcal · Đ {c["thuc"]["p"]:.0f} g · TB {c["thuc"]["c"]:.0f} g · '
+                 f'B {c["thuc"]["f"]:.0f} g</li>' for c in combo)
+    return (f'<div class="dd-an"><div>✋ <b>Áng chừng bằng bàn tay:</b> {E(bt.dong_ban_tay(t, rau))}</div>'
+            f'<div style="margin-top:4px">🍜 <b>Ăn ngoài tương đương</b> (≈ {t["kcal"]:.0f} kcal, ≥ {t["p"]:.0f} g đạm):</div>'
+            + (f"<ul>{ds}</ul>" if ds else "<div>Chọn món có đủ lòng bàn tay đạm như trên, tinh bột & béo vừa phải.</div>")
+            + '<small>Calo món ngoài là ước lượng cho 1 phần trung bình — quán khác nhau có thể lệch 20–30 %.</small></div>')
 
 
 def _the_chat_luong(ds: list[dict], tieu_de: str) -> str:
@@ -327,6 +343,12 @@ def dinh_duong(k: dict, vai: str, nguoi: str, q: dict | None = None):
                     unsafe_allow_html=True)
         st.markdown('<div class="dd-tl">' + "".join(_bang_bua(bb, F) for bb in ngay) + "</div>", unsafe_allow_html=True)
         st.markdown(_the_chat_luong(dd.chat_luong_ngay(ngay, h, la_tap), "Chất lượng khẩu phần hôm nay"), unsafe_allow_html=True)
+        with st.expander("✋ Quy tắc bàn tay & cách áng chừng khi ăn ngoài (có hình)"):
+            from views import ban_tay_ui as _bt
+            st.markdown(_bt.the_ban_tay(), unsafe_allow_html=True)
+            st.markdown("\n".join(f"- {x}" for x in _bt.HUONG_DAN_AN_NGOAI))
+            st.caption("Cách áng chừng bằng bàn tay theo hướng dẫn phổ biến của Precision Nutrition — bàn tay to nhỏ tỉ lệ với cơ thể nên "
+                       "tự điều chỉnh theo từng người; sai số lớn hơn cân, đủ dùng khi ăn ngoài. Số phần mỗi bữa ghi ngay dưới từng bữa.")
         with st.expander("🍎 Góc chuyên gia: vi chất, lợi khuẩn, trái cây & thói quen"):
             for t_, nd_ in dd.vi_chat(h):
                 st.markdown(f"**{t_}** — {E(nd_)}")

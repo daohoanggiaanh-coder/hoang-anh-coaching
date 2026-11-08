@@ -21,7 +21,8 @@ FIELDS = ["ma", "ho_ten", "sdt", "ten_zalo", "goi_khach", "xung_toi", "dia_diem"
           "email", "nghe_nghiep", "khu_vuc", "kinh_nghiem", "mon_da_tap", "buoi_co_the",       # v1.9: hồ sơ đầy đủ
           "khung_gio", "cong_viec", "giac_ngu", "ly_do", "benh_nen", "thuoc", "lh_ten", "lh_quan_he", "lh_sdt", "can_mong_muon",
           "ngay_ket_thuc", "thanh_toan", "bao_luu", "cho_vao", "trinh_do", "giao_dien",
-          "phong_tap", "ma_atlas", "inbody_ky"]                                  # v2.2: gói · công nợ · bảo lưu · khoá                                                                              # v1.3: mục khách được thấy / dùng
+          "phong_tap", "ma_atlas", "inbody_ky",
+          "goi_ls"]                                                                             # v3.5: các gói đã mua trước gói hiện tại                                  # v2.2: gói · công nợ · bảo lưu · khoá                                                                              # v1.3: mục khách được thấy / dùng
 PHONG_TAP = ["Atlas", "Gold Gym", "Online"]            # v2.9: 3 nơi anh Hoàng Anh đang dạy (thêm phòng khác ở ô ➕)
 MAU_PHONG = {"Atlas": "#A3803C", "Gold Gym": "#B8860B", "Online": "#3E6E9E"}
 LOAI_GOI = {"buoi": "buổi", "tuan": "tuần", "thang": "tháng"}
@@ -146,11 +147,32 @@ def hen_id(ma: str, ngay: date, gio: str) -> str:
 
 
 def ghi_hen(ma: str, ngay: date, gio: str, trang_thai: str, nguoi: str, dia_diem: str = "", ghi_chu: str = "",
-            goc: str = "") -> bool:
-    """trang_thai: hen (thêm / dời tới) · xong (đã tập) · huy (nghỉ)."""
+            goc: str = "", buoi_ga: str | None = None) -> bool:
+    """trang_thai: hen (thêm / dời tới) · xong (đã tập) · huy (nghỉ).
+    buoi_ga (v3.5): HLV đổi buổi giáo án cho riêng ngày này (VD hôm nay tập Pull thay Leg) — các buổi sau tự nối tiếp từ đây.
+    Không truyền → giữ lựa chọn đổi buổi đã lưu trước đó."""
     hid = goc if goc and trang_thai in ("huy", "xong") else hen_id(ma, ngay, gio)
+    if buoi_ga is None:
+        buoi_ga = (hens(ma).get(hid) or {}).get("buoi_ga", "")
     return db.append("LichHen", hid, {"ma": ma, "ngay": ngay.isoformat(), "gio": gio, "dia_diem": dia_diem,
-                                      "trang_thai": trang_thai, "ghi_chu": ghi_chu, "goc": goc}, nguoi, ma)
+                                      "trang_thai": trang_thai, "ghi_chu": ghi_chu, "goc": goc, "buoi_ga": buoi_ga or ""}, nguoi, ma)
+
+
+def doi_lich_co_dinh(k: dict, thu_cu: int, gio_cu: str, tu: date, thu_moi: int, gio_moi: str) -> list[dict]:
+    """v3.5 — Dời buổi cố định từ ngày `tu` trở đi: dòng cũ kết thúc hôm trước, thêm dòng mới bắt đầu từ `tu`
+    (các tuần đã qua giữ nguyên lịch cũ)."""
+    out, xong = [], False
+    for x in lich_co_dinh(k):
+        if not xong and int(x["thu"]) == thu_cu and str(x.get("gio", "")) == str(gio_cu) and not x.get("den"):
+            if not x.get("tu") or (_d(x["tu"]) or date.min) < tu:
+                out.append({**x, "den": (tu - timedelta(days=1)).isoformat()})
+            out.append({**{a: b for a, b in x.items() if a not in ("den",)}, "thu": thu_moi, "gio": gio_moi, "tu": tu.isoformat()})
+            xong = True
+        else:
+            out.append(x)
+    if not xong:
+        out.append({"thu": thu_moi, "gio": gio_moi, "tu": tu.isoformat()})
+    return out
 
 
 def lich_co_dinh(k: dict) -> list[dict]:
@@ -183,6 +205,9 @@ def buoi(ds: list[dict], tu: date, den: date, H: dict[str, dict] | None = None) 
         d = tu
         while d <= den:
             for s in lich_co_dinh(k):
+                # v3.5: "tu" / "den" — lịch cố định đổi từ ngày nào (HLV dời buổi + chọn áp dụng cho các tuần sau)
+                if (s.get("tu") and d < (_d(s["tu"]) or date.min)) or (s.get("den") and d > (_d(s["den"]) or date.max)):
+                    continue
                 if int(s["thu"]) == d.weekday() and bd <= d <= kt and not _goi.ngay_bao_luu(k, d):
                     hid = hen_id(k["ma"], d, str(s.get("gio", "")))
                     out[hid] = {"id": hid, "ma": k["ma"], "ngay": d, "gio": str(s.get("gio", "")),
@@ -193,10 +218,11 @@ def buoi(ds: list[dict], tu: date, den: date, H: dict[str, dict] | None = None) 
         if h.get("ma") not in by:
             continue
         if hid in out:
-            out[hid].update({"trang_thai": h.get("trang_thai", "hen"), "ghi_chu": h.get("ghi_chu", "")})
+            out[hid].update({"trang_thai": h.get("trang_thai", "hen"), "ghi_chu": h.get("ghi_chu", ""), "buoi_ga": h.get("buoi_ga", "")})
         elif nd and tu <= nd <= den:
             out[hid] = {"id": hid, "ma": h["ma"], "ngay": nd, "gio": h.get("gio", ""), "dia_diem": h.get("dia_diem", ""),
-                        "trang_thai": h.get("trang_thai", "hen"), "ghi_chu": h.get("ghi_chu", ""), "co_dinh": False}
+                        "trang_thai": h.get("trang_thai", "hen"), "ghi_chu": h.get("ghi_chu", ""), "co_dinh": False,
+                        "buoi_ga": h.get("buoi_ga", "")}
     return sorted(out.values(), key=lambda b: (b["ngay"], str(b["gio"])))
 
 

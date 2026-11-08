@@ -23,8 +23,11 @@ def sap_toi(k: dict, so_ngay: int = 21, tu: date | None = None) -> list[dict]:
     for b in sorted(B, key=lambda x: (x["ngay"], x["gio"])):
         if b["ngay"] == tu and da_hom_nay:
             continue
+        doi = b.get("buoi_ga") in mas
+        if doi:                       # v3.5: HLV đổi buổi riêng ngày này → các buổi sau nối tiếp từ buổi đã đổi
+            i = mas.index(b["buoi_ga"])
         bu = P["buoi"][i % len(mas)]
-        out.append({"ngay": b["ngay"], "gio": b["gio"], "buoi": bu["ma"], "ten": bu["ten"]})
+        out.append({"ngay": b["ngay"], "gio": b["gio"], "buoi": bu["ma"], "ten": bu["ten"], "id": b["id"], "doi": doi})
         i += 1
     return out
 

@@ -160,6 +160,16 @@ def lich():
             L = [b for b in L if (store.phong(by.get(b["ma"], {})) or "Chưa ghi phòng") in lp]
     if not L:
         st.caption("Không có buổi nào.")
+    # v3.5: buổi giáo án dự kiến của từng buổi hẹn (tự nối tiếp; HLV đổi được ở nút ↻ Dời / đổi)
+    from core import lich_tap as _lt
+    KH_PLAN, KH_CK = {}, {}
+    for m_ in {b["ma"] for b in L if b["ngay"] >= hom and b["trang_thai"] == "hen"}:
+        try:
+            ds_ = _lt.sap_toi(by[m_], 21)
+            KH_PLAN[m_] = {x.get("id"): x for x in ds_ if x.get("buoi")}
+            KH_CK[m_] = _lt.chu_ky(by[m_])
+        except Exception:  # noqa: BLE001 — khách chưa có giáo án
+            pass
     truoc = None
     for b in L:
         k = by.get(b["ma"], {})
@@ -177,6 +187,8 @@ def lich():
                     + (f'<span class="hac-chip" style="background:{store.mau_phong(store.phong(k))}">🏢 {E(store.phong(k))}</span>' if k and store.phong(k) else "")
                     + ('<span class="hac-chip" style="background:#2F7D5B">📏 Đo InBody</span>'
                        if T.get(b["ma"]) and b["ngay"] >= hom and T[b["ma"]]["han"] <= b["ngay"] and b["trang_thai"] != "huy" else "")
+                    + (f'<span class="hac-chip" style="background:#3E6E9E">🏋️ {E(pl["buoi"])} · {E(pl["ten"])}{" (đã đổi)" if pl.get("doi") else ""}</span>'
+                       if (pl := KH_PLAN.get(b["ma"], {}).get(b["id"])) else "")
                     + f'<span class="m">{E(b.get("dia_diem") or "")}' + (f" · {E(store.mo_ta_goi(k, H, hom))}" if k else "")
                     + (" · hẹn thêm" if not b.get("co_dinh") else "") + "</span></div>", unsafe_allow_html=True)
         c1, c2, c3, c4 = st.columns(4)
@@ -189,14 +201,37 @@ def lich():
         if b["trang_thai"] != "hen" and c2.button("↩ Hoàn tác", key=f"u_{b['id']}", use_container_width=True):
             store.ghi_hen(b["ma"], b["ngay"], b["gio"], "hen", u["name"], b.get("dia_diem", ""), goc=b["id"])
             st.rerun()
-        with c3.popover("↻ Dời", use_container_width=True):
+        with c3.popover("↻ Dời / đổi", use_container_width=True):
             nd = st.date_input("Ngày mới", value=b["ngay"], format="DD/MM/YYYY", key=f"dn_{b['id']}")
             ng = st.text_input("Giờ mới", value=b["gio"], key=f"dg_{b['id']}", placeholder="18:00")
+            moi_tuan = b.get("co_dinh") and st.checkbox(
+                f"Áp dụng cho mọi tuần sau (đổi lịch cố định {store.THU[b['ngay'].weekday()]} {store.gio_s(b['gio'])})",
+                key=f"dt_{b['id']}", help="Từ ngày mới trở đi, buổi này luôn rơi vào thứ / giờ mới. Các tuần đã qua giữ nguyên.")
             if st.button("Dời buổi", key=f"dv_{b['id']}"):
-                store.ghi_hen(b["ma"], b["ngay"], b["gio"], "huy", u["name"], b.get("dia_diem", ""), "dời lịch", goc=b["id"])
-                store.ghi_hen(b["ma"], nd, ng.strip(), "hen", u["name"], b.get("dia_diem", ""), f"dời từ {b['ngay']:%d/%m} {b['gio']}")
-                S["_soan_doi"] = (b["ma"], nd.isoformat(), ng.strip(), b["ngay"].isoformat(), b["gio"])
+                g2 = _gio_chuan(ng) or ng.strip()
+                if moi_tuan and k:
+                    k2 = {**k, "lich": json.dumps(store.doi_lich_co_dinh(k, b["ngay"].weekday(), b["gio"], min(nd, b["ngay"]),
+                                                                        nd.weekday(), g2), ensure_ascii=False)}
+                    store.save_client(k2, u["name"])
+                    if nd < b["ngay"]:
+                        store.ghi_hen(b["ma"], nd, g2, "hen", u["name"], b.get("dia_diem", ""), f"dời từ {b['ngay']:%d/%m} {b['gio']}")
+                else:
+                    store.ghi_hen(b["ma"], b["ngay"], b["gio"], "huy", u["name"], b.get("dia_diem", ""), "dời lịch", goc=b["id"])
+                    store.ghi_hen(b["ma"], nd, g2, "hen", u["name"], b.get("dia_diem", ""), f"dời từ {b['ngay']:%d/%m} {b['gio']}",
+                                  buoi_ga=b.get("buoi_ga", ""))
+                S["_soan_doi"] = (b["ma"], nd.isoformat(), g2, b["ngay"].isoformat(), b["gio"])
                 st.rerun()
+            CK = KH_CK.get(b["ma"]) or []
+            if CK and b["trang_thai"] == "hen" and b["ngay"] >= hom:
+                st.divider()
+                pl = KH_PLAN.get(b["ma"], {}).get(b["id"]) or {}
+                hien = next((i for i, x in enumerate(CK) if x.split(" · ")[0] == pl.get("buoi")), 0)
+                cb = st.selectbox("🔀 Đổi buổi giáo án hôm đó", CK, index=hien, key=f"cb_{b['id']}",
+                                  help="VD hôm nay khách đau chân → tập Pull thay Leg. Các buổi sau tự nối tiếp từ buổi anh chọn.")
+                if st.button("Lưu buổi tập", key=f"cbl_{b['id']}"):
+                    store.ghi_hen(b["ma"], b["ngay"], b["gio"], "hen", u["name"], b.get("dia_diem", ""), b.get("ghi_chu", ""),
+                                  goc=b["id"], buoi_ga=cb.split(" · ")[0])
+                    st.rerun()
         with c4.popover("💬 Nhắc", use_container_width=True):
             if k:
                 _soan(k, store.tin_nhac(k, b, hom), f"n_{b['id']}", u)
@@ -1232,6 +1267,12 @@ def _khach_thay_1(u: dict, DS: list[dict]):
 def tien_do_all():
     from views import tien_do_all_ui
     tien_do_all_ui.trang(_user())
+
+
+def goi_buoi():
+    """v3.5 — 📦 Gói & buổi tập."""
+    from views import goi_buoi_ui
+    goi_buoi_ui.trang(_user())
 
 
 def quet_inbody():

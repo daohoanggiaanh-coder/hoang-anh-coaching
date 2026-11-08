@@ -86,6 +86,7 @@ if user["role"] == "coach":
     from views import coach as V
     pages = {
         "Huấn luyện": [st.Page(V.lich, title="Lịch & nhắc tập", icon="📅", url_path="lich", default=True),
+                       st.Page(V.goi_buoi, title="Gói & buổi tập", icon="📦", url_path="goi_buoi"),
                        st.Page(V.cam_ket, title="Cam kết khách", icon="🔥", url_path="cam_ket"),
                        st.Page(V.tong_ket, title="Tổng kết ngày", icon="📅", url_path="tong_ket"),
                        st.Page(V.cham_soc, title="Chăm sóc khách", icon="✨", url_path="cham_soc"),

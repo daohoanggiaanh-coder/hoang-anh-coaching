@@ -533,3 +533,30 @@ def test_quet_inbody_khop_ten_va_luu_gop(tmp_path, monkeypatch):
     td.luu_so_do("A1", date(2026, 11, 2), "tuan", {"pbf": 25, "bmr": 1300}, "", u, gop=True)
     sd = td.so_do("A1")
     assert sd.iloc[-1]["v_eo"] == 70 and sd.iloc[-1]["pbf"] == 25
+
+
+def test_goi_buoi_da_tap_gia_han_va_doi_lich():
+    from core import goi
+    k = _khach()
+    store.ghi_hen("R001", date(2026, 10, 5), "18:00", "xong", "HLV", goc="R001|2026-10-05|18:00")
+    store.ghi_hen("R001", date(2026, 10, 7), "18:00", "xong", "HLV", goc="R001|2026-10-07|18:00")
+    t = goi.tong_quan(k, hom=date(2026, 10, 8))
+    assert (t["tong"], t["da"], t["con"]) == (12, 2, 10)
+    # sổ PT nói đã tập 7 buổi → chỉnh; buổi ✅ sau đó vẫn cộng tiếp
+    assert store.save_client(goi.dat_da_tap(k, 7), "HLV")
+    store.ghi_hen("R001", date(2026, 10, 12), "18:00", "xong", "HLV", goc="R001|2026-10-12|18:00")
+    k = store.client("R001")
+    assert goi.tong_quan(k, hom=date(2026, 10, 13))["da"] == 8
+    # gia hạn 24 buổi, cộng dồn 4 buổi còn
+    k2 = goi.gia_han(k, "Gói 24 buổi", 24, date(2026, 10, 14), "9500000", cong_don=True)
+    assert store.save_client(k2, "HLV")
+    t = goi.tong_quan(store.client("R001"), hom=date(2026, 10, 14))
+    assert (t["tong"], t["da"], t["so_goi"], t["tong_mua"]) == (28, 0, 2, 40)
+    # dời buổi thứ 2 sang thứ 3 19:00 từ 19/10, các tuần trước giữ nguyên
+    L = store.doi_lich_co_dinh(store.client("R001"), 0, "18:00", date(2026, 10, 19), 1, "19:00")
+    k3 = {**store.client("R001"), "lich": json.dumps(L)}
+    assert store.save_client(k3, "HLV")
+    B = store.buoi([store.client("R001")], date(2026, 10, 12), date(2026, 10, 25))
+    ngay = [(b["ngay"], b["gio"]) for b in B]
+    assert (date(2026, 10, 12), "18:00") in ngay and (date(2026, 10, 20), "19:00") in ngay
+    assert (date(2026, 10, 19), "18:00") not in ngay

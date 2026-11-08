@@ -16,6 +16,9 @@ CHI_SO = [("can_nang", "Cân nặng", "kg", -1), ("pbf", "% mỡ", "%", -1), ("s
           ("v_nguc", "Vòng ngực", "cm", 0), ("v_eo", "Vòng eo", "cm", -1), ("v_bung", "Vòng bụng", "cm", -1),
           ("v_hong", "Vòng mông", "cm", 0), ("v_dui", "Vòng đùi", "cm", 0), ("v_tay", "Vòng bắp tay", "cm", 0)]
 TEN = {k: (t, dv, h) for k, t, dv, h in CHI_SO}
+# v3.4 — chỉ số phụ in trên phiếu InBody: lưu kèm số đo (không vẽ biểu đồ / không so tốt xấu)
+THEM = [("bmr", "BMR", "kcal"), ("diem_inbody", "Điểm InBody", ""), ("nuoc", "Nước cơ thể", "L"),
+        ("protein", "Protein", "kg"), ("khoang_chat", "Khoáng chất", "kg"), ("tuoi_may", "Tuổi cơ thể", "")]
 
 
 def _so(v) -> float | None:
@@ -122,9 +125,15 @@ def so_sanh(dau: dict | None, moi: dict | None) -> list[dict]:
 
 
 # ------------------------------------------------------------------ ghi
-def luu_so_do(ma: str, ngay: date, dot: str, vals: dict, ghi_chu: str, user: dict) -> bool:
-    data = {"ma": ma, "ngay": ngay.isoformat(), "dot": dot, "ghi_chu": ghi_chu,
-            **{k: vals.get(k) for k, *_ in CHI_SO if _so(vals.get(k))}}
+def luu_so_do(ma: str, ngay: date, dot: str, vals: dict, ghi_chu: str, user: dict, gop: bool = False) -> bool:
+    """gop=True (v3.4, quét InBody): giữ các số đã có cùng ngày + đợt (vd vòng eo HLV nhập tay), chỉ ghi đè số mới."""
+    cu = {}
+    if gop:
+        cu = {k: v for k, v in db.latest(BANG["rieng_sodo"], ma).get(f"{ma}|{ngay.isoformat()}|{dot}", {}).items()
+              if not k.startswith("_") and k not in ("xoa",)}
+        ghi_chu = ghi_chu or cu.get("ghi_chu", "")
+    data = {**cu, "ma": ma, "ngay": ngay.isoformat(), "dot": dot, "ghi_chu": ghi_chu,
+            **{k: vals.get(k) for k, *_ in CHI_SO + THEM if _so(vals.get(k))}}
     return _log("rieng_sodo", f"{ma}|{ngay.isoformat()}|{dot}", data, user)
 
 

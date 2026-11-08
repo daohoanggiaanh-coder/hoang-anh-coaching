@@ -35,6 +35,8 @@ def nhap_so_do(k: dict, nguoi: str, vai: str = "khach"):
     tuan_nay = hom - timedelta(days=hom.weekday())
     da = (not SD.empty) and any(d >= tuan_nay for d in SD["ngay"])
     st.markdown("**📏 Số đo hằng tuần** — đo **sáng thứ Hai**, trước khi ăn, cùng 1 thước dây" + (" ✅ tuần này đã đo" if da else ""))
+    from views import quet_inbody_ui as _qi
+    _qi.quet_mot(k, nguoi, vai)
     with st.form(f"sdk_{ma}_{vai}", clear_on_submit=True):
         a, b = st.columns(2)
         nd = a.date_input("Ngày đo", hom, format="DD/MM/YYYY", max_value=hom, min_value=hom - timedelta(days=30))

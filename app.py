@@ -96,6 +96,7 @@ if user["role"] == "coach":
                        st.Page(V.cardio, title="Cardio", icon="🏃", url_path="cardio"),
                        st.Page(V.an, title="Dinh dưỡng", icon="🍽", url_path="dinh_duong"),
                        st.Page(V.tien_do, title="Tiến độ & báo cáo", icon="📈", url_path="tien_do"),
+                       st.Page(V.quet_inbody, title="Quét phiếu InBody", icon="📷", url_path="quet_inbody"),
                        st.Page(V.tien_do_all, title="Tiến độ tất cả khách", icon="📊", url_path="tien_do_all"),
                        st.Page(V.thau_hieu, title="Thấu hiểu khách 🔒", icon="🧠", url_path="thau_hieu"),
                        st.Page(V.lo_trinh, title="Lộ trình & mục tiêu 🔒", icon="🎯", url_path="lo_trinh"),

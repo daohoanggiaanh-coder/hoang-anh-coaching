@@ -346,6 +346,8 @@ def dinh_duong(k: dict, vai: str, nguoi: str, q: dict | None = None):
         with st.expander("✋ Quy tắc bàn tay & cách áng chừng khi ăn ngoài (có hình)"):
             from views import ban_tay_ui as _bt
             st.markdown(_bt.the_ban_tay(), unsafe_allow_html=True)
+            if vai == "hlv" and st.toggle("🖼️ Thay hình bằng ảnh thật / ảnh AI", key="bt_ql"):
+                _bt.quan_ly_anh(nguoi)
             st.markdown("\n".join(f"- {x}" for x in _bt.HUONG_DAN_AN_NGOAI))
             st.caption("Cách áng chừng bằng bàn tay theo hướng dẫn phổ biến của Precision Nutrition — bàn tay to nhỏ tỉ lệ với cơ thể nên "
                        "tự điều chỉnh theo từng người; sai số lớn hơn cân, đủ dùng khi ăn ngoài. Số phần mỗi bữa ghi ngay dưới từng bữa.")

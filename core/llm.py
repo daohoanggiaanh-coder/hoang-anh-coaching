@@ -281,3 +281,38 @@ def chat_json(system: str, messages: list[dict], **kw) -> dict:
                                        {"role": "user", "content": "Trả lại đúng JSON hợp lệ."}],
                    json_mode=True, temperature=0.0, **kw)
         return parse_json(raw)
+
+
+# ------------------------------------------------------------------ v3.4: tạo ảnh minh hoạ (Gemini)
+def tao_anh(prompt: str, timeout: int = 90) -> bytes:
+    """Gemini tạo 1 ảnh từ mô tả → bytes (PNG/JPEG). Chỉ hỗ trợ khoá Gemini. Lỗi → LLMError (kể cả khi gói miễn phí
+    không cho dùng mô hình tạo ảnh — khi đó HLV tự tạo ảnh ở app Gemini / ChatGPT rồi tải lên)."""
+    import base64
+    if not config.get("GEMINI_API_KEY"):
+        raise LLMError("Tạo ảnh cần GEMINI_API_KEY trong Secrets.")
+    try:
+        r = requests.get("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", timeout=20,
+                         headers={"x-goog-api-key": config.get("GEMINI_API_KEY", "")})
+        ms = [m["name"].split("/")[-1] for m in r.json().get("models", [])
+              if "generateContent" in m.get("supportedGenerationMethods", [])]
+    except (requests.RequestException, ValueError, KeyError):
+        ms = []
+    ung = sorted([m for m in ms if "image" in m and m.startswith("gemini-")], key=lambda n: ("preview" in n, n)) or ["gemini-2.5-flash-image"]
+    loi = ""
+    for m in ung[:3]:
+        try:
+            r = requests.post(f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent", timeout=timeout,
+                              headers={"x-goog-api-key": config.get("GEMINI_API_KEY", "")},
+                              json={"contents": [{"role": "user", "parts": [{"text": prompt}]}],
+                                    "generationConfig": {"responseModalities": ["TEXT", "IMAGE"]}})
+            d = r.json()
+        except (requests.RequestException, ValueError) as e:
+            loi = str(e)
+            continue
+        for c in d.get("candidates", []):
+            for p in (c.get("content") or {}).get("parts", []):
+                dl = p.get("inlineData") or p.get("inline_data")
+                if dl and dl.get("data"):
+                    return base64.b64decode(dl["data"])
+        loi = (d.get("error") or {}).get("message") or "Mô hình không trả về ảnh."
+    raise LLMError(f"Chưa tạo được ảnh: {loi[:200]}")

@@ -513,3 +513,23 @@ def test_thuc_don_loi_khuan_trai_cay_chat_luong():
         q = dd.chat_luong_ngay(tuan[0]["bua"], h, tuan[0]["tap"])
         assert any(c["ten"].startswith("Lợi khuẩn") and c["ok"] for c in q)
         assert len(dd.chat_luong_tuan(tuan)) == 3 and dd.vi_chat(h)
+
+
+def test_quet_inbody_khop_ten_va_luu_gop(tmp_path, monkeypatch):
+    from datetime import date
+
+    from core import quet_inbody as qi, tien_do as td, tu_van as tv
+    DS = [{"ma": "A1", "ho_ten": "Nguyễn Thị Lan", "phong_tap": "Atlas"},
+          {"ma": "A2", "ho_ten": "Trần Văn Hùng", "phong_tap": "Gold Gym"},
+          {"ma": "A3", "ho_ten": "Lê Thị Lan", "phong_tap": "Online"}]
+    assert qi.khop_khach("NGUYEN THI LAN", DS)[0] == "A1"
+    assert qi.khop_khach("Tran Van Hung", DS)[0] == "A2"
+    assert qi.khop_khach("Lan", DS)[0] is None          # 2 khách tên Lan → để HLV chọn
+    assert qi.khop_khach("Pham Minh", DS)[0] is None
+    r = tv.clean_inbody({"ten": "Nguyen Thi Lan", "ngay_do": "2019.01.01", "can_nang": 60, "bmr": 1300})
+    assert r["ten"] == "Nguyen Thi Lan" and "ngay_do" not in r and r["bmr"] == 1300
+    u = {"name": "test"}
+    td.luu_so_do("A1", date(2026, 11, 2), "tuan", {"v_eo": 70}, "", u)
+    td.luu_so_do("A1", date(2026, 11, 2), "tuan", {"pbf": 25, "bmr": 1300}, "", u, gop=True)
+    sd = td.so_do("A1")
+    assert sd.iloc[-1]["v_eo"] == 70 and sd.iloc[-1]["pbf"] == 25

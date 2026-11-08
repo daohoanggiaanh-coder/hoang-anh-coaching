@@ -100,6 +100,9 @@ def _inbody_nhac(dang: list[dict], T: dict, B: list[dict], hom: date):
     if not can:
         return
     ui.sec(f"📏 Cần đo InBody ({len(can)})")
+    if st.button("📷 Đo xong cả nhóm? Quét nhiều phiếu InBody một lần", key="ib_quet"):
+        S["_dich"] = "quet_inbody"
+        st.rerun()
     BD = {k["ma"]: inbody.buoi_do(k, t, B, hom) for t, k in can}
     can.sort(key=lambda x: (BD[x[1]["ma"]] is None, BD[x[1]["ma"]]["ngay"] if BD[x[1]["ma"]] else hom, x[0]["con"]))
     for i, (t, k) in enumerate(can):
@@ -1229,6 +1232,12 @@ def _khach_thay_1(u: dict, DS: list[dict]):
 def tien_do_all():
     from views import tien_do_all_ui
     tien_do_all_ui.trang(_user())
+
+
+def quet_inbody():
+    """v3.4 — 📷 Quét phiếu InBody hàng loạt."""
+    from views import quet_inbody_ui
+    quet_inbody_ui.trang(_user())
 
 
 def thau_hieu():

@@ -367,8 +367,29 @@ INBODY_PROMPT = (
     "khoi_mo (Body Fat Mass, kg), pbf (PBF / Percent Body Fat, %), mo_noi_tang (Visceral Fat Level, số nguyên), "
     "bmr (Basal Metabolic Rate, kcal), diem_inbody (InBody Score), nuoc (Total Body Water, L), protein (Protein, kg), "
     "khoang_chat (Minerals, kg), tuoi (Age), gioi_tinh (\"Nam\" hoặc \"Nữ\" nếu phiếu ghi Male/Female), "
-    "tuoi_may (Body Age / Metabolic Age nếu phiếu có in), ngay_do (ngày đo YYYY-MM-DD nếu có). "
+    "tuoi_may (Body Age / Metabolic Age nếu phiếu có in), ngay_do (ngày đo YYYY-MM-DD nếu có), "
+    "ten (tên / ID khách in ở đầu phiếu, giữ nguyên chữ, không có thì null). "
     "Lấy giá trị đo của khách, không lấy khoảng chuẩn (Normal range) in bên cạnh.")
+
+
+def _ngay_phieu(v) -> str | None:
+    """Ngày in trên phiếu (nhiều kiểu: 2026.11.08 / 08/11/2026 / 2026-11-08 14:20). Chỉ nhận trong 2 năm gần đây."""
+    import re
+    from datetime import date, datetime, timedelta
+    s = str(v or "").strip()
+    m = re.search(r"(20\d\d)[./-](\d{1,2})[./-](\d{1,2})", s) or None
+    try:
+        if m:
+            d = date(int(m[1]), int(m[2]), int(m[3]))
+        else:
+            m = re.search(r"(\d{1,2})[./-](\d{1,2})[./-](20\d\d)", s)
+            if not m:
+                return None
+            d = date(int(m[3]), int(m[2]), int(m[1]))
+    except ValueError:
+        return None
+    hom = datetime.now().date()
+    return d.isoformat() if hom - timedelta(days=730) <= d <= hom + timedelta(days=1) else None
 
 
 def clean_inbody(raw: dict) -> dict:
@@ -383,6 +404,12 @@ def clean_inbody(raw: dict) -> dict:
         out["gioi_tinh"] = "Nam"
     elif g in ("nữ", "nu", "female", "f"):
         out["gioi_tinh"] = "Nữ"
+    t = str(raw.get("ten") or "").strip()
+    if t and t.lower() not in ("null", "none") and len(t) <= 60:
+        out["ten"] = t
+    d = _ngay_phieu(raw.get("ngay_do"))
+    if d:
+        out["ngay_do"] = d
     if out.get("khoi_mo") and out.get("can_nang") and not out.get("pbf"):
         out["pbf"] = round(out["khoi_mo"] / out["can_nang"] * 100, 1)
     return out

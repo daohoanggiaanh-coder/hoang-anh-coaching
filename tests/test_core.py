@@ -477,3 +477,22 @@ def test_inbody_han(monkeypatch):
     B = [{"ma": "R1", "ngay": date(2026, 11, 6), "trang_thai": "xong", "gio": "6"},
          {"ma": "R1", "ngay": date(2026, 11, 9), "trang_thai": "hen", "gio": "6"}]
     assert inbody.buoi_do({"ma": "R1"}, {"han": date(2026, 11, 7)}, B, date(2026, 11, 7))["ngay"] == date(2026, 11, 9)
+
+
+def test_thau_hieu_phong_cach_va_diem(monkeypatch):
+    from datetime import date
+    from core import store, thau_hieu as th
+    hs = {"dh6": True, "dh7": True, "dh0": True}
+    assert th.phong_cach(hs)[0] == "phan_tich"
+    assert th.phong_cach({**hs, "phong_cach_tay": "on_dinh"})[0] == "on_dinh"
+    assert th.phong_cach({})[0] is None
+    monkeypatch.setattr(store, "con_lai", lambda k, H=None: 2)
+    monkeypatch.setattr(store, "da_tap", lambda k, H=None: 20)
+    cc = {"tong": 6, "xong": 2, "huy": 4, "ti_le": 2 / 6}
+    d, ly = th.nguy_co({"ma": "R1"}, {"giai_doan": "chao_dao", "hai_long": 5}, cc)
+    assert d >= 80 and ly
+    g, _ = th.san_sang_gioi_thieu({"ma": "R1"}, {"hai_long": 10, "da_thay_ket_qua": True, "mang_luoi": ["Đồng nghiệp công ty"]},
+                                   {"tong": 6, "xong": 6, "huy": 0, "ti_le": 1.0})
+    assert g >= 80
+    assert th.muc(65) == "Cao" and th.muc(10) == "Thấp"
+    _ = date

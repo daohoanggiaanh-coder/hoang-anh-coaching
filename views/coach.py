@@ -1229,3 +1229,9 @@ def _khach_thay_1(u: dict, DS: list[dict]):
 def tien_do_all():
     from views import tien_do_all_ui
     tien_do_all_ui.trang(_user())
+
+
+def thau_hieu():
+    """v3.1 — 🧠 Thấu hiểu khách (chỉ HLV)."""
+    from views import thau_hieu_ui
+    thau_hieu_ui.trang(_user())

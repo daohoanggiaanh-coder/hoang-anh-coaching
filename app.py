@@ -97,6 +97,7 @@ if user["role"] == "coach":
                        st.Page(V.an, title="Dinh dưỡng", icon="🍽", url_path="dinh_duong"),
                        st.Page(V.tien_do, title="Tiến độ & báo cáo", icon="📈", url_path="tien_do"),
                        st.Page(V.tien_do_all, title="Tiến độ tất cả khách", icon="📊", url_path="tien_do_all"),
+                       st.Page(V.thau_hieu, title="Thấu hiểu khách 🔒", icon="🧠", url_path="thau_hieu"),
                        st.Page(V.lo_trinh, title="Lộ trình & mục tiêu 🔒", icon="🎯", url_path="lo_trinh"),
                        st.Page(V.khach_thay, title="Khách thấy gì", icon="👁", url_path="khach_thay")],
         "Công cụ": [st.Page(V.soan_tin, title="Soạn tin Zalo", icon="✉️", url_path="soan_tin"),

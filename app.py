@@ -178,6 +178,11 @@ with st.sidebar:                                        # v2.2: tên + ảnh đ�
         st.markdown(f"<div style='font-size:1.05rem;font-weight:800;margin:2px 0 10px'>{ui.E(user['name'])}</div>", unsafe_allow_html=True)
 nav = st.navigation(pages, position="sidebar")            # v2.4: khách cũng dùng menu bên trái
 with st.sidebar:
+    try:
+        from core import nen as _nen                    # v3.2: nền sáng / tối tự động theo giờ, nhớ lựa chọn
+        _nen.chon(user)
+    except Exception:  # noqa: BLE001
+        pass
     if st.button("Đăng xuất", use_container_width=True):
         auth.logout()
         st.rerun()

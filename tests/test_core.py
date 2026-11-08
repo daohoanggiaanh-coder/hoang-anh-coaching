@@ -496,3 +496,20 @@ def test_thau_hieu_phong_cach_va_diem(monkeypatch):
     assert g >= 80
     assert th.muc(65) == "Cao" and th.muc(10) == "Thấp"
     _ = date
+
+
+def test_thuc_don_loi_khuan_trai_cay_chat_luong():
+    F = dd.foods()
+    for cd in (["thuong"], ["khong_sua"]):
+        h = dd.HoSo(gioi_tinh="Nữ", tuoi=30, cao=158, kg=58, buoi_tuan=3, muc_tieu="giam_mo", so_bua=4, che_do=cd)
+        kq = dd.tinh(h)
+        tuan = dd.thuc_don_tuan(h, kq, "R009")
+        for d in tuan:
+            assert any("len_men" in F[x].get("tag", []) for b in d["bua"] for x in b["mon"]), (cd, d["thu"])
+            for b in d["bua"]:
+                for x in b["mon"]:
+                    if F[x]["nhom"] == "trai_cay" and b["mau"] not in ("truoc", "sau"):
+                        assert x in dd.TRAI_CAY_MT["giam_mo"], x
+        q = dd.chat_luong_ngay(tuan[0]["bua"], h, tuan[0]["tap"])
+        assert any(c["ten"].startswith("Lợi khuẩn") and c["ok"] for c in q)
+        assert len(dd.chat_luong_tuan(tuan)) == 3 and dd.vi_chat(h)

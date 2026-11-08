@@ -149,6 +149,7 @@
    "f": 0.4,
    "xo": 0.0,
    "tag": [
+    "len_men",
     "sua"
    ]
   },
@@ -244,6 +245,7 @@
    "f": 3.3,
    "xo": 0.0,
    "tag": [
+    "len_men",
     "sua"
    ],
    "don_vi": {
@@ -721,6 +723,111 @@
    "f": 0.2,
    "xo": 1.2,
    "tag": []
+  },
+  "kefir": {
+   "ten": "Kefir / sữa chua uống men sống (không đường)",
+   "nhom": "sua",
+   "kcal": 43,
+   "p": 3.8,
+   "c": 4.5,
+   "f": 1.0,
+   "xo": 0.0,
+   "tag": [
+    "sua",
+    "len_men"
+   ],
+   "don_vi": {
+    "ten": "ly",
+    "g": 200
+   }
+  },
+  "kim_chi": {
+   "ten": "Kim chi (ăn kèm, lượng nhỏ)",
+   "nhom": "rau",
+   "kcal": 15,
+   "p": 1.1,
+   "c": 2.4,
+   "f": 0.5,
+   "xo": 1.6,
+   "tag": [
+    "len_men"
+   ],
+   "don_vi": {
+    "ten": "chén nhỏ",
+    "g": 50
+   }
+  },
+  "dua_cai_chua": {
+   "ten": "Dưa cải chua (ăn kèm, lượng nhỏ)",
+   "nhom": "rau",
+   "kcal": 19,
+   "p": 0.9,
+   "c": 4.3,
+   "f": 0.1,
+   "xo": 2.9,
+   "tag": [
+    "len_men"
+   ],
+   "don_vi": {
+    "ten": "chén nhỏ",
+    "g": 50
+   }
+  },
+  "thanh_long": {
+   "ten": "Thanh long",
+   "nhom": "trai_cay",
+   "kcal": 57,
+   "p": 0.4,
+   "c": 15.2,
+   "f": 0.1,
+   "xo": 3.1,
+   "tag": []
+  },
+  "dau_tay": {
+   "ten": "Dâu tây",
+   "nhom": "trai_cay",
+   "kcal": 32,
+   "p": 0.7,
+   "c": 7.7,
+   "f": 0.3,
+   "xo": 2.0,
+   "tag": []
+  },
+  "viet_quat": {
+   "ten": "Việt quất",
+   "nhom": "trai_cay",
+   "kcal": 57,
+   "p": 0.7,
+   "c": 14.5,
+   "f": 0.3,
+   "xo": 2.4,
+   "tag": []
+  },
+  "nho": {
+   "ten": "Nho",
+   "nhom": "trai_cay",
+   "kcal": 69,
+   "p": 0.7,
+   "c": 18.1,
+   "f": 0.2,
+   "xo": 0.9,
+   "tag": []
+  },
+  "hat_chia": {
+   "ten": "Hạt chia",
+   "nhom": "beo",
+   "kcal": 486,
+   "p": 16.5,
+   "c": 42.1,
+   "f": 30.7,
+   "xo": 34.4,
+   "tag": [
+    "hat"
+   ],
+   "don_vi": {
+    "ten": "thìa canh",
+    "g": 12
+   }
   }
  }
 }

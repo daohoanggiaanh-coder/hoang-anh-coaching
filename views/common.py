@@ -197,6 +197,11 @@ DD_CSS = """<style>
 .dd-wd.t{background:#1C1B19;border-color:#1C1B19;color:#F3ECDC}.dd-wd.t b{color:#E8C76A}
 .dd-wd small{display:block;font-size:.66rem;letter-spacing:.1em;font-weight:800;opacity:.75}.dd-wd b{display:block;font-size:1.1rem}
 .dd-wd i{font-style:normal;font-size:.7rem;opacity:.75}
+.dd-clw{border:1px solid #E6DCC6;border-radius:14px;padding:10px 14px;margin:12px 0;background:#FBF8F1}
+.dd-clw .h{font-weight:800;margin-bottom:6px;text-align:left}.dd-clw .h span{float:right;font-size:.8rem;color:#2E7D4F}
+.dd-cl{display:flex;gap:10px;padding:6px 0;border-top:1px dashed #E6DCC6;text-align:left}.dd-cl .i{font-size:1.05rem}
+.dd-cl b{display:block;font-size:.9rem}.dd-cl small{display:block;font-size:.78rem;opacity:.8;line-height:1.35}
+html[data-hac-theme=dark] .dd-clw{background:#1A1814;border-color:#3A342A}html[data-hac-theme=dark] .dd-cl{border-color:#3A342A}
 </style>"""
 
 
@@ -233,6 +238,15 @@ def _bang_bua(b: dict, F: dict) -> str:
             f'<span>Béo <b>{t["f"]:.0f} g</b></span><span>Xơ <b>{t["xo"]:.0f} g</b></span></div>'
             f'<div style="font-size:.72rem;opacity:.7;padding:2px 12px 8px">🎯 Mục tiêu bữa này · ăn ngoài thì chọn món ≈ {t["kcal"]:.0f} kcal, '
             f'≥ {t["p"]:.0f} g đạm</div></div>')
+
+
+def _the_chat_luong(ds: list[dict], tieu_de: str) -> str:
+    """v3.2: thẻ đánh giá chất lượng khẩu phần (ngoài calo / macro)."""
+    n_ok = sum(1 for x in ds if x["ok"])
+    dong = "".join(
+        f'<div class="dd-cl"><span class="i">{"✅" if x["ok"] else "⚠️"}</span><div><b>{E(x["ten"])}</b><small>{E(x["ct"])}</small></div></div>'
+        for x in ds)
+    return (f'<div class="dd-clw"><div class="h">🩺 {E(tieu_de)} <span>{n_ok}/{len(ds)} đạt</span></div>{dong}</div>')
 
 
 def _the_bo_sung(ds: list[dict], h) -> str:
@@ -312,6 +326,14 @@ def dinh_duong(k: dict, vai: str, nguoi: str, q: dict | None = None):
         st.markdown(_the_ngay(store.THU[thu] + (" · hôm nay" if thu == hom.weekday() else ""), la_tap, tt, m, dd.rau_qua(ngay)),
                     unsafe_allow_html=True)
         st.markdown('<div class="dd-tl">' + "".join(_bang_bua(bb, F) for bb in ngay) + "</div>", unsafe_allow_html=True)
+        st.markdown(_the_chat_luong(dd.chat_luong_ngay(ngay, h, la_tap), "Chất lượng khẩu phần hôm nay"), unsafe_allow_html=True)
+        with st.expander("🍎 Góc chuyên gia: vi chất, lợi khuẩn, trái cây & thói quen"):
+            for t_, nd_ in dd.vi_chat(h):
+                st.markdown(f"**{t_}** — {E(nd_)}")
+            st.markdown("**🍽 Đĩa ăn cân bằng** — ½ đĩa rau củ, ¼ đạm (thịt, cá, trứng, đậu), ¼ tinh bột ưu tiên nguyên cám "
+                        "(theo mô hình Healthy Eating Plate của Harvard T.H. Chan School of Public Health).")
+            st.caption("Gợi ý chung theo hồ sơ — không thay cho xét nghiệm hay tư vấn của bác sĩ / chuyên gia dinh dưỡng lâm sàng "
+                       "khi có bệnh nền (tiểu đường, thận, dạ dày…).")
         if hlv or q.get("doi_mon"):
             with st.expander("🔁 Đổi món trong bữa (web tự tính lại số gram)"):
                 for bb in ngay:
@@ -363,6 +385,7 @@ def dinh_duong(k: dict, vai: str, nguoi: str, q: dict | None = None):
             f'<b>{sum(b_["thuc"]["kcal"] for b_ in d["bua"]):,.0f}</b><i>kcal · {"tập" if d["tap"] else "nghỉ"}</i>'
             f'<i><br>Đ {sum(b_["thuc"]["p"] for b_ in d["bua"]):.0f} g</i></div>'.replace(",", ".") for d in tuan) + "</div>",
             unsafe_allow_html=True)
+        st.markdown(_the_chat_luong(dd.chat_luong_tuan(tuan), "Chất lượng cả tuần"), unsafe_allow_html=True)
         for d in tuan:
             with st.expander(f"{store.THU[d['thu']]} · {'ngày tập' if d['tap'] else 'ngày nghỉ'}"):
                 st.markdown('<div class="dd-tl">' + "".join(_bang_bua(bb, F) for bb in d["bua"]) + "</div>", unsafe_allow_html=True)

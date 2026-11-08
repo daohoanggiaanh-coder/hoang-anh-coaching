@@ -278,7 +278,7 @@ GIOI_HAN = {"whey": 45, "trung": 200, "long_trang": 264, "dau_an": 10, "bo_dau_p
             "hat_dieu": 40, "qua_bo": 120, "sua_dau_nanh": 500, "sua_tuoi": 400, "sua_tach_beo": 400, "edamame": 250, "dau_lang": 300, "yen_mach": 100, "banh_mi": 150, "com": 400, "com_gao_lut": 400, "bun": 400,
             "mi_y": 350, "khoai_lang": 450, "khoai_tay": 450, "bap": 300, "chuoi": 240, "tao": 300, "cam": 300, "du_du": 300,
             "dua_hau": 400, "sua_chua_hy_lap": 300, "ca_ngu_hop": 150, "dau_phu": 300,
-            "chao": 700, "banh_pho": 450, "hu_tieu": 450, "xoi": 300}
+            "chao": 700, "banh_pho": 450, "hu_tieu": 450, "xoi": 300, "hat_chia": 15, "kefir": 300}
 
 
 # v1.4 — MÓN VIỆT cho bữa chính: tên món thật, web vẫn giải số gram từng thành phần để khớp macro.
@@ -422,7 +422,8 @@ def tong(mon: dict[str, float], F: dict) -> dict:
 
 
 def bua_an(b: dict, F: dict, che_do: list[str], seed: int, chon: dict | None = None, bo: set[str] | None = None,
-           tranh_kem: set[str] | None = None, viet: bool = True, tranh_mon: set[str] | None = None, it_tb: bool = False) -> dict:
+           tranh_kem: set[str] | None = None, viet: bool = True, tranh_mon: set[str] | None = None, it_tb: bool = False,
+           uu_trai: list[str] | None = None) -> dict:
     """1 bữa: bữa chính kiểu Việt → chọn 1 món Việt (xoay vòng, không lặp trong ngày); còn lại chọn món theo mẫu
     (xoay vòng theo seed, hoặc theo `chon` người dùng đổi) rồi tính gram."""
     bo = bo or set()
@@ -460,6 +461,10 @@ def bua_an(b: dict, F: dict, che_do: list[str], seed: int, chon: dict | None = N
         ds = [k for k, v in F.items() if v.get("nhom") == nhom and duoc_an(v, che_do) and k not in bo and k not in mon
               and k not in (tranh_kem or set())] or \
              [k for k, v in F.items() if v.get("nhom") == nhom and duoc_an(v, che_do) and k not in bo and k not in mon]
+        ds = [x for x in ds if "len_men" not in F[x].get("tag", [])] or ds     # kim chi / dưa chua chỉ thêm lượng nhỏ (xem _them_loi_khuan)
+        if nhom == "trai_cay":                                            # v3.2: trái cây theo mục tiêu; quanh giờ tập ưu tiên chuối
+            pref = ["chuoi"] if mau in ("truoc", "sau") else (uu_trai or [])
+            ds = [x for x in ds if x in pref] or ds
         if ds:
             x = chon.get(nhom) if chon.get(nhom) in ds else ds[(seed >> 17) % len(ds)]
             dv = F[x].get("don_vi")
@@ -508,15 +513,158 @@ def thuc_don_ngay(h: HoSo, kq: dict, ngay_tap: bool, thu: int, ma: str = "", cho
     da_mon: set[str] = set()                              # món Việt không lặp trong ngày
     for b in phan_bua(h, m, ngay_tap):
         x = bua_an(b, F, h.che_do, _seed(ma, thu, b["bua"]), (chon or {}).get(b["bua"]), bo, da_an,
-                   viet=h.kieu_td != "tach", tranh_mon=da_mon, it_tb=m["c"] < 160)
+                   viet=h.kieu_td != "tach", tranh_mon=da_mon, it_tb=m["c"] < 160, uu_trai=TRAI_CAY_MT.get(h.muc_tieu))
         da_an |= {k for k in x["kem"] if F[k]["nhom"] == "trai_cay"}
         if x.get("mon_id"):
             da_mon.add(x["mon_id"])
             if MON_VIET[x["mon_id"]].get("nuoc"):            # đã có 1 món nước trong ngày → bữa sau ưu tiên món cơm
                 da_mon |= {i for i, v in MON_VIET.items() if v.get("nuoc")}
         out.append(x)
+    _them_loi_khuan(out, F, h.che_do, bo or set())
+    _them_xo(out, F, h.che_do, bo or set(), m["kcal"])
     _can_ngay(out, m, F)
+    _them_loi_khuan(out, F, h.che_do, bo or set())       # món lên men bị làm tròn mất khi cân ngày → thêm lại
     _bu_beo(out, m, F, h.che_do, bo or set(), h.nu)
+    return out
+
+
+# ------------------------------------------------------------------ v3.2: chất lượng khẩu phần (ngoài macro)
+# Trái cây theo mục tiêu — giảm mỡ: ít năng lượng, nhiều xơ / nước, no lâu; tăng cơ: dễ ăn, nhiều năng lượng.
+TRAI_CAY_MT = {
+    "giam_mo": ["oi", "buoi", "tao", "kiwi", "dau_tay", "du_du", "dua_hau", "thanh_long", "cam", "viet_quat"],
+    "recomp": ["oi", "buoi", "tao", "kiwi", "cam", "du_du", "thanh_long", "dau_tay", "viet_quat", "chuoi"],
+    "tang_co": ["chuoi", "xoai", "nho", "du_du", "cam", "tao", "kiwi", "thanh_long", "viet_quat"],
+    "giu": [],
+}
+CA_BEO = {"ca_hoi", "ca_thu"}
+
+
+def _len_men(x: str, F: dict) -> bool:
+    return "len_men" in F.get(x, {}).get("tag", [])
+
+
+def _them_loi_khuan(ds: list[dict], F: dict, che_do: list[str], bo: set[str]) -> None:
+    """Mỗi ngày ít nhất 1 món lên men (sữa chua / kefir; không ăn sữa → kim chi lượng nhỏ) — thêm vào bữa phụ hoặc bữa sáng."""
+    if any(_len_men(x, F) for b in ds for x in b["mon"]):
+        return
+    chon = next(((x, g) for x, g in (("sua_chua_thuong", 100), ("kefir", 200), ("kim_chi", 50), ("dua_cai_chua", 50))
+                 if x in F and duoc_an(F[x], che_do) and x not in bo), None)
+    if not chon:
+        return
+    x, g = chon
+    if F[x]["nhom"] == "rau":                                   # kim chi / dưa chua: ăn kèm bữa chính
+        dich = next((b for b in ds if b["bua"] in ("trua", "toi")), ds[0] if ds else None)
+    else:
+        dich = next((b for b in ds if b["bua"].startswith("phu") and b.get("vai") != "truoc"), None) or \
+            next((b for b in ds if b["bua"] == "sang"), ds[0] if ds else None)
+    if dich is None:
+        return
+    dich["mon"][x] = float(g)
+    dich["kem"] = list(dich.get("kem", [])) + [x]
+    dich["loi_khuan"] = x
+
+
+def _them_xo(ds: list[dict], F: dict, che_do: list[str], bo: set[str], kcal: float) -> None:
+    """Thiếu xơ (< 80 % mức 14 g / 1.000 kcal) → thêm rau vào bữa chính, rồi 1 thìa hạt chia vào bữa có sữa chua."""
+    def xo():
+        return sum(tong(b["mon"], F)["xo"] for b in ds)
+    mt = 0.8 * 14 * kcal / 1000
+    for b in ds:
+        if xo() >= mt:
+            return
+        rau = [x for x in b["mon"] if F[x]["nhom"] == "rau" and not _len_men(x, F)]
+        if b["bua"] in ("trua", "toi") and rau:
+            b["mon"][rau[0]] += 100.0
+    if xo() < mt and "hat_chia" in F and duoc_an(F["hat_chia"], che_do) and "hat_chia" not in bo:
+        dich = next((b for b in ds if any(_len_men(x, F) and F[x]["nhom"] in ("sua", "dam") for x in b["mon"])), None) or \
+            next((b for b in ds if b["bua"] == "sang"), None)
+        if dich is not None:
+            dich["mon"]["hat_chia"] = 10.0
+            dich["kem"] = list(dich.get("kem", [])) + ["hat_chia"]
+
+
+def chat_luong_ngay(ngay: list[dict], h: "HoSo", la_tap: bool) -> list[dict]:
+    """Đánh giá 1 ngày ăn ngoài calo / macro. Trả [{ok: True/False/None, ten, ct}]."""
+    F = foods()
+    mon = [x for b in ngay for x in b["mon"]]
+    kcal = sum(b["thuc"]["kcal"] for b in ngay)
+    xo = sum(b["thuc"]["xo"] for b in ngay)
+    rq = rau_qua(ngay)
+    out = []
+    out.append({"ok": rq >= 400, "ten": "Rau + trái cây ≥ 400 g",
+                "ct": f"{rq:.0f} g — WHO khuyến nghị tối thiểu 400 g rau quả / ngày. Thiếu thì thêm 1 chén rau luộc hoặc 1 phần trái cây."})
+    mt_xo = 14 * kcal / 1000
+    out.append({"ok": xo >= 0.8 * mt_xo, "ten": f"Chất xơ ≈ {mt_xo:.0f} g",
+                "ct": f"Thực đơn có ~{xo:.0f} g (mức tham khảo 14 g / 1.000 kcal — Hướng dẫn dinh dưỡng Mỹ 2020–2025). "
+                      "Tăng bằng rau, gạo lứt, yến mạch, đậu, ổi, hạt chia; uống thêm nước khi tăng xơ."})
+    lm = [F[x]["ten"] for x in mon if _len_men(x, F)]
+    out.append({"ok": bool(lm), "ten": "Lợi khuẩn (thực phẩm lên men)",
+                "ct": ("Có: " + ", ".join(dict.fromkeys(lm)) + ". ") if lm else "Chưa có món lên men. "
+                      "Sữa chua không đường / kefir có men sống hỗ trợ hệ vi sinh đường ruột; ăn cùng rau, chuối, yến mạch, hành tỏi "
+                      "(chất xơ ‘nuôi’ lợi khuẩn). Kim chi, dưa chua nhiều muối — ăn lượng nhỏ."})
+    tc = [x for x in dict.fromkeys(mon) if F[x]["nhom"] == "trai_cay"]
+    pref = TRAI_CAY_MT.get(h.muc_tieu) or []
+    if tc:
+        hop = all(x in pref or x == "chuoi" for x in tc) if pref else True
+        out.append({"ok": hop, "ten": "Trái cây hợp mục tiêu",
+                    "ct": ", ".join(F[x]["ten"] for x in tc) + (" — " + GHI_TRAI.get(h.muc_tieu, "") if GHI_TRAI.get(h.muc_tieu) else "")})
+    nguong = 0.3 * h.kg
+    bua_chinh = [b for b in ngay if not b["bua"].startswith("phu")]
+    it = [b["ten"] for b in bua_chinh if b["thuc"]["p"] < nguong]
+    out.append({"ok": not it, "ten": f"Đạm chia đều (≥ {nguong:.0f} g mỗi bữa chính)",
+                "ct": ("Thiếu ở: " + ", ".join(it) + ". " if it else "") +
+                      "Mức tham khảo ~0,3–0,4 g/kg mỗi bữa, chia 3–5 bữa (Schoenfeld & Aragon, JISSN 2018) giúp tổng hợp cơ tốt hơn dồn 1 bữa."})
+    if la_tap:
+        sau = [b for b in ngay if b.get("vai") == "sau"]
+        out.append({"ok": bool(sau), "ten": "Bữa sau tập có đạm + tinh bột",
+                    "ct": "Trong ~2 giờ sau tập: 20–40 g đạm + tinh bột để hồi phục (khuyến nghị ISSN về thời điểm ăn — Kerksick et al., 2017)."})
+    return out
+
+
+GHI_TRAI = {"giam_mo": "ưu tiên trái cây nhiều xơ, nhiều nước, ít ngọt (ổi, bưởi, táo, dâu, thanh long) — no lâu, ít calo; nước ép không thay được trái cây nguyên quả.",
+            "tang_co": "chuối, xoài, nho dễ ăn, nhiều năng lượng — hợp bữa phụ và quanh giờ tập.",
+            "recomp": "chủ yếu trái cây nhiều xơ; chuối / xoài để quanh giờ tập."}
+
+
+def chat_luong_tuan(tuan: list[dict]) -> list[dict]:
+    F = foods()
+    ca = sum(1 for d in tuan if any(x in CA_BEO for b in d["bua"] for x in b["mon"]))
+    loai = {x for d in tuan for b in d["bua"] for x in b["mon"] if F[x]["nhom"] in ("rau", "trai_cay")}
+    lm = sum(1 for d in tuan if any(_len_men(x, F) for b in d["bua"] for x in b["mon"]))
+    return [
+        {"ok": ca >= 2, "ten": f"Cá béo {ca} bữa / tuần (nên ≥ 2)",
+         "ct": "Cá hồi, cá thu, cá trích, cá nục… cho omega-3 (EPA/DHA) — Hiệp hội Tim mạch Mỹ khuyến nghị ăn cá ~2 lần/tuần. "
+               "Thiếu thì đổi món ở bữa trưa / tối sang cá hồi / cá thu, hoặc cân nhắc omega-3 (tab Bổ sung)."},
+        {"ok": len(loai) >= 10, "ten": f"{len(loai)} loại rau / trái cây khác nhau trong tuần",
+         "ct": "Càng đa dạng màu sắc (xanh, đỏ, cam, tím) càng nhiều loại vi chất & chất xơ khác nhau — mục tiêu tham khảo ≥ 10 loại / tuần."},
+        {"ok": lm >= 5, "ten": f"Thực phẩm lên men {lm}/7 ngày", "ct": "Duy trì đều đặn quan trọng hơn ăn nhiều 1 lần."},
+    ]
+
+
+def vi_chat(h: "HoSo") -> list[tuple[str, str]]:
+    """Điểm cần chú ý về vi chất / thói quen theo hồ sơ (gợi ý chung — không thay xét nghiệm, khám bác sĩ)."""
+    cd = set(h.che_do or [])
+    out = []
+    if h.nu:
+        out.append(("🩸 Sắt", "Phụ nữ trong tuổi sinh sản dễ thiếu sắt: thịt bò nạc, gan (1 lần/tuần), rau lá xanh đậm; ăn kèm trái cây "
+                              "nhiều vitamin C (ổi, cam, kiwi) để hấp thu tốt hơn; trà / cà phê cách bữa ăn ~1 giờ."))
+        out.append(("🦴 Canxi", "Sữa, sữa chua, đậu phụ làm với muối canxi, cá nhỏ ăn cả xương, rau cải — 2–3 phần mỗi ngày."))
+    if cd & {"khong_sua"}:
+        out.append(("🦴 Canxi (không dùng sữa)", "Đậu phụ, sữa đậu nành có bổ sung canxi, cá nhỏ cả xương, mè, rau cải xanh đậm."))
+    if cd & {"chay_trung_sua", "thuan_chay"}:
+        out.append(("🌱 Ăn chay", "Kết hợp đậu + ngũ cốc để đủ axit amin; chú ý B12 (thuần chay gần như luôn cần bổ sung), sắt, kẽm, "
+                                 "omega-3 (hạt chia, hạt lanh, óc chó). Nên xét nghiệm định kỳ."))
+    if h.tuoi >= 50:
+        out.append(("👵 Trên 50 tuổi", "Giữ đạm cao mỗi bữa để chống mất cơ; chú ý canxi, vitamin D (ít ra nắng), vitamin B12."))
+    if h.muc_tieu == "giam_mo":
+        out.append(("🥗 Giảm mỡ mà vẫn no", "Ăn rau trước, rồi đạm, tinh bột sau cùng; uống 1 ly nước trước bữa; ưu tiên món luộc / hấp / canh; "
+                                         "hạn chế nước ngọt, trà sữa, rượu bia (calo ‘vô hình’)."))
+    if h.muc_tieu in ("tang_co", "recomp"):
+        out.append(("🌙 Bữa tối muộn / trước ngủ", "Khó đủ đạm thì thêm sữa chua Hy Lạp hoặc sữa trước ngủ — một số nghiên cứu "
+                                                  "cho thấy đạm trước ngủ hỗ trợ hồi phục; quan trọng nhất vẫn là đủ tổng đạm cả ngày."))
+    out.append(("🧂 Muối & đường", "Hạn chế nước chấm, mì gói, đồ chế biến sẵn (nhiều muối); WHO khuyến nghị muối < 5 g/ngày, "
+                                  "đường tự do < 10 % năng lượng."))
+    out.append(("😴 Ngủ & nước", "Ngủ 7–9 tiếng; ngủ thiếu dễ thèm ăn và khó giữ cơ. Uống nước rải đều, nước tiểu vàng nhạt là đủ."))
     return out
 
 
@@ -566,7 +714,8 @@ def _can_ngay(ds: list[dict], m: dict, F: dict) -> None:
             r = m[macro] - t
             if abs(r) * (9 if macro == "f" else 4) < 25:
                 break
-            cho = [(b, x) for b in ds for x in b["mon"] if x not in b.get("kem", []) and F[x]["nhom"] in nhom and F[x][macro] > 0]
+            cho = [(b, x) for b in ds for x in b["mon"] if (x not in b.get("kem", []) or (r < 0 and F[x]["nhom"] == "trai_cay"))
+                   and F[x]["nhom"] in nhom and F[x][macro] > 0]                # dư tinh bột → được bớt cả trái cây (tối thiểu 60 g)
             if not cho:
                 break
             phan = r / len(cho)
@@ -574,6 +723,8 @@ def _can_ngay(ds: list[dict], m: dict, F: dict) -> None:
             for b, x in cho:
                 g0 = b["mon"][x]
                 san = SAN_TB_VIET.get(x, 0) if b.get("mon_id") and macro == "c" else 0
+                if x in b.get("kem", []):
+                    san = 60
                 g1 = min(max(_tron(x, g0 + phan / F[x][macro] * 100, F), san), GIOI_HAN.get(x, 300))
                 if g1 != g0:
                     b["mon"][x] = g1

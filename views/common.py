@@ -666,7 +666,7 @@ def ghi_buoi(k: dict, vai: str, nguoi: str, G: list[dict], L: list[dict]):
             for si in range(n):
                 c1, c2, c3 = st.columns([0.5, 1, 1], vertical_alignment="center")
                 c1.markdown(f"<div style='text-align:center;font-weight:700;color:#8b8577'>{si + 1}</div>", unsafe_allow_html=True)
-                kg_ = c2.number_input("kg", 0.0, 400.0, value=kg_g, step=0.5, format="%.1f", placeholder="kg",
+                kg_ = c2.number_input("kg", 0.0, 400.0, value=None if kg_g is None else float(kg_g), step=0.5, format="%.1f", placeholder="kg",
                                       key=f"gb_kg_{ma}_{vai}_{chon}_{j}_{si}", label_visibility="collapsed")
                 ln_ = c3.number_input("lần", 0, 600, value=None, step=1, placeholder="lần",
                                       key=f"gb_ln_{ma}_{vai}_{chon}_{j}_{si}", label_visibility="collapsed")

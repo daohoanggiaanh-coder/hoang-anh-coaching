@@ -459,7 +459,7 @@ def ghi_buoi(k: dict, P_: dict, nguoi: str, vai: str = "hlv", chua_luu: bool = F
                 c1.markdown(f"<div style='text-align:center;color:{'#C9BFA9' if tuy else '#8b8577'};font-weight:700' "
                             f"title='{'Tuỳ chọn hôm nay — có thể bỏ theo thể trạng' if tuy else ''}'>{si + 1}{'*' if tuy else ''}</div>",
                             unsafe_allow_html=True)
-                kg = None if giay else c2.number_input("kg", 0.0, 400.0, value=tk, step=0.5, format="%.1f",
+                kg = None if giay else c2.number_input("kg", 0.0, 400.0, value=None if tk is None else float(tk), step=0.5, format="%.1f",
                                                        key=f"kg_{km}_{bm_luu}_{j}_{eid}_{si}_{tkey}", placeholder="kg",
                                                        label_visibility="collapsed")
                 lan = c3.number_input("lần", 0, 600, value=None, step=1, key=f"ln_{km}_{bm_luu}_{j}_{eid}_{si}",

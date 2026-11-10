@@ -429,3 +429,41 @@ def pdf(k: dict, kieu: str, sd: pd.DataFrame, can: pd.DataFrame, imgs: dict[str,
     c.showPage()
     c.save()
     return buf.getvalue()
+
+
+# ------------------------------------------------------------------ v3.8: % mỡ ước tính từ vòng (khi không đo InBody)
+def rfm(eo, cao, gioi: str | None) -> float | None:
+    """Relative Fat Mass (Woolcott & Bergman, Scientific Reports 2018): nam 64 − 20×(cao/eo), nữ 76 − 20×(cao/eo).
+    Chỉ cần chiều cao + vòng eo (cùng đơn vị cm). Là ƯỚC TÍNH (sai số vài %), dùng để theo dõi xu hướng khi không có InBody."""
+    eo, cao = _so(eo), _so(cao)
+    if not eo or not cao or eo < 40 or cao < 120:
+        return None
+    v = (76 if str(gioi or "").strip().lower() in ("nữ", "nu", "f") else 64) - 20 * cao / eo
+    return round(min(max(v, 4.0), 60.0), 1)
+
+
+def chuoi_tien_do(k: dict, sd: pd.DataFrame | None = None, cn: pd.DataFrame | None = None) -> dict:
+    """Dữ liệu biểu đồ tiến độ theo đúng ngày nhập:
+    can: [(ngày, kg)] — cân hằng ngày, thêm cân của ngày đo InBody / số đo nếu hôm đó chưa cân;
+    co: [(ngày, kg cơ)] — từ InBody; mo: [(ngày, % mỡ)] — InBody; mo_uoc: [(ngày, % mỡ ước tính, vòng dùng)] — chỉ ngày KHÔNG có
+    InBody nhưng có vòng bụng / eo (RFM)."""
+    sd = so_do(k["ma"]) if sd is None else sd
+    cn = can_ngay(k["ma"]) if cn is None else cn
+    can = {r["ngay"]: float(r["kg"]) for _, r in cn.iterrows() if r["ngay"] and _so(r["kg"])}
+    co, mo, mo_uoc = [], [], []
+    for _, r in sd.iterrows():
+        d = r["ngay"]
+        if not d:
+            continue
+        if _so(r.get("can_nang")) and d not in can:
+            can[d] = float(r["can_nang"])
+        if _so(r.get("smm")):
+            co.append((d, float(r["smm"])))
+        if _so(r.get("pbf")):
+            mo.append((d, float(r["pbf"])))
+        else:
+            vong = _so(r.get("v_bung")) or _so(r.get("v_eo"))
+            u = rfm(vong, k.get("chieu_cao"), k.get("gioi_tinh"))
+            if u is not None:
+                mo_uoc.append((d, u, "bụng" if _so(r.get("v_bung")) else "eo"))
+    return {"can": sorted(can.items()), "co": co, "mo": mo, "mo_uoc": mo_uoc}

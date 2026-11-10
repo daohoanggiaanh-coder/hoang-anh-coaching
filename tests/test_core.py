@@ -583,3 +583,16 @@ def test_f1_sang_khach_khao_sat_va_tuoi_co_the():
     from views import chi_so_ui
     ev = tv.evaluate(chi_so_ui.ho_so_do(k, sd.iloc[-1].to_dict()))
     assert ev["tuoi_co_the"]["gia_tri"] > 35
+
+
+def test_rfm_va_chuoi_tien_do():
+    from datetime import date as D
+    assert td.rfm(80, 160, "Nữ") == 36.0 and td.rfm(90, 175, "Nam") == round(64 - 20 * 175 / 90, 1)
+    k = _khach()
+    u = {"name": "HLV"}
+    td.luu_can("R001", D(2026, 10, 1), 60.0, u)
+    td.luu_so_do("R001", D(2026, 10, 1), "dau_khoa", {"can_nang": 60.2, "pbf": 30, "smm": 21}, "", u)
+    td.luu_so_do("R001", D(2026, 10, 8), "tuan", {"v_bung": 82}, "", u)
+    c = td.chuoi_tien_do(k)
+    assert c["can"] == [(D(2026, 10, 1), 60.0)] and c["mo"] == [(D(2026, 10, 1), 30.0)]
+    assert c["mo_uoc"][0][0] == D(2026, 10, 8) and c["mo_uoc"][0][2] == "bụng"

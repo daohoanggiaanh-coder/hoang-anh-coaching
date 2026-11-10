@@ -7,7 +7,6 @@ import html
 import json
 import pandas as pd
 import streamlit as st
-from plotly.subplots import make_subplots
 
 from core import config, db, store, tien_do as td, ui
 
@@ -64,32 +63,9 @@ def _chip(x: dict | None, ten: str) -> str:
             f'<small>{E(ten)}</small></span>')
 
 
-def bieu_do(d: dict, h: int, key: str):
-    sd, cn = d["sd"], d["cn"]
-    fig = make_subplots(specs=[[{"secondary_y": True}]])
-    if len(cn) >= 2:
-        fig.add_scatter(x=cn["ngay"], y=cn["tb7"], name="Cân (TB 7 ngày)", mode="lines", line=dict(color=ui.VANG, width=3.5),
-                        hovertemplate="%{x|%d/%m}: %{y:.1f} kg<extra></extra>", secondary_y=False)
-    elif len(sd) and sd["can_nang"].notna().any():
-        c = sd[sd["can_nang"].notna()]
-        fig.add_scatter(x=c["ngay"], y=c["can_nang"], name="Cân", mode="lines+markers+text", line=dict(color=ui.VANG, width=3.5),
-                        text=[f"{v:g}" for v in c["can_nang"]], textposition="top center",
-                        hovertemplate="%{x|%d/%m}: %{y:.1f} kg<extra></extra>", secondary_y=False)
-    if len(sd) and sd["smm"].notna().any():
-        c = sd[sd["smm"].notna()]
-        fig.add_scatter(x=c["ngay"], y=c["smm"], name="Khối cơ (kg)", mode="lines+markers", line=dict(color="#2E7D4F", width=2.5),
-                        hovertemplate="%{x|%d/%m}: cơ %{y:.1f} kg<extra></extra>", secondary_y=False)
-    if len(sd) and sd["pbf"].notna().any():
-        c = sd[sd["pbf"].notna()]
-        fig.add_scatter(x=c["ngay"], y=c["pbf"], name="% mỡ", mode="lines+markers+text", line=dict(color="#B3412E", width=2.5, dash="dot"),
-                        text=[f"{v:g}%" for v in c["pbf"]], textposition="bottom center", textfont=dict(color="#B3412E", size=11),
-                        hovertemplate="%{x|%d/%m}: %{y:.1f}% mỡ<extra></extra>", secondary_y=True)
-    ui.layout(fig, h)
-    fig.update_layout(legend=dict(orientation="h", y=-0.18, font=dict(size=11)), margin=dict(l=4, r=4, t=22, b=4))
-    fig.update_xaxes(tickformat="%d/%m")
-    fig.update_yaxes(title_text="kg", secondary_y=False)
-    fig.update_yaxes(title_text="% mỡ", secondary_y=True, showgrid=False, tickformat=".1f")
-    st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False}, key=key)
+def bieu_do(k: dict, d: dict, h: int, key: str):
+    from views import bieu_do_ui
+    bieu_do_ui.ve(k, d["sd"], d["cn"], h, key, so_nhan={540: 16, 470: 10}.get(h, 7))
 
 
 def the(k: dict, d: dict, che: bool, h: int):
@@ -115,7 +91,7 @@ def the(k: dict, d: dict, che: bool, h: int):
             dn, mn = d["dau"].get("_ngay_can") or d["dau"].get("ngay"), d["moi"].get("_ngay_can") or d["moi"].get("ngay")
             if dn and mn:
                 st.caption(f"Từ {dn:%d/%m/%Y} → {mn:%d/%m/%Y}")
-        bieu_do(d, h, f"tda_f_{k['ma']}")
+        bieu_do(k, d, h, f"tda_f_{k['ma']}")
         st.markdown(f'<div class="tda-wm">{E(config.BRAND)}</div>', unsafe_allow_html=True)
 
 
@@ -178,7 +154,7 @@ def trang(u: dict):
         hien += thieu
     if not hien:
         st.info("Chưa khách nào có số đo / cân — nhập ở trang 📈 Tiến độ từng khách.")
-    h = {1: 380, 2: 300, 3: 250}[cot]
+    h = {1: 540, 2: 470, 3: 430}[cot]
     for i in range(0, len(hien), cot):
         cs = st.columns(cot)
         for j, (k, d) in enumerate(hien[i:i + cot]):

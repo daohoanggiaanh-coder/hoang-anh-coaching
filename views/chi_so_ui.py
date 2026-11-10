@@ -93,6 +93,9 @@ def _cac_lan(k: dict) -> list[dict]:
 def hien(k: dict, vai: str = "hlv"):
     """Bảng chỉ số cơ thể + tuổi cơ thể (lần InBody gần nhất), so với lần đầu."""
     st.markdown(CSS, unsafe_allow_html=True)
+    from views import bieu_do_ui
+    ui.sec("Diễn biến cân · cơ · % mỡ")
+    bieu_do_ui.ve(k, key=f"cs_bd_{k['ma']}_{vai}")
     L = _cac_lan(k)
     if not L:
         st.info("Chưa có lần đo InBody nào (% mỡ, cơ, mỡ nội tạng). Quét phiếu InBody hoặc nhập số đo để xem chỉ số và tuổi cơ thể.")

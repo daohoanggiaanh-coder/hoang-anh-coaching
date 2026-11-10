@@ -792,7 +792,7 @@ def lo_trinh():
     cc = lt.chuyen_can(k, hom)
     toc = lt.toc_do_can(ma)
     if not tdo:
-        st.info("Cần ít nhất 1 lần đo (cân / InBody / vòng eo) — nhập ở trang **📈 Tiến độ & báo cáo**.")
+        st.info("Cần ít nhất 1 lần đo (cân / InBody / vòng eo) — nhập ở trang **📈 Tiến độ từng khách**.")
     else:
         mau = "#1E7B4A" if tdo["tong"] >= tdo["tg_pct"] - 15 else "#D98E04" if tdo["tong"] >= 0 else "#B4442F"
         ui.tiles([(f"{tdo['tong']} %", "hoàn thành mục tiêu", tdo["ten_loai"]),

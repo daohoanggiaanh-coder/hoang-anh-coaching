@@ -84,28 +84,28 @@ db.tai_truoc()                                          # v2.7: lần đầu m�
 
 if user["role"] == "coach":
     from views import coach as V
-    pages = {
-        "Huấn luyện": [st.Page(V.lich, title="Lịch & nhắc tập", icon="📅", url_path="lich", default=True),
-                       st.Page(V.goi_buoi, title="Gói & buổi tập", icon="📦", url_path="goi_buoi"),
-                       st.Page("views/f1_ui.py", title="Buổi tư vấn F1 · F2", icon="🎯", url_path="f1"),
-                       st.Page(V.cam_ket, title="Cam kết khách", icon="🔥", url_path="cam_ket"),
-                       st.Page(V.tong_ket, title="Tổng kết ngày", icon="📅", url_path="tong_ket"),
-                       st.Page(V.cham_soc, title="Chăm sóc khách", icon="✨", url_path="cham_soc"),
-                       st.Page(V.ho_so, title="Hồ sơ HLV & thành quả", icon="🏆", url_path="ho_so"),
-                       st.Page(V.khach, title="Khách & tài khoản", icon="👤", url_path="khach"),
-                       st.Page(V.tap, title="Giáo án khách", icon="🏋️", url_path="tap"),
-                       st.Page(V.volume, title="Volume & bản đồ cơ", icon="💪", url_path="volume"),
-                       st.Page(V.cardio, title="Cardio", icon="🏃", url_path="cardio"),
-                       st.Page(V.an, title="Dinh dưỡng", icon="🍽", url_path="dinh_duong"),
-                       st.Page(V.tien_do, title="Tiến độ & báo cáo", icon="📈", url_path="tien_do"),
-                       st.Page(V.quet_inbody, title="Quét phiếu InBody", icon="📷", url_path="quet_inbody"),
-                       st.Page(V.tien_do_all, title="Tiến độ tất cả khách", icon="📊", url_path="tien_do_all"),
-                       st.Page(V.thau_hieu, title="Thấu hiểu khách 🔒", icon="🧠", url_path="thau_hieu"),
-                       st.Page(V.lo_trinh, title="Lộ trình & mục tiêu 🔒", icon="🎯", url_path="lo_trinh"),
-                       st.Page(V.khach_thay, title="Khách thấy gì", icon="👁", url_path="khach_thay")],
-        "Công cụ": [st.Page(V.soan_tin, title="Soạn tin Zalo", icon="✉️", url_path="soan_tin"),
-                    st.Page(V.thuc_pham, title="Bảng thực phẩm", icon="🥗", url_path="thuc_pham"),
-                    st.Page(V.nhap_atlas, title="Chép khách từ Atlas", icon="📥", url_path="nhap_atlas")],
+    pages = {                                           # v3.7: chia nhóm theo việc trong ngày cho dễ tìm
+        "📅 Hôm nay": [st.Page(V.lich, title="Lịch & nhắc tập", icon="📅", url_path="lich", default=True),
+                      st.Page(V.tong_ket, title="Tổng kết ngày", icon="📝", url_path="tong_ket"),
+                      st.Page(V.cham_soc, title="Chăm sóc khách", icon="✨", url_path="cham_soc"),
+                      st.Page(V.cam_ket, title="Cam kết khách", icon="🔥", url_path="cam_ket")],
+        "👥 Khách hàng": [st.Page(V.khach, title="Khách & tài khoản", icon="👤", url_path="khach"),
+                         st.Page(V.goi_buoi, title="Gói & buổi tập", icon="📦", url_path="goi_buoi"),
+                         st.Page("views/f1_ui.py", title="Tư vấn F1 · F2", icon="🎯", url_path="f1"),
+                         st.Page(V.thau_hieu, title="Thấu hiểu khách 🔒", icon="🧠", url_path="thau_hieu"),
+                         st.Page(V.khach_thay, title="Khách thấy gì", icon="👁", url_path="khach_thay")],
+        "🏋️ Tập luyện": [st.Page(V.tap, title="Giáo án khách", icon="🏋️", url_path="tap"),
+                        st.Page(V.lo_trinh, title="Lộ trình & mục tiêu 🔒", icon="🗺", url_path="lo_trinh"),
+                        st.Page(V.volume, title="Volume & bản đồ cơ", icon="💪", url_path="volume"),
+                        st.Page(V.cardio, title="Cardio", icon="🏃", url_path="cardio")],
+        "📈 Đo & tiến độ": [st.Page(V.tien_do, title="Tiến độ từng khách", icon="📈", url_path="tien_do"),
+                          st.Page(V.tien_do_all, title="Tiến độ tất cả khách", icon="📊", url_path="tien_do_all"),
+                          st.Page(V.quet_inbody, title="Quét phiếu InBody", icon="📷", url_path="quet_inbody")],
+        "🍽 Dinh dưỡng": [st.Page(V.an, title="Thực đơn khách", icon="🍽", url_path="dinh_duong"),
+                         st.Page(V.thuc_pham, title="Bảng thực phẩm", icon="🥗", url_path="thuc_pham")],
+        "🛠 Công cụ": [st.Page(V.soan_tin, title="Soạn tin Zalo", icon="✉️", url_path="soan_tin"),
+                      st.Page(V.ho_so, title="Hồ sơ HLV & thành quả", icon="🏆", url_path="ho_so"),
+                      st.Page(V.nhap_atlas, title="Chép khách từ Atlas", icon="📥", url_path="nhap_atlas")],
     }
 else:
     from views import client as V
@@ -179,7 +179,7 @@ with st.sidebar:                                        # v2.2: tên + ảnh đ�
                     st.rerun()
     except Exception:  # noqa: BLE001 — ảnh lỗi thì chỉ hiện tên
         st.markdown(f"<div style='font-size:1.05rem;font-weight:800;margin:2px 0 10px'>{ui.E(user['name'])}</div>", unsafe_allow_html=True)
-nav = st.navigation(pages, position="sidebar")            # v2.4: khách cũng dùng menu bên trái
+nav = st.navigation(pages, position="sidebar", expanded=True)            # v2.4: khách cũng dùng menu bên trái
 with st.sidebar:
     try:
         from core import nen as _nen                    # v3.2: nền sáng / tối tự động theo giờ, nhớ lựa chọn

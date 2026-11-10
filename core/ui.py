@@ -89,8 +89,12 @@ div[data-testid="stMetricValue"]{font-weight:800;letter-spacing:-.01em}
 [data-testid="stTopNavLink"][aria-current="page"]{background:#1C1B19!important;border-color:#1C1B19!important}
 [data-testid="stTopNavLink"][aria-current="page"] *{color:#E8C76A!important}
 [data-testid="stTopNavLink"] span{font-weight:700!important}
-[data-testid="stSidebarNavLink"]{border:1px solid rgba(200,162,74,.28)!important;background:#1D1A15!important;border-radius:11px!important;
-  margin:3px 0!important;padding:7px 10px!important}
+[data-testid="stSidebarNavLink"]{border:1px solid rgba(200,162,74,.22)!important;background:#1D1A15!important;border-radius:10px!important;
+  margin:2px 0!important;padding:4px 10px!important;min-height:2.1rem!important}
+/* v3.7: tiêu đề nhóm menu — chữ vàng, có khoảng cách giữa các nhóm */
+[data-testid="stNavSectionHeader"]{color:#C8A24A!important;font-weight:800!important;letter-spacing:.06em;font-size:.78rem!important;
+  margin:14px 0 4px!important;padding:4px 2px 4px!important;border-bottom:1px solid rgba(200,162,74,.25)}
+[data-testid="stNavSectionHeader"] *{color:#C8A24A!important;font-weight:800!important}
 [data-testid="stSidebarNavLink"]:hover{border-color:#C8A24A!important;background:#26221B!important}
 [data-testid="stSidebarNavLink"][aria-current="page"]{background:#3A2F18!important;border:2px solid #E8C76A!important}
 [data-testid="stSidebarNavLink"][aria-current="page"] *{color:#F6D77E!important;font-weight:800!important}

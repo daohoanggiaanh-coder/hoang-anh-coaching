@@ -177,7 +177,7 @@ def trang(u: dict):
     if con_an:
         hien += thieu
     if not hien:
-        st.info("Chưa khách nào có số đo / cân — nhập ở trang 📈 Tiến độ & báo cáo.")
+        st.info("Chưa khách nào có số đo / cân — nhập ở trang 📈 Tiến độ từng khách.")
     h = {1: 380, 2: 300, 3: 250}[cot]
     for i in range(0, len(hien), cot):
         cs = st.columns(cot)

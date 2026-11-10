@@ -29,7 +29,7 @@ def ve(k: dict, sd=None, cn=None, h: int = 520, key: str = "bd", so_nhan: int = 
     duoi = bool(co or mo or mu)
     fig = make_subplots(rows=2 if duoi else 1, cols=1, shared_xaxes=True, vertical_spacing=0.13,
                         row_heights=[0.55, 0.45] if duoi else [1], specs=[[{}], [{"secondary_y": True}]] if duoi else [[{}]],
-                        subplot_titles=["⚖️ Cân nặng (kg)"] + (["💪 Khối cơ (kg) · 🔥 % mỡ"] if duoi else []))
+                        subplot_titles=["⚖️ Cân nặng (kg)"] + ([" · ".join(x for x, c in (("💪 Khối cơ (kg)", co), ("🔥 % mỡ", mo or mu)) if c)] if duoi else []))
     if can:
         x, y = [a for a, _ in can], [b for _, b in can]
         fig.add_scatter(x=x, y=y, mode="lines+markers+text", name="Cân (kg)", text=_nhan(y, "{:.1f}", so_nhan), textposition="top center",
@@ -58,24 +58,25 @@ def ve(k: dict, sd=None, cn=None, h: int = 520, key: str = "bd", so_nhan: int = 
             fig.add_scatter(x=x, y=y, mode="lines+markers+text", name="% mỡ (InBody)", text=_nhan(y, "{:.1f}%", so_nhan),
                             textposition="bottom center", textfont=dict(size=11, color=DO), line=dict(color=DO, width=2.5),
                             marker=dict(size=7, symbol="diamond"), hovertemplate="%{x|%d/%m/%Y}: <b>%{y:.1f}% mỡ</b> (InBody)<extra></extra>",
-                            row=2, col=1, secondary_y=True)
+                            row=2, col=1, secondary_y=bool(co))
         if mu:
             x, y, v = [a for a, _, _ in mu], [b for _, b, _ in mu], [c for _, _, c in mu]
             fig.add_scatter(x=x, y=y, mode="lines+markers+text", name="% mỡ ước tính (từ vòng)", text=_nhan(y, "≈{:.0f}%", so_nhan),
                             textposition="bottom center", textfont=dict(size=11, color=CAM), line=dict(color=CAM, width=2, dash="dash"),
                             marker=dict(size=7, symbol="circle-open"), customdata=v,
                             hovertemplate="%{x|%d/%m/%Y}: ≈<b>%{y:.1f}% mỡ</b> ước tính từ vòng %{customdata}<extra></extra>",
-                            row=2, col=1, secondary_y=True)
+                            row=2, col=1, secondary_y=bool(co))
         pm = [b for _, b in mo] + [b for _, b, _ in mu]
         if pm:
             lo, hi = min(pm), max(pm)
             sp = max(hi - lo, 1.0)
-            fig.update_yaxes(range=[lo - sp * 0.6, hi + sp * (1.6 if co else 0.6)], row=2, col=1, secondary_y=True, showgrid=False,
+            # không có khối cơ → % mỡ dùng trục chính của khung dưới (trục phụ đứng một mình bị Plotly kéo ra cả biểu đồ)
+            fig.update_yaxes(range=[lo - sp * 0.6, hi + sp * (1.6 if co else 0.6)], row=2, col=1, secondary_y=bool(co), showgrid=not co,
                              title_text="% mỡ", ticksuffix="%", tickformat=".0f")
         if co:
             fig.update_yaxes(title_text="kg cơ", row=2, col=1, secondary_y=False)
     ui.layout(fig, h if duoi else int(h * 0.62))
-    fig.update_layout(legend=dict(orientation="h", y=-0.1, font=dict(size=11)), margin=dict(l=6, r=6, t=34, b=6), hovermode="closest")
+    fig.update_layout(legend=dict(orientation="h", y=-0.1, font=dict(size=11)), margin=dict(l=36, r=6, t=34, b=6), hovermode="closest")
     fig.update_xaxes(tickformat="%d/%m")
     if duoi:
         fig.update_xaxes(showticklabels=False, row=1, col=1)       # ngày chỉ ghi ở khung dưới, khỏi đè tiêu đề

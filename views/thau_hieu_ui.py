@@ -83,7 +83,20 @@ def tung_khach(DS: list[dict], u: dict):
         return
     ma, hom = k["ma"], db.now_vn().date()
     hs = th.ho_so(ma)
-    a, b, c = st.tabs(["🧭 Hướng dẫn cho khách này", "✍️ Ghi hồ sơ tính cách", "📝 Nhật ký quan sát"])
+    a, d, b, c = st.tabs(["🧭 Hướng dẫn cho khách này", "📝 Bảng hỏi tính cách", "✍️ Ghi hồ sơ tính cách", "📓 Nhật ký quan sát"])
+    with d:
+        from views import khao_sat_ui as ksu
+        if hs.get("ks"):
+            st.success(f"Khách đã trả lời ngày {hs.get('ks_ngay', '')}.")
+            ksu.ket_qua_hlv(hs)
+        else:
+            st.caption("Khách có thể tự làm ở trang 👤 Hồ sơ của khách, hoặc anh hỏi trực tiếp và chọn giúp ở đây.")
+        with st.form(f"ks_hlv_{ma}"):
+            ans = ksu.form(f"kshlv_{ma}", hs.get("ks"), "hlv")
+            if st.form_submit_button("💾 Lưu bảng hỏi", type="primary"):
+                if ksu.luu(ma, ans, u["name"]):
+                    st.toast("Đã lưu — web cập nhật kiểu giao tiếp & gợi ý.")
+                    st.rerun()
     with b:
         _form(k, hs, u)
     with a:
@@ -153,13 +166,17 @@ def _huong_dan(k: dict, hs: dict, hom: date):
         st.info("Chưa có hồ sơ — vào tab ✍️ Ghi hồ sơ (mất khoảng 2 phút). Web vẫn tính sẵn chuyên cần & gói còn lại bên dưới.")
     g = th.huong_dan(k, hs, hom)
     xh = store.xung(k)[0]
-    ui.tiles([(th.PHONG_CACH[g["pc"]][0].split(" ", 1)[1] if g["pc"] else "—", "Kiểu giao tiếp", "từ dấu hiệu anh tick"),
+    ui.tiles([(th.PHONG_CACH[g["pc"]][0].split(" ", 1)[1] if g["pc"] else "—", "Kiểu giao tiếp",
+               "dấu hiệu anh tick + bảng hỏi" if hs.get("ks") else "từ dấu hiệu anh tick"),
               (th.muc(g["nguy_co"]), "Nguy cơ bỏ tập", "; ".join(g["ly_nc"][:2]) or "chưa thấy dấu hiệu"),
               (th.muc(g["gt"]), "Sẵn sàng giới thiệu", "; ".join(g["ly_gt"][:2]) or "—"),
               (f"{g['cc']['xong']}/{g['cc']['tong']}" if g["cc"]["tong"] else "—", "Đi tập 3 tuần qua", "buổi xong / buổi theo lịch")])
     ui.sec("✅ Việc nên làm tuần này")
     for v in g["viec"] or ["Khách đang ổn — giữ nhịp, ghi thêm quan sát khi có."]:
         st.markdown(f"- {E(v)}")
+    from core import khao_sat as _ks
+    for x in _ks.tom_tat(hs):
+        st.markdown("- " + x)
     if hs.get("ly_do_sau"):
         st.markdown(f'<div class="hac-note">💡 Lý do thật sự của {E(xh)}: <b>“{E(hs["ly_do_sau"])}”</b> — nhắc lại câu này '
                     f"khi khách nản, và gắn mục tiêu buổi tập với nó.</div>", unsafe_allow_html=True)

@@ -617,7 +617,10 @@ def tien_do():
     c3.metric("Tới mục tiêu", f"{_pt}%" if _pt is not None else "—", f"mục tiêu {k['can_muc_tieu']} kg" if k.get("can_muc_tieu") else None,
               delta_color="off")
     c4.metric("Lần đo · lần cân", f"{len(SD)} · {len(CAN)}")
-    s1, s2, s3, s4 = st.tabs(["⚖️ Cân hằng ngày", "📏 Số đo", "📸 Ảnh", "📄 Báo cáo"])
+    s0, s1, s2, s3, s4 = st.tabs(["🧬 Chỉ số cơ thể", "⚖️ Cân hằng ngày", "📏 Số đo", "📸 Ảnh", "📄 Báo cáo"])
+    with s0:
+        from views import chi_so_ui
+        chi_so_ui.hien(k, "hlv")
     with s1:
         C.nhap_can(k, u["name"], CAN, "hlv")
         C.bieu_do_can(k, CAN, 340)

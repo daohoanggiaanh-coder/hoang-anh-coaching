@@ -560,3 +560,26 @@ def test_goi_buoi_da_tap_gia_han_va_doi_lich():
     ngay = [(b["ngay"], b["gio"]) for b in B]
     assert (date(2026, 10, 12), "18:00") in ngay and (date(2026, 10, 20), "19:00") in ngay
     assert (date(2026, 10, 19), "18:00") not in ngay
+
+
+def test_f1_sang_khach_khao_sat_va_tuoi_co_the():
+    from core import f1, khao_sat as ks, thau_hieu as th, tu_van as tv
+    store.save_goi_list([{"ten": "Gói 24 buổi", "loai": "buoi", "so": 24, "gia": 9500000}], "HLV")
+    h = {"ho_ten": "Trần Văn Mới", "sdt": "0901234567", "gioi_tinh": "Nam", "tuoi": 35, "ngay_f1": "2026-11-10",
+         "chieu_cao": 170, "can_nang": 80, "pbf": 27, "smm": 31, "mo_noi_tang": 11, "bmr": 1600, "v_eo": 92, "v_dui_p": 58,
+         "ket_qua": "Đăng ký Gói 24 buổi", "muc_tieu": "giam_mo",
+         "ks": {"pc0": 3, "pc1": 3, "pc2": 0, "pc3": 3, "pc4": 3, "pc5": 1, "chia_se": ks.CHIA_SE[0], "duy_tri": 1,
+                "rao_can": ["Mau chán"], "ly_do_sau": "chạy được với con"}}
+    ma = f1.sang_khach(h, "HLV")
+    k = store.client(ma)
+    assert k["goi_buoi"] in (24, "24") and k["goi_ten"] == "Gói 24 buổi"
+    sd = td.so_do(ma, them=True)
+    assert sd.iloc[-1]["pbf"] == 27 and sd.iloc[-1]["v_eo"] == 92 and sd.iloc[-1]["v_dui"] == 58 and sd.iloc[-1]["tuoi"] == 35
+    hs = th.ho_so(ma)
+    assert hs["ks_phong_cach"] == "phan_tich" and hs["giai_doan"] == "chuan_bi" and "Mau chán" in hs["rao_can"]
+    assert th.phong_cach(hs)[0] == "phan_tich"
+    # gửi lại lần 2 không tạo trùng khách
+    assert f1.sang_khach(h, "HLV") == ma
+    from views import chi_so_ui
+    ev = tv.evaluate(chi_so_ui.ho_so_do(k, sd.iloc[-1].to_dict()))
+    assert ev["tuoi_co_the"]["gia_tri"] > 35

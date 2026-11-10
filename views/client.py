@@ -214,7 +214,8 @@ def tien_do():
     ui.hero("TIẾN ĐỘ", "Cân · số đo · ảnh", "Cân mỗi sáng · đo vòng mỗi thứ Hai · chụp ảnh mỗi 4 tuần — đủ 3 thứ này HLV mới thấy rõ bạn đang tiến bộ.")
     from views import tien_do_ui
     CAN, SD = td.can_ngay(ma), td.so_do(ma)
-    tabs = [x for x, on in (("⚖️ Cân hằng ngày", q["can"]), ("📏 Số đo hằng tuần", q["so_do"]), ("📸 Ảnh 4 tuần", q["so_do"])) if on]
+    tabs = [x for x, on in (("🧬 Chỉ số cơ thể", q["so_do"]), ("⚖️ Cân hằng ngày", q["can"]), ("📏 Số đo hằng tuần", q["so_do"]),
+                            ("📸 Ảnh 4 tuần", q["so_do"])) if on]
     if not tabs:
         return
     T = dict(zip(tabs, st.tabs(tabs)))
@@ -224,6 +225,9 @@ def tien_do():
             C.bieu_do_can(k, CAN)
     if not q["so_do"]:
         return
+    with T["🧬 Chỉ số cơ thể"]:
+        from views import chi_so_ui
+        chi_so_ui.hien(k, "khach")
     with T["📸 Ảnh 4 tuần"]:
         tien_do_ui.nhap_anh(k, k["ho_ten"])
         _anh_khach(ma)
@@ -278,6 +282,8 @@ def tai_khoan():
     ui.hero("HỒ SƠ & TÀI KHOẢN", k["ho_ten"], f"Tên đăng nhập: <b>{ui.E(u['username'])}</b>",
             avatar=hinh.the_avatar(hinh.avatar_khach(k), k["ho_ten"], 64))
     ho_so_ui.form(k, k["ho_ten"], "khach")
+    from views import khao_sat_ui
+    khao_sat_ui.cho_khach(k)
     from core import thong_bao as tb
     if tb.san_sang():
         st.divider()

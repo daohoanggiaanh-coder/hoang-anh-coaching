@@ -18,7 +18,7 @@ CHI_SO = [("can_nang", "Cân nặng", "kg", -1), ("pbf", "% mỡ", "%", -1), ("s
 TEN = {k: (t, dv, h) for k, t, dv, h in CHI_SO}
 # v3.4 — chỉ số phụ in trên phiếu InBody: lưu kèm số đo (không vẽ biểu đồ / không so tốt xấu)
 THEM = [("bmr", "BMR", "kcal"), ("diem_inbody", "Điểm InBody", ""), ("nuoc", "Nước cơ thể", "L"),
-        ("protein", "Protein", "kg"), ("khoang_chat", "Khoáng chất", "kg"), ("tuoi_may", "Tuổi cơ thể", "")]
+        ("protein", "Protein", "kg"), ("khoang_chat", "Khoáng chất", "kg"), ("tuoi_may", "Tuổi cơ thể (máy in)", ""), ("tuoi", "Tuổi trên phiếu", "")]
 
 
 def _so(v) -> float | None:
@@ -46,13 +46,15 @@ def _log(loai: str, key: str, data: dict, user: dict) -> bool:
 
 
 # ------------------------------------------------------------------ đọc
-def so_do(ma: str, df=None) -> pd.DataFrame:
+def so_do(ma: str, df=None, them: bool = False) -> pd.DataFrame:
+    """them=True (v3.6): kèm chỉ số phụ của phiếu InBody (BMR, điểm, nước, tuổi cơ thể máy in…)."""
+    ks = [k for k, *_ in CHI_SO] + ([k for k, *_ in THEM] if them else [])
     rows = []
     for v in _rows("rieng_sodo", ma, df):
         r = {"ngay": _d(v["ngay"]), "dot": v.get("dot") or "khac", "ghi_chu": v.get("ghi_chu", "")}
-        r.update({k: _so(v.get(k)) for k, *_ in CHI_SO})
+        r.update({k: _so(v.get(k)) for k in ks})
         rows.append(r)
-    cols = ["ngay", "dot", "ghi_chu"] + [k for k, *_ in CHI_SO]
+    cols = ["ngay", "dot", "ghi_chu"] + ks
     return pd.DataFrame(rows, columns=cols).sort_values("ngay").reset_index(drop=True) if rows else pd.DataFrame(columns=cols)
 
 

@@ -104,6 +104,12 @@ def phong_cach(hs: dict) -> tuple[str | None, dict[str, int]]:
     for i, (_, pc) in enumerate(DAU_HIEU):
         if hs.get(f"dh{i}"):
             diem[pc] += 1
+    for pc, v in (hs.get("ks_diem") or {}).items():       # v3.6: + điểm bảng hỏi khách tự trả lời
+        if pc in diem:
+            try:
+                diem[pc] += int(v)
+            except (TypeError, ValueError):
+                pass
     tay = hs.get("phong_cach_tay")
     if tay in PHONG_CACH:
         return tay, diem
@@ -265,7 +271,9 @@ def huong_dan(k: dict, hs: dict, hom: date) -> dict:
         viec.append("🚨 Gọi / gặp riêng tuần này: hỏi điều gì đang khó (" + "; ".join(ly_nc[:2]) + ").")
     if not hs.get("hai_long"):
         viec.append("❓ Hỏi khách 1 câu: “Từ 0–10, khả năng anh/chị giới thiệu em cho bạn bè là bao nhiêu? Điều gì làm nó cao hơn?”")
-    if not pc:
+    if not hs.get("ks"):
+        viec.append("📝 Mời khách làm bảng hỏi 2 phút (trang Hồ sơ của khách) hoặc hỏi trực tiếp ở tab Bảng hỏi tính cách.")
+    elif not pc:
         viec.append("👀 Quan sát thêm 1–2 buổi rồi tick dấu hiệu tính cách để web gợi ý cách nói chuyện.")
     if not hs.get("ly_do_sau"):
         viec.append("💬 Hỏi ‘lý do thật sự’: “Nếu 3 tháng nữa đạt mục tiêu, điều gì trong cuộc sống của anh/chị sẽ khác?”")

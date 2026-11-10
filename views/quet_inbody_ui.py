@@ -109,7 +109,7 @@ def trang(u: dict):
             r, x = ED.loc[i], OK[i]
             thanh.progress(j / len(chon), f"Đang lưu {r['Khách']}")
             ma = nhan[r["Khách"]]
-            vals = {**{c: x["r"].get(c) for c in ("chieu_cao", "gioi_tinh", "nuoc", "protein", "khoang_chat", "tuoi_may")},
+            vals = {**{c: x["r"].get(c) for c in ("chieu_cao", "gioi_tinh", "nuoc", "protein", "khoang_chat", "tuoi_may", "tuoi")},
                     **{c: (None if pd.isna(r[t]) else float(r[t])) for c, t in COT}}
             ngay = r["Ngày đo"] if isinstance(r["Ngày đo"], date) else pd.to_datetime(r["Ngày đo"]).date()
             up = db.upload_images({"inbody": x["anh"]}, f"HAC_{ma}_")

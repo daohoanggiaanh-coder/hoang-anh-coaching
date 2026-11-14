@@ -60,6 +60,14 @@ def trang_chu():
         _hom_nay_co_ban(k, q, t, hom)
         return
     DL.the_chinh(k, t)
+    if q["giao_an"] and q["ghi_buoi"]:                 # v3.9: buổi tới cần tăng tiến gì (theo các buổi cũ)
+        from views import tang_tien_ui
+        from core import lich_tap as _lt
+        try:
+            nx = next((x for x in _lt.sap_toi(k, 14) if x.get("buoi")), None)
+        except Exception:  # noqa: BLE001
+            nx = None
+        tang_tien_ui.the_khach(k, nx["ngay"] if nx else hom, nx["buoi"] if nx else None)
     if q["can"] and not any(x["id"] == "can" and x["xong"] for x in t["nv"]):
         C.nhap_can(k, k["ho_ten"], td.can_ngay(ma), "home")
     DL.check_in(k, k["ho_ten"], t)
@@ -170,6 +178,13 @@ def _hom_nay_co_ban(k: dict, q: dict, t: dict, hom):
                                                       f"{store.gio_s(nx['gio'])}**" if nx else ""))
         if _trang("tap_luyen") and q["ghi_buoi"]:
             st.page_link(_trang("tap_luyen"), label="Mở bài tập & ghi buổi tập", icon="✍️", use_container_width=True)
+    if q["giao_an"] and q["ghi_buoi"]:                 # v3.9: buổi tới cần tăng tiến gì
+        from views import tang_tien_ui
+        try:
+            nx_ = next((x for x in lich_tap.sap_toi(k, 14) if x.get("buoi")), None)
+        except Exception:  # noqa: BLE001
+            nx_ = None
+        tang_tien_ui.the_khach(k, nx_["ngay"] if nx_ else hom, nx_["buoi"] if nx_ else None)
     with st.container(border=True):
         CAN = td.can_ngay(ma)
         da = CAN[CAN["ngay"] == hom] if not CAN.empty else CAN

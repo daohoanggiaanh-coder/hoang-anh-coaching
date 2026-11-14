@@ -596,3 +596,28 @@ def test_rfm_va_chuoi_tien_do():
     c = td.chuoi_tien_do(k)
     assert c["can"] == [(D(2026, 10, 1), 60.0)] and c["mo"] == [(D(2026, 10, 1), 30.0)]
     assert c["mo_uoc"][0][0] == D(2026, 10, 8) and c["mo_uoc"][0][2] == "bụng"
+
+
+def test_tang_tien_bien_so():
+    from datetime import date as D
+    from core import tang_tien as ttn
+    it = {"id": "squat", "ten": "Squat", "loai": "M"}
+    hom = D(2026, 11, 14)
+
+    def x(d, kg, lans, **kw):
+        return {"ngay": D(2026, 11, d), "hiep": [{"kg": kg, "lan": n} for n in lans], "ghi_chu": "", "rpe": None,
+                "cam_nhan": "", "ghi_chu_buoi": "", **kw}
+    assert ttn.phan_tich(it, "3×10–12", [], hom)["muc"] == "moi"
+    p = ttn.phan_tich(it, "3×10–12", [x(12, 40, [12, 12, 12])], hom)
+    assert p["muc"] == "tang_ta" and p["kg"] == 42.5 and p["lan"] == [10, 10, 10]
+    p = ttn.phan_tich(it, "3×10–12", [x(12, 40, [10, 10, 8])], hom)
+    assert p["muc"] == "tang_lan" and p["kg"] == 40 and p["lan"] == [11, 11, 9]
+    p = ttn.phan_tich(it, "3×10–12", [x(12, 40, [10, 9, 8]), x(9, 40, [10, 9, 8]), x(5, 40, [10, 10, 8])], hom)
+    assert p["muc"] == "doi_bien"
+    p = ttn.phan_tich(it, "3×10–12", [x(12, 40, [10, 10, 8], ghi_chu="đau nhẹ gối")], hom)
+    assert p["muc"] == "chu_y" and p["chu_y"]
+    p = ttn.phan_tich(it, "3×10–12", [{**x(12, 40, [10, 10, 8]), "ngay": D(2026, 10, 20)}], hom)
+    assert p["muc"] == "giam" and p["kg"] == 35.0
+    p = ttn.phan_tich(it, "3×30–45 giây", [x(12, 0, [30, 30, 25])], hom)
+    assert p["muc"] == "giay" and p["lan"] == [35, 35, 30]
+    assert ttn.mo_ta(x(12, 40, [10, 10, 8])) == "12/11 40 kg × 10/10/8"

@@ -445,13 +445,24 @@ def ghi_buoi(k: dict, P_: dict, nguoi: str, vai: str = "hlv", chua_luu: bool = F
             n_goi_y = tt_.so_hiep(n_set, tts, it.get("loai", ""))      # gợi ý theo thể trạng; vẫn hiện đủ dòng theo giáo án
             met = r["lieu"].rstrip().endswith(" m")
             last = bt.last_for(ma, eid, hist)
-            sg = bt.suggest(it, r["lieu"], last)
-            if sg:
-                st.markdown(f'<div class="gx-tip">💡 {E(sg)}</div>', unsafe_allow_html=True)
+            from core import tang_tien as ttn               # v3.9: tăng tiến theo biến số + lịch sử các buổi trước
+            ls_ = ttn.lich_su(hist, eid, it.get("ten", ""))
+            pt_ = ttn.phan_tich(it, r["lieu"], ls_, ngay)
+            st.markdown(f'<div class="gx-tip">{pt_["icon"]} '
+                        + E(pt_["ngan"]).replace("**", "") + "</div>", unsafe_allow_html=True)
+            if ls_:
+                st.markdown('<div style="font-size:.78rem;color:#8b8577;margin:-2px 0 6px 4px">📜 Các buổi trước: '
+                            + " · ".join(E(ttn.mo_ta(y, giay_="giây" in r["lieu"])) for y in ls_[:3]) + "</div>",
+                            unsafe_allow_html=True)
+            from views import tang_tien_ui as _ttu
+            for c_ in pt_["chu_y"][:2]:
+                st.markdown(f'<div class="gx-tip" style="border-color:#E6C46A;background:#FFF8E6">⚠️ {E(c_ if hlv else _ttu._cho_khach(c_))}</div>',
+                            unsafe_allow_html=True)
             box = st.container(key=f"sets_{km}_{bm_luu}_{j}")
             box.markdown(f'<div class="gx-th"><span>Hiệp</span><span>{"" if giay else "kg"}</span>'
                          f'<span>{"giây" if giay else "mét" if met else "lần"}</span></div>', unsafe_allow_html=True)
-            tk = None if giay else tt_.kg_goi_y(bt.target_kg(it, r["lieu"], last), tts, it.get("loai", ""), bt._step(it))
+            tk = None if giay else tt_.kg_goi_y(pt_["kg"] if pt_["kg"] is not None else bt.target_kg(it, r["lieu"], last), tts,
+                                                it.get("loai", ""), bt._step(it))
             hs = []
             for si in range(max(n_set, 1)):
                 c1, c2, c3 = box.columns([0.55, 1, 1], vertical_alignment="center")

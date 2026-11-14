@@ -170,6 +170,18 @@ def lich():
             KH_CK[m_] = _lt.chu_ky(by[m_])
         except Exception:  # noqa: BLE001 — khách chưa có giáo án
             pass
+    # v3.9: nhắc tăng tiến — buổi hôm nay / ngày mai, dựa trên số tạ các buổi cũ
+    sap_ = [b for b in L if hom <= b["ngay"] <= hom + timedelta(days=1) and b["trang_thai"] == "hen"
+            and KH_PLAN.get(b["ma"], {}).get(b["id"])]
+    if sap_:
+        ui.sec(f"📣 Nhắc tăng tiến ({len(sap_)} buổi)")
+        st.caption("Mỗi bài: các buổi trước + hôm nay nên tăng tạ / thêm lần / đổi biến số, kèm điều cần chú ý và tin Zalo soạn sẵn.")
+        from views import tang_tien_ui
+        for b in sap_:
+            k_, pl_ = by[b["ma"]], KH_PLAN[b["ma"]][b["id"]]
+            with st.expander(f"{'Hôm nay' if b['ngay'] == hom else 'Ngày mai'} {store.gio_s(b['gio'])} · {k_.get('ho_ten', '')} · "
+                             f"Buổi {pl_['buoi']} · {pl_['ten']}"):
+                tang_tien_ui.nhac_hlv(k_, b["ngay"], pl_["buoi"], f"tt_{b['id']}")
     truoc = None
     for b in L:
         k = by.get(b["ma"], {})

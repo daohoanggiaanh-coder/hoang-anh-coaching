@@ -621,3 +621,14 @@ def test_tang_tien_bien_so():
     p = ttn.phan_tich(it, "3×30–45 giây", [x(12, 0, [30, 30, 25])], hom)
     assert p["muc"] == "giay" and p["lan"] == [35, 35, 30]
     assert ttn.mo_ta(x(12, 40, [10, 10, 8])) == "12/11 40 kg × 10/10/8"
+
+
+def test_tu_lanh_goi_y_luong():
+    from core import dinh_duong as dd, tu_lanh as tl
+    F = dd.foods()
+    muc = {"kcal": 1700, "p": 140, "c": 160, "f": 55}
+    r = tl.goi_y(["uc_ga", "bo_nac", "com", "yen_mach", "sua_chua_hy_lap", "tao", "hanh_nhan", "cai_bo_xoi"], muc, F, 2.5)
+    assert abs(r["lech"]["p"]) <= 10 and abs(r["lech"]["kcal"]) <= 120
+    assert all(d["g"] >= 0 for d in r["ds"]) and next(d for d in r["ds"] if d["id"] == "cai_bo_xoi")["g"] == 300
+    r = tl.goi_y(["com", "chuoi"], {"kcal": 600, "p": 40, "c": 70, "f": 15}, F, 1)
+    assert "dam" in r["thieu_nhom"] and tl.nen_mua(r["thieu_nhom"], F, ["thuong"], set(), ["com", "chuoi"])

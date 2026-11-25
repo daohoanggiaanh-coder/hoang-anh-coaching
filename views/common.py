@@ -313,7 +313,7 @@ def dinh_duong(k: dict, vai: str, nguoi: str, q: dict | None = None):
         for g in kq["ghi"]:
             st.caption(f"⚠️ {g}")
 
-    tabs = [("hom", "🍽 Thực đơn hôm nay")]
+    tabs = [("hom", "🍽 Thực đơn hôm nay"), ("tl", "🧊 Tủ lạnh")]                # v4.0
     if hlv or q.get("nhat_ky_an"):
         tabs.append(("an", "📝 Đã ăn · còn lại"))
         tabs.append(("bc", "📊 Báo cáo ăn uống"))
@@ -395,6 +395,9 @@ def dinh_duong(k: dict, vai: str, nguoi: str, q: dict | None = None):
     if "an" in T:
         with T["an"]:
             an_ui.nhat_ky(k, vai, nguoi, h, kq, F, bo, tap_set)
+    with T["tl"]:
+        from views import tu_lanh_ui
+        tu_lanh_ui.tab(k, vai, nguoi, h, kq, F, bo, tap_set)
     if "bc" in T:
         with T["bc"]:
             an_ui.bao_cao(k, vai, nguoi, h, kq, bo, tap_set)

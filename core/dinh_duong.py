@@ -73,7 +73,7 @@ def foods() -> dict[str, dict]:
         from core import db
         for k, v in db.latest("DinhDuong").items():
             if k.startswith("mon|"):
-                base[k[4:]] = {kk: vv for kk, vv in v.items() if not kk.startswith("_")}
+                base[k[4:]] = {**base.get(k[4:], {}), **{kk: vv for kk, vv in v.items() if not kk.startswith("_")}}  # giữ tt / ty_le mới
     except Exception:  # noqa: BLE001
         pass
     return base
@@ -279,6 +279,15 @@ GIOI_HAN = {"whey": 45, "trung": 200, "long_trang": 264, "dau_an": 10, "bo_dau_p
             "mi_y": 350, "khoai_lang": 450, "khoai_tay": 450, "bap": 300, "chuoi": 240, "tao": 300, "cam": 300, "du_du": 300,
             "dua_hau": 400, "sua_chua_hy_lap": 300, "ca_ngu_hop": 150, "dau_phu": 300,
             "chao": 700, "banh_pho": 450, "hu_tieu": 450, "xoi": 300, "hat_chia": 15, "kefir": 300}
+GIOI_HAN.update({   # v4.1 — món mới: trần gram / bữa cho món đậm năng lượng
+    "ba_chi": 120, "suon_heo": 200, "heo_xay": 200, "xuc_xich": 120, "jambon": 150, "cha_ca": 150, "ca_vien": 150, "cua_thanh": 150,
+    "gan_ga": 150, "gan_bo": 150, "tom_kho": 30, "ca_moi_hop": 150, "trung_vit": 210, "trung_cut": 100, "dau_hu_chien": 200,
+    "protein_bar": 60, "cottage": 250, "sua_dac": 30, "pho_mai_lat": 60, "mozzarella": 80, "pho_mai_tam_giac": 51, "sua_co_duong": 360,
+    "sua_chua_co_duong": 200, "mi_goi": 150, "mien": 100, "banh_trang": 60, "ngu_coc_bap": 80, "granola": 80, "banh_quy_lat": 60,
+    "banh_bao": 210, "sau_rieng": 200, "cha_la": 40, "nho_kho": 40, "oc_cho": 40, "hat_bi": 40, "huong_duong": 40, "me_vung": 20,
+    "hat_lanh": 20, "mac_ca": 30, "de_cuoi": 40, "dua_nao": 50, "nuoc_cot_dua": 60, "bo_lat": 10, "mo_heo": 10, "mayonnaise": 15,
+    "socola_den": 30, "bo_hanh_nhan": 32, "khoai_mon": 400, "khoai_mi": 350, "quinoa": 400, "mi_trung": 400, "banh_mi_den": 150,
+    "banh_mi_sandwich": 150, "banh_cuon": 400})
 
 
 # v1.4 — MÓN VIỆT cho bữa chính: tên món thật, web vẫn giải số gram từng thành phần để khớp macro.
@@ -398,8 +407,34 @@ def _tron(m: str, g: float, F: dict) -> float:
     return 5 * round(g / 5)
 
 
+TT_TEN = {"chin": "chín", "song": "sống", "kho": "khô", "tuoi": "tươi", "an": "ăn liền"}
+
+
+def song_chin(m: str, g: float, F: dict) -> dict:
+    """v4.1 — đổi gram giữa dạng SỐNG (lúc cân đi nấu) và CHÍN (lúc ăn). Hệ số = g chín ÷ g sống (ước tính).
+    → {"tt": dạng của số liệu, "song": g | None, "chin": g | None, "chu": mô tả ngắn}."""
+    f = F.get(m, {})
+    tt, r = f.get("tt", "an"), float(f.get("ty_le") or 0)
+    if tt == "chin" and r and abs(r - 1) > 0.02:
+        return {"tt": tt, "song": g / r, "chin": g, "chu": f"sống ≈ {5 * round(g / r / 5):.0f} g"}
+    if tt == "song" and r and abs(r - 1) > 0.02:
+        return {"tt": tt, "song": g, "chin": g * r, "chu": f"nấu chín ≈ {5 * round(g * r / 5):.0f} g"}
+    if tt == "kho" and r:
+        return {"tt": tt, "song": g, "chin": g * r, "chu": f"khô · nấu ra ≈ {5 * round(g * r / 5):.0f} g"}
+    chu = {"kho": "cân khô", "tuoi": "cân sợi tươi", "song": "cân sống", "chin": "sống ≈ chín"}.get(tt, "")
+    return {"tt": tt, "song": None, "chin": None, "chu": chu}
+
+
 def mo_ta_luong(m: str, g: float, F: dict) -> str:
     dv = F[m].get("don_vi")
+    sc = song_chin(m, g, F) if g > 0 else {}
+    if sc.get("song") is not None:
+        dv_ = _mo_ta_dv(m, g, F, dv)
+        return " · ".join(x for x in (dv_, sc["chu"]) if x)
+    return _mo_ta_dv(m, g, F, dv)
+
+
+def _mo_ta_dv(m: str, g: float, F: dict, dv: dict | None) -> str:
     if not dv or g <= 0:
         return ""
     if m == "dau_an":                                     # dầu: 1 thìa cà phê = 5 ml ≈ 4,6 g

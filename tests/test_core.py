@@ -632,3 +632,16 @@ def test_tu_lanh_goi_y_luong():
     assert all(d["g"] >= 0 for d in r["ds"]) and next(d for d in r["ds"] if d["id"] == "cai_bo_xoi")["g"] == 300
     r = tl.goi_y(["com", "chuoi"], {"kcal": 600, "p": 40, "c": 70, "f": 15}, F, 1)
     assert "dam" in r["thieu_nhom"] and tl.nen_mua(r["thieu_nhom"], F, ["thuong"], set(), ["com", "chuoi"])
+
+
+def test_song_chin_va_mon_moi():
+    from core import dinh_duong as dd
+    F = dd.foods()
+    assert len(F) >= 190 and all(f["nhom"] in ("dam", "sua", "tinh_bot", "trai_cay", "beo", "rau") for f in F.values())
+    for k, f in F.items():   # kcal khớp 4P + 4C + 9F trong ±15%
+        assert abs(4 * f["p"] + 4 * f["c"] + 9 * f["f"] - f["kcal"]) <= 0.15 * f["kcal"] + 10, k
+    sc = dd.song_chin("uc_ga", 150, F)
+    assert sc["chin"] == 150 and 190 < sc["song"] < 210
+    assert dd.song_chin("com", 280, F)["song"] == 100
+    assert dd.song_chin("ca_rot", 100, F)["chin"] == 90
+    assert dd.song_chin("chuoi", 120, F)["song"] is None

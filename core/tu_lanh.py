@@ -20,8 +20,13 @@ def _ub(m: str, F: dict, he_so: float) -> float:
         return u * min(he_so, 2)
     if m in ("dau_an",):
         return u * min(he_so, 3)
-    if m in ("trung",):                         # tối đa ~5 quả / ngày
+    if m in ("trung", "trung_vit", "trung_cut"):  # tối đa ~5 quả trứng gà / ngày
         return u * min(he_so, 1.25)
+    nh = F.get(m, {}).get("nhom")
+    if nh == "trai_cay":                          # trái cây ≤ ~450 g / ngày
+        return min(u * he_so, 450.0)
+    if nh == "beo" or u <= 60:                    # món đậm năng lượng (hạt, bơ, phô mai, khô…) — không nới quá 2 lần
+        return u * min(he_so, 2)
     return u * he_so
 
 
@@ -62,7 +67,7 @@ def goi_y(mon: list[str], muc: dict, F: dict, he_so: float = 1.0) -> dict:
         f = F[m]
         ds.append({"id": m, "ten": f.get("ten", m), "nhom": f.get("nhom", ""), "g": g,
                    **{x: f.get(x, 0) * g / 100 for x in ("p", "c", "f", "xo")}, "kcal": (f.get("kcal", 0) * g / 100),
-                   "luong": dd.mo_ta_luong(m, g, F)})
+                   "luong": dd._mo_ta_dv(m, g, F, f.get("don_vi"))})
     ds.sort(key=lambda d: (d["g"] == 0, list(NHOM_TEN).index(d["nhom"]) if d["nhom"] in NHOM_TEN else 9, -d["g"]))
     t = {x: sum(d[x] for d in ds) for x in ("p", "c", "f", "xo", "kcal")}
     t["kcal_macro"] = 4 * t["p"] + 4 * t["c"] + 9 * t["f"]

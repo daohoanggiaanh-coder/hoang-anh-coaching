@@ -590,17 +590,22 @@ def thuc_pham():
     ui.hero("BẢNG THỰC PHẨM", "Giá trị dinh dưỡng / 100 g", "Sửa số theo nhãn sản phẩm khách thật sự dùng (VD whey, sữa chua).")
     F = dd.foods()
     ui.note(E(config.load_json("thuc_pham.json")["_ghi_chu"]))
-    df = pd.DataFrame([{"id": k, "Món": v["ten"], "Nhóm": v["nhom"], "kcal": v["kcal"], "Đạm": v["p"], "Tinh bột": v["c"], "Béo": v["f"],
-                        "Xơ": v.get("xo", 0)} for k, v in F.items()])
-    ed = st.data_editor(df, hide_index=True, use_container_width=True, disabled=["id", "Nhóm"], key="tp_ed",
-                        column_config={c: st.column_config.NumberColumn(format="%.1f") for c in ("kcal", "Đạm", "Tinh bột", "Béo", "Xơ")})
+    df = pd.DataFrame([{"id": k, "Món": v["ten"], "Nhóm": v["nhom"], "Dạng": v.get("tt", "an"), "kcal": v["kcal"], "Đạm": v["p"],
+                        "Tinh bột": v["c"], "Béo": v["f"], "Xơ": v.get("xo", 0), "Hệ số chín": float(v.get("ty_le") or 0)} for k, v in F.items()])
+    ed = st.data_editor(df, hide_index=True, use_container_width=True, disabled=["id", "Nhóm"], key="tp_ed", height=560,
+                        column_config={**{c: st.column_config.NumberColumn(format="%.1f") for c in ("kcal", "Đạm", "Tinh bột", "Béo", "Xơ")},
+                                       "Dạng": st.column_config.SelectboxColumn(options=list(dd.TT_TEN), help="Số liệu tính cho dạng: "
+                                                                                + " · ".join(f"{k} = {v}" for k, v in dd.TT_TEN.items())),
+                                       "Hệ số chín": st.column_config.NumberColumn(format="%.2f", help="g chín ÷ g sống (0 = không đổi)")})
+    st.caption("Hệ số chín là ước tính trung bình: thịt cá thường hao 20–30% khi nấu (0,7–0,8), gạo nở ~2,8 lần, miến ~3 lần.")
     if st.button("💾 Lưu thay đổi", type="primary"):
         n = 0
         for r in ed.to_dict("records"):
             cu = F[r["id"]]
             moi = {**cu, "ten": r["Món"], "kcal": float(r["kcal"]), "p": float(r["Đạm"]), "c": float(r["Tinh bột"]), "f": float(r["Béo"]),
-                   "xo": float(r["Xơ"])}
-            if any(moi[x] != cu.get(x) for x in ("ten", "kcal", "p", "c", "f", "xo")):
+                   "xo": float(r["Xơ"]), "tt": r["Dạng"] or "an", "ty_le": float(r["Hệ số chín"] or 0)}
+            if any(moi.get(x) != cu.get(x, d0) for x, d0 in (("ten", None), ("kcal", None), ("p", None), ("c", None), ("f", None),
+                                                              ("xo", 0), ("tt", "an"), ("ty_le", 0))):
                 db.append("DinhDuong", f"mon|{r['id']}", moi, u["name"])
                 n += 1
         st.toast(f"Đã lưu {n} món")

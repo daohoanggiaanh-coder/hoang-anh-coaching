@@ -91,6 +91,7 @@ if user["role"] == "coach":
                       st.Page(V.cam_ket, title="Cam kết khách", icon="🔥", url_path="cam_ket")],
         "👥 Khách hàng": [st.Page(V.khach, title="Khách & tài khoản", icon="👤", url_path="khach"),
                          st.Page(V.goi_buoi, title="Gói & buổi tập", icon="📦", url_path="goi_buoi"),
+                         st.Page(V.thong_ke_buoi, title="Thống kê buổi tập", icon="📊", url_path="thong_ke_buoi"),
                          st.Page("views/f1_ui.py", title="Tư vấn F1 · F2", icon="🎯", url_path="f1"),
                          st.Page(V.thau_hieu, title="Thấu hiểu khách 🔒", icon="🧠", url_path="thau_hieu"),
                          st.Page(V.khach_thay, title="Khách thấy gì", icon="👁", url_path="khach_thay")],

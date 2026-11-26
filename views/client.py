@@ -101,16 +101,11 @@ def trang_chu():
         tl.append((str(ga.chuoi_tuan(L, hom)), "tuần liên tiếp", "có ghi buổi tập"))
     if tl:
         ui.tiles(tl)
-    a, b = st.columns([1, 1]) if q["lich"] and q["so_ta"] else (st.container(), st.container())
-    if q["lich"]:
-        with a:
-            ui.sec("Lịch 2 tuần tới")
-            if not sap:
-                st.caption("Chưa có buổi hẹn — nhắn HLV để xếp lịch.")
-            for x in sap[:8]:
-                st.markdown(f'<div class="hac-b"><span class="t">{store.gio_s(x["gio"])}</span><span class="n">'
-                            f'{store.THU[x["ngay"].weekday()]} · {x["ngay"]:%d/%m}</span><span class="m">{ui.E(x.get("dia_diem") or "")}'
-                            f'{" · hôm nay" if x["ngay"] == hom else ""}</span></div>', unsafe_allow_html=True)
+    if q["lich"]:                                      # v4.3: lịch tháng — ngày đã tập + tên buổi, mốc, buổi sắp tới, ngày nghỉ → NEAT
+        ui.sec("Lịch tập tháng này")
+        from views import lich_thang_ui
+        lich_thang_ui.lich(k, "kh_home")
+    b = st.container()
     if q["so_ta"]:
         with b:
             ui.sec("Kỷ lục gần đây")
@@ -197,6 +192,10 @@ def _hom_nay_co_ban(k: dict, q: dict, t: dict, hom):
         st.markdown("### 🍽 Ăn uống hôm nay")
         if _trang("thuc_don"):
             st.page_link(_trang("thuc_don"), label="Xem thực đơn hôm nay", icon="🍽", use_container_width=True)
+    if q["lich"]:                                      # v4.3: lịch tháng
+        ui.sec("Lịch tập tháng này")
+        from views import lich_thang_ui
+        lich_thang_ui.lich(k, "kh_cb")
     DL.check_in(k, k["ho_ten"], t)
     hs = hinh.ho_so_hlv()
     st.markdown(f'<div class="hac-note" style="display:flex;gap:12px;align-items:center;font-size:1.05rem">'

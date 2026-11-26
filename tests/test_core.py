@@ -663,3 +663,23 @@ def test_email_bao_cao_buoi_va_tong_ket():
     t, h2 = mail.tong_ket_ngay(date(2026, 10, 8))
     assert "1 buổi" in t and "Nguyễn Thị Lan" in h2
     assert mail.cai_dat()["sau_buoi"] is True
+
+
+def test_lich_thang_va_thong_ke():
+    from core import thong_ke_buoi as tk
+    k = _khach(goi_buoi=4, da_tap_truoc=0)
+    store.ghi_hen("R001", date(2026, 10, 1), "18:00", "xong", "HLV")
+    ga.save_log("R001", {"ngay": "2026-10-01", "buoi": "Buổi A · Push", "bai": []}, "HLV")
+    store.ghi_hen("R001", date(2026, 10, 6), "18:00", "xong", "HLV")
+    D = tk.ngay_da_tap(k)
+    assert D[date(2026, 10, 1)]["ten"] == "Buổi A · Push" and D[date(2026, 10, 1)]["so"] == 1
+    assert D[date(2026, 10, 1)]["moc"].startswith("🎉") and D[date(2026, 10, 6)]["so"] == 2
+    L = tk.lich_thang(k, 2026, 10, date(2026, 10, 7))
+    o = {x["ngay"]: x for x in L["o"]}
+    assert o[date(2026, 10, 1)]["loai"] == "da" and o[date(2026, 10, 3)]["loai"] == "nghi"
+    assert o[date(2026, 10, 7)]["loai"] == "hen" and o[date(2026, 10, 7)]["so"] == 3     # hôm nay thứ 4 18:00 (lịch cố định)
+    assert o[date(2026, 10, 12)]["so"] == 4 and o[date(2026, 10, 12)]["moc"].startswith("🏁")   # buổi 4/4 = cuối gói
+    assert o[date(2026, 10, 5)]["loai"] == "lo"
+    assert sum(t["so"] for t in tk.theo_tuan(k, 4, date(2026, 10, 7))) == 2
+    r = tk.tong_hop_khach([k], date(2026, 10, 7))[0]
+    assert r["da"] == 2 and r["con"] == 2

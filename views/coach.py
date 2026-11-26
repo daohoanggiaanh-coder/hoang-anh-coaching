@@ -1289,6 +1289,12 @@ def tien_do_all():
     tien_do_all_ui.trang(_user())
 
 
+def thong_ke_buoi():
+    """v4.3 — biểu đồ đã tập / còn lại, chuyên cần tuần, lịch tháng từng khách."""
+    from views import lich_thang_ui
+    lich_thang_ui.trang_hlv(_user())
+
+
 def goi_buoi():
     """v3.5 — 📦 Gói & buổi tập."""
     from views import goi_buoi_ui

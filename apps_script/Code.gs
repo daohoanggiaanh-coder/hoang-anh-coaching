@@ -1,5 +1,5 @@
 /**
- * Hoàng Anh Coaching v1.0 (2026-10-31) — database riêng trên Google Sheets (miễn phí), đứng tên Gmail của anh.
+ * Hoàng Anh Coaching v4.2 (2026-11-26) — database riêng trên Google Sheets (miễn phí), đứng tên Gmail của anh.
  *
  * CÁCH CÀI (1 lần, ~5 phút):
  *  1. Vào sheets.new bằng Gmail cá nhân → đặt tên "Hoàng Anh Coaching · Dữ liệu".
@@ -16,6 +16,12 @@
  *   GET  ?token&action=read&sheet=...                  → toàn bộ dòng của 1 sheet dạng JSON
  *   POST {token, action:"upload", files:[{name,data}]} → lưu ảnh JPEG vào thư mục Drive riêng, trả id
  *   GET  ?token&action=images&ids=a,b                   → {id: base64} (chỉ ảnh trong thư mục riêng)
+ *   POST {token, action:"mail", subject, html}         → v4.2: gửi email báo cáo về CHÍNH Gmail chủ script (không gửi người khác)
+ *   GET  ?token&action=mail_info                       → {email, con_lai} — kiểm tra đã bật gửi mail chưa
+ *
+ * v4.2 — CẬP NHẬT ĐỂ GỬI EMAIL: dán đè toàn bộ file này → Lưu → chạy hàm thuMail 1 lần (Google hỏi thêm quyền
+ *   "Gửi email thay mặt bạn" → Cho phép) → Triển khai → Quản lý các lần triển khai → ✏️ → Phiên bản: Phiên bản mới
+ *   → Triển khai. (URL …/exec giữ nguyên, không phải sửa Secrets.)
  */
 
 const SHEETS = ['KhachHang', 'TaiKhoan', 'LichHen', 'CanNang', 'SoDo', 'Anh', 'GiaoAn', 'NhatKy', 'DinhDuong', 'HangCho'];
@@ -37,6 +43,12 @@ function doPost(e) {
         return f.createFile(Utilities.newBlob(Utilities.base64Decode(x.data), 'image/jpeg', String(x.name || 'anh.jpg'))).getId();
       });
       return json_({ ok: true, ids: ids });
+    }
+    if (b.action === 'mail') {
+      const to = nguoiNhan_();
+      MailApp.sendEmail({ to: to, subject: String(b.subject || 'Báo cáo').slice(0, 200), htmlBody: String(b.html || '').slice(0, 400000),
+                          name: 'Hoàng Anh Coaching' });
+      return json_({ ok: true, to: to });
     }
     if (b.action !== 'append' || SHEETS.indexOf(b.sheet) === -1) return json_({ ok: false, error: 'yêu cầu không hợp lệ' });
     const lock = LockService.getScriptLock();
@@ -67,11 +79,26 @@ function doGet(e) {
     });
     return json_({ ok: true, images: out });
   }
+  if (p.action === 'mail_info') {
+    return json_({ ok: true, email: nguoiNhan_(), con_lai: MailApp.getRemainingDailyQuota() });
+  }
   if (p.action !== 'read' || SHEETS.indexOf(p.sheet) === -1) return json_({ ok: false, error: 'yêu cầu không hợp lệ' });
   const sh = sheet_(p.sheet);
   if (sh.getLastRow() < 2) return json_({ ok: true, rows: [] });
   const v = sh.getRange(2, 1, sh.getLastRow() - 1, COLS.length).getDisplayValues();
   return json_({ ok: true, rows: v.map(function (r) { const o = {}; COLS.forEach(function (c, i) { o[c] = r[i]; }); return o; }) });
+}
+
+/** Email nhận báo cáo: Gmail chủ script (đổi được bằng Thuộc tính tập lệnh EMAIL_NHAN). */
+function nguoiNhan_() {
+  return PropertiesService.getScriptProperties().getProperty('EMAIL_NHAN') || Session.getEffectiveUser().getEmail();
+}
+
+/** CHẠY 1 LẦN sau khi cập nhật v4.2: cấp quyền gửi mail + gửi thử 1 email về Gmail của anh. */
+function thuMail() {
+  MailApp.sendEmail(nguoiNhan_(), 'Hoàng Anh Coaching · đã bật email báo cáo ✅',
+                    'Từ giờ web gửi báo cáo buổi tập và tổng kết ngày về địa chỉ này. Còn ' + MailApp.getRemainingDailyQuota() + ' email hôm nay.');
+  Logger.log('Đã gửi thử tới ' + nguoiNhan_());
 }
 
 function sheet_(name) {

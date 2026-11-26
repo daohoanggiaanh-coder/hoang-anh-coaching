@@ -645,3 +645,21 @@ def test_song_chin_va_mon_moi():
     assert dd.song_chin("com", 280, F)["song"] == 100
     assert dd.song_chin("ca_rot", 100, F)["chin"] == 90
     assert dd.song_chin("chuoi", 120, F)["song"] is None
+
+
+def test_email_bao_cao_buoi_va_tong_ket():
+    from core import mail
+    k = _khach()
+    ga.save_log("R001", {"ngay": "2026-10-01", "bai": [{"bai": "Dumbbell Bench Press", "sets": [{"kg": 14, "lan": 10}] * 3}]}, "HLV")
+    lid = ga.save_log("R001", {"ngay": "2026-10-08", "rpe": 9, "ghi_chu": "vai hơi đau",
+                               "bai": [{"bai": "Dumbbell Bench Press", "sets": [{"kg": 16, "lan": 8}] * 3}]}, "HLV")
+    td.luu_can("R001", date(2026, 10, 1), 60.0, {"name": "HLV"})
+    td.luu_can("R001", date(2026, 10, 8), 59.4, {"name": "HLV"})
+    tieu, h = mail.bao_cao_buoi(k, lid)
+    assert "Nguyễn Thị Lan" in tieu and "08/10" in tieu
+    assert "+2 kg" in h and "14 kg × 10/10/10" in h and "-0,6 kg" in h and "RPE 9" in h and "vai hơi đau" in h
+    ok, p = mail.gui(tieu, h)
+    assert ok and p.endswith(".html")
+    t, h2 = mail.tong_ket_ngay(date(2026, 10, 8))
+    assert "1 buổi" in t and "Nguyễn Thị Lan" in h2
+    assert mail.cai_dat()["sau_buoi"] is True

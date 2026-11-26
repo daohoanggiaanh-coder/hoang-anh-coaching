@@ -520,7 +520,9 @@ def ghi_buoi(k: dict, P_: dict, nguoi: str, vai: str = "hlv", chua_luu: bool = F
               "rpe": rpe, "ghi_chu_hlv": ghi_pt, "loi_nhan": loi, "thoi_luong": 60, "nguoi_ghi": vai,
               **({"ghi_chu": gkh.strip()} if gkh.strip() else {})}
         prs = _wow.ky_luc_moi(bai, hist)
-        bt.save(ma, s_, nguoi)
+        lid = bt.save(ma, s_, nguoi)
+        from core import mail as _mail
+        _mail.sau_buoi(k, lid, vai)                                   # v4.2: email báo cáo buổi cho HLV (gửi nền)
         if prs:
             S[f"_pr_{km}"] = (prs, ngay)
         if cd_phut:

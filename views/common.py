@@ -687,8 +687,10 @@ def ghi_buoi(k: dict, vai: str, nguoi: str, G: list[dict], L: list[dict]):
                 st.error("Chưa nhập số lần của hiệp nào.")
             else:
                 cu = ga.ky_luc(ga.lich_su_bai(ma, L))
-                ga.save_log(ma, {"ngay": ngay.isoformat(), "ga_id": gid, "buoi": ten_buoi, "nguoi_ghi": vai, "bai": ket,
-                                 "cam_nhan": cn, "thoi_luong": tl, "ghi_chu": gc.strip()}, nguoi)
+                lid = ga.save_log(ma, {"ngay": ngay.isoformat(), "ga_id": gid, "buoi": ten_buoi, "nguoi_ghi": vai, "bai": ket,
+                                       "cam_nhan": cn, "thoi_luong": tl, "ghi_chu": gc.strip()}, nguoi)
+                from core import mail as _mail
+                _mail.sau_buoi(store.client(ma) or {"ma": ma}, lid, vai)   # v4.2: email báo cáo buổi cho HLV
                 moi_pr = []
                 for x in ket:
                     best = max((ga.e1rm(s["kg"], s["lan"]) or 0) for s in x["sets"])

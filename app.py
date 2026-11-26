@@ -104,6 +104,7 @@ if user["role"] == "coach":
         "🍽 Dinh dưỡng": [st.Page(V.an, title="Thực đơn khách", icon="🍽", url_path="dinh_duong"),
                          st.Page(V.thuc_pham, title="Bảng thực phẩm", icon="🥗", url_path="thuc_pham")],
         "🛠 Công cụ": [st.Page(V.soan_tin, title="Soạn tin Zalo", icon="✉️", url_path="soan_tin"),
+                      st.Page(V.email_bao_cao, title="Email báo cáo", icon="📧", url_path="email"),
                       st.Page(V.ho_so, title="Hồ sơ HLV & thành quả", icon="🏆", url_path="ho_so"),
                       st.Page(V.nhap_atlas, title="Chép khách từ Atlas", icon="📥", url_path="nhap_atlas")],
     }

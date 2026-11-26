@@ -1,0 +1,22 @@
+name: Email tổng kết ngày
+on:
+  schedule:
+    - cron: "30 14 * * *"   # 21h30 giờ Việt Nam
+  workflow_dispatch:
+concurrency: mail
+jobs:
+  mail:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Gửi tổng kết
+        env:
+          SHEETS_WEBAPP_URL: ${{ secrets.SHEETS_WEBAPP_URL }}
+          SHEETS_TOKEN: ${{ secrets.SHEETS_TOKEN }}
+        run: python -m scripts.mail_ngay

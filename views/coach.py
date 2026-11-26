@@ -1305,3 +1305,59 @@ def thau_hieu():
     """v3.1 — 🧠 Thấu hiểu khách (chỉ HLV)."""
     from views import thau_hieu_ui
     thau_hieu_ui.trang(_user())
+
+
+# =================================================================== v4.2 EMAIL BÁO CÁO
+def email_bao_cao():
+    from core import mail
+    u = _user()
+    ui.hero("EMAIL BÁO CÁO", "Báo cáo tự động về Gmail của anh",
+            "Sau mỗi buổi tập: bài tập so với lần trước, thông số cơ thể, mục tiêu, gói — kèm việc nên làm. Cuối ngày: tổng kết tất cả khách.")
+    kt = mail.kiem_tra()
+    if kt["ok"]:
+        st.success(f"Đang gửi tới **{kt['email']}**" + (f" · hôm nay còn gửi được {kt['con_lai']} email (giới hạn của Gmail)"
+                                                        if kt.get("con_lai") is not None else ""))
+    else:
+        st.warning(kt["loi"])
+    c = mail.cai_dat()
+    with st.form("mail_cd"):
+        a = st.toggle("📨 Gửi báo cáo ngay sau mỗi buổi HLV ghi", value=c["sau_buoi"])
+        b = st.toggle("🙋 Gửi cả khi khách tự ghi buổi tập", value=c["khach_tu_ghi"])
+        d = st.toggle("🌙 Tổng kết cuối ngày (21h30) — tất cả khách", value=c["cuoi_ngay"])
+        if st.form_submit_button("💾 Lưu cài đặt", type="primary"):
+            if mail.luu_cai_dat({"sau_buoi": a, "khach_tu_ghi": b, "cuoi_ngay": d}, u["name"]):
+                st.toast("Đã lưu")
+    st.markdown("#### 👁 Xem trước & gửi thử")
+    k = _chon_khach(store.clients(ca_ngung=False), "mail_kh")
+    t1, t2 = st.tabs(["Báo cáo buổi gần nhất", "Tổng kết hôm nay"])
+    with t1:
+        r = mail.bao_cao_buoi(k) if k else None
+        if not r:
+            st.info("Khách này chưa có buổi tập nào được ghi.")
+        else:
+            st.caption(f"Tiêu đề: **{r[0]}**")
+            st.html(r[1])
+            if st.button("📨 Gửi thử email này", key="mail_thu1"):
+                ok, m = mail.gui(*r)
+                (st.success if ok else st.error)(f"Đã gửi → {m}" if ok else f"Chưa gửi được: {m}")
+    with t2:
+        if st.button("Dựng tổng kết hôm nay", key="mail_tk"):
+            st.session_state["_mail_tk"] = mail.tong_ket_ngay()
+        r = st.session_state.get("_mail_tk")
+        if r:
+            st.caption(f"Tiêu đề: **{r[0]}**")
+            st.html(r[1])
+            if st.button("📨 Gửi thử tổng kết", key="mail_thu2"):
+                ok, m = mail.gui(*r)
+                (st.success if ok else st.error)(f"Đã gửi → {m}" if ok else f"Chưa gửi được: {m}")
+    with st.expander("🛠 Cài đặt 1 lần: bật chức năng gửi mail trong Apps Script", expanded=not kt["ok"]):
+        st.markdown(
+            "1. Mở Google Sheet **Hoàng Anh Coaching · Dữ liệu** → **Tiện ích mở rộng → Apps Script**.\n"
+            "2. Xoá hết code cũ trong `Code.gs` → dán **toàn bộ** code bên dưới (nút sao chép ở góc khung) → **Lưu** (Ctrl+S).\n"
+            "3. Ở thanh trên chọn hàm **thuMail** → **Chạy** → Google hỏi quyền → chọn Gmail của anh → **Nâng cao → Đi tới… → Cho phép** "
+            "(thêm quyền *Gửi email thay mặt bạn*). Anh sẽ nhận 1 email thử.\n"
+            "4. **Triển khai → Quản lý các lần triển khai → ✏️ (bút chì) → Phiên bản: Phiên bản mới → Triển khai.** "
+            "URL giữ nguyên, không phải sửa Secrets.\n"
+            "5. Quay lại trang này, tải lại — dòng trên cùng chuyển sang màu xanh là xong.\n\n"
+            "Mail chỉ gửi về **Gmail chủ Sheet** (code không cho gửi địa chỉ khác). Gmail cá nhân giới hạn ~100 email / ngày.")
+        st.code((config.ROOT / "apps_script" / "Code.gs").read_text(encoding="utf-8"), language="javascript", wrap_lines=True)
